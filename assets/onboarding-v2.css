@@ -1,0 +1,314 @@
+/* ════════════════════════════════════════════════════════════════════
+   Onboarding (register & login) — rebuilt on TOMS Design System v2.0.
+   Namespace: obx-*  (supersedes the legacy ob-* block in index.html).
+
+   v2.0 fidelity notes:
+   · Flat backgrounds only — no gradients (DS: "Flat. Always.").
+   · Avatars are mono initials on bg-3 (DS imagery rule), not gradient chips.
+   · Borders carry the system: 1px hairlines everywhere; depth from tone.
+   · One primary CTA per surface. Secondary actions use subtle / outline.
+   · Uses the v2.0 addendum: tds-otp cells, tds-progress, tds-btn--soft etc.
+
+   Single CENTERED composition: a brand moment, the step card, and a trust
+   footer carrying the encrypted-link "data voice", over a faint blueprint
+   background. Stripe/Linear-grade focused auth.
+   ════════════════════════════════════════════════════════════════════ */
+
+.obx-shell {
+  position: fixed; inset: 0; z-index: 8500;
+  background: var(--color-bg-1);
+  color: var(--color-text-primary);
+  overflow: auto;
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Faint blueprint grid behind the card — hairlines, faded to clear at the
+   centre so the card sits on calm ground; reads technical at the edges.
+   The single permitted bit of "chrome"; the rest is type + data. */
+.obx-bggrid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(var(--color-border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border-subtle) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(120% 95% at 50% 40%, transparent 36%, #000 88%);
+          mask-image: radial-gradient(120% 95% at 50% 40%, transparent 36%, #000 88%);
+}
+
+/* ─── Centered stage ────────────────────────────────────────────────── */
+/* min-height (not height) + flex-center: short content centres, tall content
+   (e.g. the register step) grows the container so .obx-shell can scroll to it
+   instead of clipping top/bottom. */
+.obx-main { position: relative; z-index: 1; min-height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 48px 28px 40px; width: 100%; }
+.obx-stage { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: stretch; }
+
+/* Top-bottom composition: full-bleed hero band on top, focused card below.
+   Fills wide (1920) viewports — the empty gutters become a fleet data strip. */
+.obx-main--stacked { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0; }
+.obx-body { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 46px 28px 52px; width: 100%; box-sizing: border-box; }
+.obx-main--stacked .obx-stage { max-width: 540px; }
+
+/* ═══ Hero band ══════════════════════════════════════════════════════ */
+.obx-hero {
+  position: relative; z-index: 1; overflow: hidden; flex: none;
+  background: oklch(17% 0.035 264);
+  color: oklch(96% 0.01 262);
+  border-bottom: 1px solid oklch(30% 0.04 262);
+  padding: 24px 28px 32px;
+}
+/* Faint blueprint grid — hairlines faded toward the edges. The only "chrome". */
+.obx-hero__grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(oklch(100% 0 0 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(100% 0 0 / 0.035) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(130% 150% at 20% 0%, #000 0%, transparent 72%);
+          mask-image: radial-gradient(130% 150% at 20% 0%, #000 0%, transparent 72%);
+}
+.obx-hero__inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; width: 100%; }
+
+.obx-hero__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.obx-hero__brand { display: flex; align-items: center; gap: 11px; }
+.obx-hero__logo { width: 32px; height: 32px; border-radius: 9px; overflow: hidden; flex: none; display: grid; place-items: center; }
+.obx-hero__logo img { width: 100%; height: 100%; object-fit: contain; }
+.obx-hero__name { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; color: #fff; line-height: 1.1; }
+.obx-hero__name span { display: block; font: 500 9.5px var(--font-family-mono); letter-spacing: 0.13em; text-transform: uppercase; color: oklch(70% 0.03 262); margin-top: 4px; white-space: nowrap; }
+.obx-hero__exit {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  padding: 6px 13px; border-radius: var(--radius-md);
+  background: oklch(24% 0.04 262); border: 1px solid oklch(33% 0.04 262);
+  color: oklch(82% 0.02 262); font: 500 12px var(--font-family-sans); cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+.obx-hero__exit:hover { background: oklch(29% 0.05 262); color: #fff; }
+
+.obx-hero__lead { margin-top: 28px; max-width: 720px; }
+.obx-hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  font: 600 11px var(--font-family-mono); letter-spacing: 0.12em; text-transform: uppercase;
+  color: oklch(80% 0.06 262); margin-bottom: 16px;
+  padding: 5px 12px 5px 10px; border-radius: var(--radius-full);
+  background: oklch(23% 0.04 264); border: 1px solid oklch(33% 0.05 264);
+}
+.obx-hero__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success-500); box-shadow: 0 0 0 3px oklch(72% 0.18 152 / 0.20); flex: none; }
+@media (prefers-reduced-motion: no-preference) { .obx-hero__dot { animation: obxPulse 2.4s var(--easing-standard) infinite; } }
+@keyframes obxPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.obx-hero__headline { font-size: 31px; font-weight: 600; letter-spacing: -0.026em; line-height: 1.15; margin: 0 0 12px; color: #fff; text-wrap: balance; }
+.obx-hero__lede { font-size: 14px; line-height: 1.6; color: oklch(78% 0.02 262); margin: 0; max-width: 56ch; }
+
+/* Fleet stat strip — the "multiple columns" filling the width */
+.obx-hero__stats { display: grid; grid-template-columns: repeat(6, 1fr); column-gap: 0; row-gap: 20px; margin-top: 30px; border-top: 1px solid oklch(30% 0.04 262); padding-top: 22px; }
+.obx-hero__stat { padding: 0 22px; border-left: 1px solid oklch(28% 0.04 262); }
+.obx-hero__stat:nth-child(6n+1) { border-left: 0; padding-left: 0; }
+.obx-hero__stat-v { font: 500 25px var(--font-family-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: #fff; line-height: 1; }
+.obx-hero__stat-l { font: 500 11px var(--font-family-sans); color: oklch(64% 0.025 262); margin-top: 9px; line-height: 1.35; }
+
+@media (max-width: 1080px) {
+  .obx-hero__stats { grid-template-columns: repeat(3, 1fr); }
+  .obx-hero__stat:nth-child(6n+1) { border-left: 1px solid oklch(28% 0.04 262); padding-left: 22px; }
+  .obx-hero__stat:nth-child(3n+1) { border-left: 0; padding-left: 0; }
+}
+@media (max-width: 620px) {
+  .obx-hero { padding: 20px 22px 26px; }
+  .obx-hero__headline { font-size: 25px; }
+  .obx-hero__lead { margin-top: 22px; }
+  .obx-hero__stats { grid-template-columns: repeat(2, 1fr); }
+  .obx-hero__stat:nth-child(3n+1) { border-left: 1px solid oklch(28% 0.04 262); padding-left: 22px; }
+  .obx-hero__stat:nth-child(2n+1) { border-left: 0; padding-left: 0; }
+  .obx-body { padding: 32px 20px 40px; }
+}
+
+/* Brand moment — focused lockup above the card */
+.obx-mark { display: flex; align-items: center; gap: 11px; justify-content: center; margin-bottom: 22px; }
+.obx-mark__logo { width: 34px; height: 34px; border-radius: 9px; overflow: hidden; flex: none; display: grid; place-items: center; }
+.obx-mark__logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.obx-mark__name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--color-text-primary); white-space: nowrap; }
+.obx-mark__name span { font: 500 11px var(--font-family-mono); letter-spacing: 0.10em; text-transform: uppercase; color: var(--color-text-tertiary); margin-left: 4px; }
+
+/* ─── Card ──────────────────────────────────────────────────────────── */
+.obx-card {
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-2xl, 16px);
+  box-shadow: var(--shadow-4);
+  padding: 32px 32px 28px;
+  position: relative;
+  width: 100%;
+}
+.obx-card--centered { text-align: center; }
+.obx-card--err { text-align: center; border-color: oklch(70% 0.16 25 / 0.4); padding: 38px 32px; }
+
+/* Trust footer — encrypted-link data voice, aligned to the card edges */
+.obx-secure {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 16px; padding: 0 6px;
+  font: 500 11.5px var(--font-family-sans); color: var(--color-text-tertiary);
+}
+.obx-secure__lead { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-secondary); font-weight: 500; }
+.obx-secure__lead svg { color: var(--color-success-700); flex: none; }
+.obx-secure__token { font: 500 11px var(--font-family-mono); color: var(--color-text-secondary); background: var(--color-bg-3); border: 1px solid var(--color-border-subtle); padding: 2px 7px; border-radius: var(--radius-sm); letter-spacing: 0.01em; }
+.obx-secure__sep { flex: 1; min-width: 12px; height: 1px; background: var(--color-border-subtle); }
+.obx-secure__meta { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Exit — subtle text link, centered below everything */
+.obx-exit {
+  align-self: center; margin-top: 22px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-full);
+  background: transparent; border: 1px solid transparent;
+  color: var(--color-text-tertiary);
+  font: 500 12.5px var(--font-family-sans); cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
+}
+.obx-exit:hover { background: var(--color-bg-2); color: var(--color-text-primary); border-color: var(--color-border-default); }
+
+
+.obx-eyebrow { font: 600 11px var(--font-family-mono); letter-spacing: 0.10em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 8px; }
+.obx-title { font-size: 23px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 7px; line-height: 1.2; }
+.obx-sub { font-size: 13.5px; color: var(--color-text-secondary); margin: 0 0 22px; line-height: 1.55; }
+.obx-sub strong { color: var(--color-text-primary); font-weight: 600; }
+
+.obx-code { font: 500 12px var(--font-family-mono); background: var(--color-bg-3); padding: 2px 6px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle); color: var(--color-text-primary); }
+
+/* Status icon medallion (welcome / invalid) */
+.obx-medallion { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; margin: 0 auto 18px; }
+.obx-medallion--ok  { background: var(--color-success-50); color: var(--color-success-700); border: 1px solid oklch(58% 0.14 152 / 0.30); }
+.obx-medallion--err { background: var(--color-error-50);   color: var(--color-error-700);   border: 1px solid oklch(70% 0.16 25 / 0.30); }
+
+/* Back link */
+.obx-back {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 9px; border-radius: var(--radius-md);
+  background: transparent; border: 0; color: var(--color-text-secondary);
+  font: 500 12.5px var(--font-family-sans); cursor: pointer;
+  margin: -8px 0 16px -9px;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+.obx-back:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+
+/* ─── Entity context row ────────────────────────────────────────────── */
+.obx-entity {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px;
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+}
+.obx-entity__logo {
+  width: 38px; height: 38px; border-radius: 10px; flex: none;
+  background: var(--color-primary-700); color: #fff;
+  display: grid; place-items: center;
+  font: 700 11.5px var(--font-family-mono); letter-spacing: 0.04em;
+  box-shadow: var(--shadow-cta);
+}
+.obx-entity__main { flex: 1; min-width: 0; }
+.obx-entity__name { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+.obx-entity__sub { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
+.obx-entity__sub strong { color: var(--color-text-secondary); font-weight: 600; }
+
+/* ─── Account preview (mono initials on bg-3 — DS imagery rule) ──────── */
+.obx-account {
+  display: flex; align-items: center; gap: 13px;
+  padding: 15px 16px;
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+}
+.obx-account--lg { padding: 17px 18px; }
+.obx-account__avatar {
+  width: 44px; height: 44px; border-radius: var(--radius-full); flex: none;
+  background: var(--color-bg-2); border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  display: grid; place-items: center;
+  font: 600 14px var(--font-family-mono); letter-spacing: 0.02em;
+}
+.obx-account--lg .obx-account__avatar { width: 50px; height: 50px; font-size: 15px; }
+.obx-account__main { flex: 1; min-width: 0; }
+.obx-account__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.obx-account--lg .obx-account__name { font-size: 16px; }
+.obx-account__email { font: 500 12px var(--font-family-mono); color: var(--color-text-tertiary); margin-top: 3px; word-break: break-all; }
+.obx-account__chip { font: 600 9.5px var(--font-family-mono); letter-spacing: 0.06em; padding: 3px 8px; border-radius: var(--radius-full); border: 1px solid; flex: none; text-transform: uppercase; }
+.obx-account__chip--ok  { color: var(--color-success-700); background: var(--color-success-50); border-color: oklch(58% 0.14 152 / 0.25); }
+.obx-account__chip--new { color: var(--color-info-700);    background: var(--color-info-50);    border-color: oklch(60% 0.14 230 / 0.25); }
+
+/* ─── Divider with caption ──────────────────────────────────────────── */
+.obx-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 16px; color: var(--color-text-tertiary); font: 600 10.5px var(--font-family-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.obx-divider > span { white-space: nowrap; flex: none; }
+.obx-divider::before, .obx-divider::after { content: ''; flex: 1; height: 1px; background: var(--color-border-subtle); }
+
+/* ─── Action rows ───────────────────────────────────────────────────── */
+.obx-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+.obx-actions--row { flex-direction: row; justify-content: flex-end; }
+.obx-actions--center { justify-content: center; }
+.obx-actions .tds-btn { justify-content: center; }
+.obx-actions:not(.obx-actions--row) .tds-btn { width: 100%; padding-top: 10px; padding-bottom: 10px; }
+
+.obx-meta { display: flex; align-items: center; gap: 7px; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--color-border-subtle); font: 500 11.5px var(--font-family-sans); color: var(--color-text-tertiary); }
+.obx-meta svg { color: var(--color-text-tertiary); flex: none; }
+.obx-meta strong { color: var(--color-text-secondary); font-weight: 600; }
+
+.obx-stack { display: flex; flex-direction: column; }
+
+/* ─── Stepper (register wizard) ─────────────────────────────────────── */
+.obx-stepper { display: flex; align-items: center; margin: 18px 0 20px; }
+.obx-stepper__node { display: flex; align-items: center; gap: 7px; flex: none; color: var(--color-text-tertiary); }
+.obx-stepper__node.is-done, .obx-stepper__node.is-on { color: var(--color-text-primary); }
+.obx-stepper__dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--color-bg-2); border: 1px solid var(--color-border-default); color: var(--color-text-tertiary); font: 600 10.5px var(--font-family-mono); flex: none; transition: all var(--duration-fast); }
+.obx-stepper__node.is-on .obx-stepper__dot { background: var(--color-primary-700); border-color: var(--color-primary-700); color: #fff; box-shadow: 0 0 0 3px oklch(40% 0.14 262 / 0.14); }
+.obx-stepper__node.is-done .obx-stepper__dot { background: var(--color-success-50); border-color: oklch(58% 0.14 152 / 0.4); color: var(--color-success-700); }
+.obx-stepper__lbl { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.obx-stepper__node:not(.is-on) .obx-stepper__lbl { display: none; }
+.obx-stepper__bar { flex: 1; height: 1px; background: var(--color-border-default); margin: 0 6px; min-width: 12px; }
+.obx-stepper__bar.is-done { background: oklch(58% 0.14 152 / 0.5); }
+.obx-step-body { margin: 4px 0; }
+
+/* ─── Radio cards (email-mode choice) ───────────────────────────────── */
+.obx-radio-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: var(--color-bg-2); border: 1px solid var(--color-border-default); border-radius: var(--radius-xl); cursor: pointer; transition: border-color var(--duration-fast), background var(--duration-fast), box-shadow var(--duration-fast); }
+.obx-radio-card:hover { border-color: var(--color-border-strong); }
+.obx-radio-card.is-on { border-color: var(--color-primary-500); background: var(--color-primary-50); box-shadow: 0 0 0 3px oklch(40% 0.14 262 / 0.10); }
+.obx-radio-card > input[type="radio"] { margin-top: 2px; accent-color: var(--color-primary-700); width: 16px; height: 16px; flex: none; cursor: pointer; }
+.obx-radio-card__main { flex: 1; min-width: 0; }
+.obx-radio-card__title { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.obx-radio-card__sub { font-size: 12.5px; color: var(--color-text-secondary); margin-top: 4px; line-height: 1.5; }
+
+/* ─── OTP — centered block (wraps tds-otp from the v2.0 addendum) ────── */
+.obx-otp-wrap { display: flex; justify-content: center; padding: 6px 0 2px; }
+.obx-otp-wrap .tds-otp__cell { width: 46px; height: 54px; font-size: 20px; font-weight: 500; }
+.obx-otp-wrap .tds-otp__cell::placeholder { color: var(--color-text-disabled); font-weight: 400; }
+
+/* ─── Password strength (tds-progress driven) ───────────────────────── */
+.obx-strength { display: flex; flex-direction: column; gap: 7px; margin-top: 2px; }
+.obx-strength__row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.obx-strength__lbl { font: 500 11.5px var(--font-family-sans); color: var(--color-text-secondary); }
+.obx-strength__val { font: 600 11.5px var(--font-family-mono); letter-spacing: 0.02em; }
+.obx-strength__val[data-lvl="0"], .obx-strength__val[data-lvl="1"] { color: var(--color-error-700); }
+.obx-strength__val[data-lvl="2"], .obx-strength__val[data-lvl="3"] { color: var(--color-warning-700); }
+.obx-strength__val[data-lvl="4"], .obx-strength__val[data-lvl="5"] { color: var(--color-success-700); }
+
+/* Password rule checklist */
+.obx-checklist { list-style: none; padding: 12px 14px; margin: 0; background: var(--color-bg-3); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); display: grid; grid-template-columns: 1fr 1fr; gap: 7px 14px; }
+.obx-checklist__row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--color-text-tertiary); white-space: nowrap; }
+.obx-checklist__row.is-on { color: var(--color-success-700); }
+.obx-checklist__row svg { flex: none; }
+
+.obx-error { font-size: 12.5px; color: var(--color-error-700); padding: 9px 11px; background: var(--color-error-50); border: 1px solid oklch(70% 0.16 25 / 0.25); border-radius: var(--radius-md); }
+
+/* ─── Welcome confetti (kept, recolored to palette) ─────────────────── */
+.obx-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
+.obx-confetti span { position: absolute; top: 0; left: 50%; width: 7px; height: 11px; border-radius: 2px; animation: obxFall 1.5s cubic-bezier(.35,.65,.55,1) calc(var(--i) * 55ms) forwards; opacity: 0; }
+.obx-confetti span:nth-child(3n)   { background: var(--color-primary-500); }
+.obx-confetti span:nth-child(3n+1) { background: var(--color-accent-600); }
+.obx-confetti span:nth-child(3n+2) { background: var(--color-success-500); }
+.obx-confetti span:nth-child(2n)   { width: 5px; height: 5px; border-radius: 50%; }
+@keyframes obxFall {
+  0%   { transform: translate(-50%, -8px) rotate(0deg); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translate(calc(-50% + (var(--i) - 9) * 18px), 380px) rotate(680deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .obx-confetti span { animation: none; opacity: 0; }
+}

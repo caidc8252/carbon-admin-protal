@@ -1,0 +1,160 @@
+/* ─────────────────────────────────────────────────────────────
+   ⚠ ARCHIVED DESIGN SYSTEM — System B (TM Product Skin)
+   Frozen by the Single Design Language charter (spec/design-language.html).
+   Canonical system is System A: tokens/tokens.css + styles/components.css.
+   Keep for the existing Terminal Manager recreation ONLY. Do NOT import
+   into new pages, use as a component source, or introduce its
+   --bg-app / --fg-primary / --accent-* names into new work.
+   ─────────────────────────────────────────────────────────────
+   TOMS Terminal Manager — Design Tokens
+   Warm-neutral grays · Indigo accent · Light primary, dark secondary
+   ───────────────────────────────────────────────────────────── */
+
+:root, .theme-light {
+  /* Surfaces — warm neutral, oklch tuned */
+  --bg-app:        oklch(99% 0.003 90);
+  --bg-surface:    oklch(100% 0 0);
+  --bg-sunken:     oklch(97.2% 0.004 90);
+  --bg-hover:      oklch(95.8% 0.005 90);
+  --bg-active:     oklch(93.5% 0.006 90);
+
+  /* Text */
+  --fg-primary:    oklch(18% 0.01 270);
+  --fg-secondary:  oklch(42% 0.008 270);
+  --fg-tertiary:   oklch(58% 0.006 270);
+  --fg-quaternary: oklch(70% 0.005 270);
+  --fg-on-accent:  oklch(99% 0 0);
+
+  /* Borders */
+  --border-subtle:  oklch(93% 0.005 90);
+  --border-default: oklch(89% 0.005 90);
+  --border-strong:  oklch(80% 0.006 90);
+
+  /* Accent — TOMS cyan→indigo→purple gradient */
+  --accent-50:  oklch(97% 0.02 265);
+  --accent-100: oklch(93% 0.05 265);
+  --accent-200: oklch(86% 0.10 265);
+  --accent-500: oklch(58% 0.22 270);
+  --accent-600: oklch(52% 0.24 272);
+  --accent-700: oklch(46% 0.24 274);
+  /* Brand mono — used on logo + avatar (graphite, no color) */
+  --brand-mono:    oklch(22% 0.015 270);
+  --brand-mono-hi: oklch(28% 0.02 270);
+  /* CTA — solid color only. Name kept for back-compat with shell.jsx. */
+  --accent-gradient: oklch(24% 0.06 262);
+  --accent-solid:    oklch(24% 0.06 262);
+  /* AI banner background — now a flat tinted surface, not a gradient. */
+  --accent-gradient-soft: oklch(97.4% 0.010 262);
+
+  /* Semantic */
+  --success:    oklch(58% 0.14 152);
+  --success-bg: oklch(96% 0.03 152);
+  --warning:    oklch(70% 0.16 70);
+  --warning-bg: oklch(96.5% 0.04 80);
+  --danger:     oklch(58% 0.20 25);
+  --danger-bg:  oklch(96% 0.04 25);
+  --info:       oklch(60% 0.14 230);
+  --info-bg:    oklch(96% 0.03 230);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 0 oklch(0% 0 0 / 0.04);
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05), 0 1px 0 oklch(0% 0 0 / 0.02);
+  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.06), 0 1px 0 oklch(0% 0 0 / 0.03);
+  --shadow-lg: 0 24px 48px oklch(0% 0 0 / 0.10), 0 2px 6px oklch(0% 0 0 / 0.04);
+
+  /* Type — names mirror tokens/tokens.css aliases */
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Radii */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-full: 9999px;
+}
+
+/* Dark · Linear-influenced — see tokens/tokens.css for the canonical version. */
+.theme-dark {
+  --bg-app:        oklch(14% 0.003 260);
+  --bg-surface:    oklch(17% 0.004 260);
+  --bg-sunken:     oklch(11% 0.003 260);
+  --bg-hover:      oklch(22% 0.005 260);
+  --bg-active:     oklch(26% 0.006 260);
+
+  --fg-primary:    oklch(94% 0.003 260);
+  --fg-secondary:  oklch(66% 0.005 260);
+  --fg-tertiary:   oklch(50% 0.005 260);
+  --fg-quaternary: oklch(38% 0.005 260);
+  --fg-on-accent:  oklch(14% 0.003 260);
+
+  --border-subtle:  oklch(20% 0.004 260);
+  --border-default: oklch(24% 0.005 260);
+  --border-strong:  oklch(32% 0.006 260);
+
+  --accent-50:  oklch(22% 0.05 264);
+  --accent-100: oklch(28% 0.08 264);
+  --accent-200: oklch(36% 0.12 264);
+  --accent-500: oklch(70% 0.13 264);
+  --accent-600: oklch(74% 0.12 264);
+  --accent-700: oklch(82% 0.10 264);
+  --brand-mono:    oklch(86% 0.005 260);
+  --brand-mono-hi: oklch(70% 0.006 260);
+  /* CTA · light button on dark canvas (Linear pattern) */
+  --accent-gradient: oklch(88% 0.004 260);
+  --accent-solid:    oklch(88% 0.004 260);
+  --accent-gradient-soft: oklch(22% 0.014 264);
+
+  --success:    oklch(68% 0.13 152);
+  --success-bg: oklch(24% 0.05 152);
+  --warning:    oklch(76% 0.13 70);
+  --warning-bg: oklch(26% 0.06 70);
+  --danger:     oklch(68% 0.16 25);
+  --danger-bg:  oklch(24% 0.07 25);
+  --info:       oklch(70% 0.12 235);
+  --info-bg:    oklch(24% 0.05 235);
+
+  --shadow-xs: 0 0 0 1px oklch(0% 0 0 / 0.5);
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.6);
+  --shadow-md: 0 4px 10px oklch(0% 0 0 / 0.6);
+  --shadow-lg: 0 24px 48px oklch(0% 0 0 / 0.75);
+}
+
+/* Reset & base inside artboards */
+.tm-root {
+  font-family: var(--font-sans);
+  color: var(--fg-primary);
+  background: var(--bg-app);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  font-feature-settings: "ss01", "cv11";
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.tm-root *, .tm-root *::before, .tm-root *::after { box-sizing: border-box; }
+.tm-root button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.tm-root input, .tm-root select, .tm-root textarea { font: inherit; color: inherit; }
+.tm-root .mono { font-family: var(--font-mono); font-feature-settings: "zero", "ss01"; }
+.tm-root::-webkit-scrollbar, .tm-root *::-webkit-scrollbar { width: 8px; height: 8px; }
+.tm-root::-webkit-scrollbar-thumb, .tm-root *::-webkit-scrollbar-thumb {
+  background: var(--border-default); border-radius: 4px;
+}
+.tm-root::-webkit-scrollbar-track { background: transparent; }
+
+/* Utility */
+.tm-row { display: flex; align-items: center; }
+.tm-col { display: flex; flex-direction: column; }
+.tm-grow { flex: 1 1 auto; min-width: 0; }
+.tm-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Focus ring */
+.tm-root :focus-visible {
+  outline: 2px solid var(--accent-500);
+  outline-offset: 1px;
+  border-radius: 4px;
+}

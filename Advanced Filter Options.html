@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TOMS · Advanced Filter — Interaction Options</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<link rel="stylesheet" href="assets/components.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-family-sans); color: var(--color-text-primary); background: var(--color-bg-1); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 44px 32px 120px; }
+  .eyebrow { font: 600 12px var(--font-family-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-accent-600, oklch(52% 0.24 272)); margin: 0 0 12px; }
+  h1 { font: 600 30px/1.1 var(--font-family-sans); letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 16px; color: var(--color-text-secondary); max-width: 72ch; margin: 0 0 8px; text-wrap: pretty; }
+  .lede b { color: var(--color-text-primary); }
+
+  .opt { margin-top: 28px; background: var(--color-bg-2); border: 1px solid var(--color-border-subtle); border-radius: 16px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .opt__head { padding: 18px 22px; border-bottom: 1px solid var(--color-border-subtle); }
+  .opt__title-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .opt__num { font: 600 12px var(--font-family-mono); color: var(--color-text-tertiary); }
+  .opt__title { font: 600 18px var(--font-family-sans); letter-spacing: -0.01em; }
+  .opt__desc { font-size: 13px; color: var(--color-text-secondary); margin: 8px 0 0; max-width: 80ch; }
+  .opt__stage { position: relative; padding: 18px 22px 22px; }
+
+  /* shared toolbar */
+  .tb { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tb__input { flex: 1 1 280px; min-width: 200px; height: 36px; border: 1px solid var(--color-border-default); border-radius: 6px; background: var(--color-bg-1); padding: 0 12px; font: 400 14px var(--font-family-sans); color: var(--color-text-primary); }
+  .btn { height: 36px; border-radius: 6px; padding: 0 14px; font: 600 14px var(--font-family-sans); display: inline-flex; align-items: center; gap: 7px; cursor: pointer; border: 1px solid transparent; }
+  .btn--primary { background: var(--color-primary-700); color: #fff; }
+  .btn--ghost { background: var(--color-bg-2); color: var(--color-text-secondary); border-color: var(--color-border-default); }
+  .btn--ghost.is-on { color: var(--color-primary-700); border-color: var(--color-primary-300, var(--color-primary-500)); background: var(--color-primary-50); }
+  .btn__badge { font: 600 11px var(--font-family-mono); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--color-primary-700); color: #fff; display: inline-grid; place-items: center; }
+  .sub { font-size: 12px; color: var(--color-text-tertiary); margin-top: 10px; }
+
+  /* unified panel internals (shared across all 3 patterns) */
+  .fpanel { background: var(--color-bg-2); }
+  .fpanel__head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--color-border-subtle); }
+  .fpanel__head .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--color-primary-50); color: var(--color-primary-700); display: grid; place-items: center; flex: none; }
+  .fpanel__title { font: 600 14px var(--font-family-sans); }
+  .fpanel__sub { font-size: 12px; color: var(--color-text-tertiary); margin-top: 1px; }
+  .fpanel__x { margin-left: auto; width: 30px; height: 30px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--color-text-tertiary); cursor: pointer; display: grid; place-items: center; }
+  .fpanel__x:hover { background: var(--color-bg-hover); }
+  .fpanel__body { padding: 18px; display: grid; gap: 18px; }
+  .fgrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+  .fld__lbl { display: block; font: 500 12px var(--font-family-sans); color: var(--color-text-tertiary); margin-bottom: 6px; }
+  .fld select, .fld input { width: 100%; height: 34px; border: 1px solid var(--color-border-default); border-radius: 6px; background: var(--color-bg-1); padding: 0 10px; font: 400 13px var(--font-family-sans); color: var(--color-text-primary); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font: 500 12px var(--font-family-sans); padding: 5px 11px; border-radius: 999px; border: 1px solid var(--color-border-default); background: var(--color-bg-1); color: var(--color-text-secondary); cursor: pointer; }
+  .chip.is-on { background: var(--color-primary-50); border-color: var(--color-primary-500); color: var(--color-primary-700); }
+  .fpanel__foot { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--color-border-subtle); background: var(--color-bg-2); }
+  .fpanel__count { font-size: 12px; color: var(--color-text-tertiary); margin-left: auto; }
+
+  /* Pattern A — inline dropdown */
+  .drop { margin-top: 10px; border: 1px solid var(--color-border-default); border-radius: 12px; box-shadow: var(--shadow-2); overflow: hidden; }
+
+  /* Pattern B — right side drawer (scoped to its stage) */
+  .stage--drawer { min-height: 360px; }
+  .scrim { position: absolute; inset: 0; background: oklch(15% 0.01 270 / 0.40); backdrop-filter: blur(2px); border-radius: 0 0 16px 16px; z-index: 2; }
+  .drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 380px; max-width: 86%; background: var(--color-bg-2); border-left: 1px solid var(--color-border-default); box-shadow: var(--shadow-4, -12px 0 32px oklch(0% 0 0/.18)); z-index: 3; display: flex; flex-direction: column; }
+  .drawer .fpanel__body { overflow: auto; flex: 1; }
+
+  /* Pattern C — centered modal (scoped) */
+  .modal { position: absolute; z-index: 3; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 540px; max-width: 90%; background: var(--color-bg-2); border: 1px solid var(--color-border-default); border-radius: 12px; box-shadow: var(--shadow-4, 0 24px 60px oklch(0% 0 0/.35)); overflow: hidden; }
+
+  .hint { font-size: 12px; color: var(--color-text-tertiary); font-style: italic; }
+  .pickhint { margin-top: 36px; font-size: 13px; color: var(--color-text-tertiary); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">TOMS · Devices &amp; Tickets</p>
+  <h1>Unify the “Advanced” filter</h1>
+  <p class="lede">Today <b>Tickets</b> drops an inline sheet below the search bar, while <b>Devices</b> slides in a right-side drawer — two interactions, two styles. Below is the <b>same unified filter panel</b> (shared header / fields / footer) shown in three candidate interaction patterns. Click <b>Advanced</b> in each to try it, then tell me which to standardise on.</p>
+
+  <!-- Pattern A — inline dropdown -->
+  <section class="opt">
+    <div class="opt__head">
+      <div class="opt__title-row"><span class="opt__num">Option 1</span><span class="opt__title">Inline dropdown sheet</span></div>
+      <p class="opt__desc">Advanced expands a panel directly under the search toolbar, pushing content down. In place, no overlay — fast to scan, keeps you in the page. (Tickets does this today.)</p>
+    </div>
+    <div class="opt__stage" id="stageA">
+      <div class="tb">
+        <input class="tb__input" placeholder="Search…"/>
+        <button class="btn btn--primary">Search</button>
+        <button class="btn btn--ghost" id="advA">⛯ Advanced <span class="btn__badge">2</span></button>
+      </div>
+      <div id="dropA"></div>
+      <div class="sub">Active filters: Status · Severity</div>
+    </div>
+  </section>
+
+  <!-- Pattern B — side drawer -->
+  <section class="opt">
+    <div class="opt__head">
+      <div class="opt__title-row"><span class="opt__num">Option 2</span><span class="opt__title">Right side drawer</span></div>
+      <p class="opt__desc">Advanced slides a drawer in from the right over a dimmed page. Holds many filters without pushing content; closing keeps your draft. (Devices does this today.)</p>
+    </div>
+    <div class="opt__stage stage--drawer" id="stageB">
+      <div class="tb">
+        <input class="tb__input" placeholder="Search…"/>
+        <button class="btn btn--primary">Search</button>
+        <button class="btn btn--ghost" id="advB">⛯ Advanced <span class="btn__badge">2</span></button>
+      </div>
+      <div class="sub">Active filters: Status · Severity</div>
+      <div class="hint" style="margin-top:14px">↑ click Advanced — the drawer slides in from the right edge of this card.</div>
+    </div>
+  </section>
+
+  <!-- Pattern C — modal -->
+  <section class="opt">
+    <div class="opt__head">
+      <div class="opt__title-row"><span class="opt__num">Option 3</span><span class="opt__title">Centered modal</span></div>
+      <p class="opt__desc">Advanced opens a focused modal over a dimmed page. Most prominent — good when filtering is a deliberate, occasional action. (App Publish does this today.)</p>
+    </div>
+    <div class="opt__stage stage--drawer" id="stageC">
+      <div class="tb">
+        <input class="tb__input" placeholder="Search…"/>
+        <button class="btn btn--primary">Search</button>
+        <button class="btn btn--ghost" id="advC">⛯ Advanced <span class="btn__badge">2</span></button>
+      </div>
+      <div class="sub">Active filters: Status · Severity</div>
+      <div class="hint" style="margin-top:14px">↑ click Advanced — a modal opens centered over this card.</div>
+    </div>
+  </section>
+
+  <p class="pickhint">Tell me “Option 1 / 2 / 3” and I’ll standardise both Devices and Tickets on it (same interaction + the shared panel style shown here).</p>
+</div>
+
+<script>
+  // Shared unified panel markup — identical across all three patterns.
+  function panelHTML(withClose) {
+    return (
+      '<div class="fpanel">' +
+        '<div class="fpanel__head">' +
+          '<span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 9v6l-4-2v-4z"/></svg></span>' +
+          '<div><div class="fpanel__title">Advanced filters</div><div class="fpanel__sub">All conditions combine with AND · click Apply &amp; Search to apply.</div></div>' +
+          (withClose ? '<button class="fpanel__x" data-close>✕</button>' : '') +
+        '</div>' +
+        '<div class="fpanel__body">' +
+          '<div class="fgrid">' +
+            '<div class="fld"><label class="fld__lbl">Type</label><select><option>Any type</option><option>Hardware</option><option>Software</option><option>Network</option></select></div>' +
+            '<div class="fld"><label class="fld__lbl">Source</label><select><option>Any source</option><option>Operator</option><option>Auto-detected</option></select></div>' +
+          '</div>' +
+          '<div class="fld"><label class="fld__lbl">Status</label><div class="chips">' +
+            '<span class="chip is-on">Open</span><span class="chip">Pending</span><span class="chip">Resolved</span><span class="chip">Closed</span>' +
+          '</div></div>' +
+          '<div class="fld"><label class="fld__lbl">Severity</label><div class="chips">' +
+            '<span class="chip">Low</span><span class="chip is-on">Medium</span><span class="chip">High</span><span class="chip">Critical</span>' +
+          '</div></div>' +
+          '<div class="fgrid">' +
+            '<div class="fld"><label class="fld__lbl">From</label><input type="date"/></div>' +
+            '<div class="fld"><label class="fld__lbl">To</label><input type="date"/></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="fpanel__foot">' +
+          '<button class="btn btn--ghost" data-close>↺ Reset</button>' +
+          '<button class="btn btn--primary" data-close>Apply &amp; Search</button>' +
+          '<span class="fpanel__count">~ 18 results</span>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  // Pattern A — inline dropdown
+  (function () {
+    var btn = document.getElementById('advA'), host = document.getElementById('dropA'), open = false;
+    function render() {
+      btn.classList.toggle('is-on', open);
+      host.innerHTML = open ? '<div class="drop">' + panelHTML(true) + '</div>' : '';
+      if (open) host.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = function () { open = false; render(); }; });
+    }
+    btn.onclick = function () { open = !open; render(); };
+  })();
+
+  // Pattern B — side drawer
+  (function () {
+    var btn = document.getElementById('advB'), stage = document.getElementById('stageB');
+    btn.onclick = function () {
+      if (stage.querySelector('.drawer')) return;
+      var scrim = document.createElement('div'); scrim.className = 'scrim';
+      var drawer = document.createElement('div'); drawer.className = 'drawer'; drawer.innerHTML = panelHTML(true);
+      function close() { scrim.remove(); drawer.remove(); }
+      scrim.onclick = close;
+      stage.appendChild(scrim); stage.appendChild(drawer);
+      drawer.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = close; });
+    };
+  })();
+
+  // Pattern C — modal
+  (function () {
+    var btn = document.getElementById('advC'), stage = document.getElementById('stageC');
+    btn.onclick = function () {
+      if (stage.querySelector('.modal')) return;
+      var scrim = document.createElement('div'); scrim.className = 'scrim';
+      var modal = document.createElement('div'); modal.className = 'modal'; modal.innerHTML = panelHTML(true);
+      function close() { scrim.remove(); modal.remove(); }
+      scrim.onclick = close;
+      stage.appendChild(scrim); stage.appendChild(modal);
+      modal.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = close; });
+    };
+  })();
+
+  // chip toggles (cosmetic, all panels via delegation)
+  document.addEventListener('click', function (e) {
+    if (e.target.classList && e.target.classList.contains('chip')) e.target.classList.toggle('is-on');
+  });
+</script>
+</body>
+</html>

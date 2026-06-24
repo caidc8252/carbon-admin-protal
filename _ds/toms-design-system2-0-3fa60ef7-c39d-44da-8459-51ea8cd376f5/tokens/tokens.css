@@ -1,0 +1,390 @@
+/* ─────────────────────────────────────────────────────────────
+   TOMS Design System — Tokens v1.0
+   Engineering-grade · Light + Dark · OKLCH color space
+   Single source of truth; do not hardcode values in components.
+   ───────────────────────────────────────────────────────────── */
+
+/* Canonical font load — every surface that imports tokens.css gets these.
+   Weight 450 is used by the Terminal Manager skin (cmdk / shell / charts).  */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
+:root, [data-theme="light"] {
+  /* ─── Color · Brand ───────────────────────────────────── */
+  --color-brand-mono:        oklch(22% 0.015 270);
+  --color-brand-mono-strong: oklch(14% 0.012 270);
+  --color-brand-mono-soft:   oklch(28% 0.02  270);
+
+  /* ─── Color · Primary (CTA — midnight indigo) ─────────── */
+  --color-primary-50:  oklch(97%  0.012 262);
+  --color-primary-100: oklch(94%  0.025 262);
+  --color-primary-200: oklch(86%  0.06  262);
+  --color-primary-300: oklch(72%  0.10  262);
+  --color-primary-400: oklch(55%  0.14  262);
+  --color-primary-500: oklch(40%  0.14  262);
+  --color-primary-600: oklch(32%  0.10  262);
+  --color-primary-700: oklch(24%  0.06  262);  /* default CTA bg */
+  --color-primary-800: oklch(18%  0.04  262);
+  --color-primary-900: oklch(12%  0.025 262);
+
+  /* ─── Color · Secondary (cool steel — secondary actions) */
+  --color-secondary-50:  oklch(97%  0.005 250);
+  --color-secondary-100: oklch(94%  0.008 250);
+  --color-secondary-500: oklch(56%  0.02  250);
+  --color-secondary-700: oklch(38%  0.018 250);
+  --color-secondary-900: oklch(22%  0.012 250);
+
+  /* ─── Color · Accent (interactive highlights) ─────────── */
+  --color-accent-50:  oklch(97% 0.02 265);
+  --color-accent-100: oklch(93% 0.05 265);
+  --color-accent-200: oklch(86% 0.10 265);
+  --color-accent-500: oklch(58% 0.22 270);
+  --color-accent-600: oklch(52% 0.24 272);
+  --color-accent-700: oklch(46% 0.24 274);
+
+  /* ─── Color · Semantic ────────────────────────────────── */
+  --color-success-50:  oklch(96% 0.03  152);
+  --color-success-500: oklch(58% 0.14  152);
+  --color-success-700: oklch(46% 0.13  152);
+
+  --color-warning-50:  oklch(96.5% 0.04 80);
+  --color-warning-500: oklch(70%   0.16 70);
+  --color-warning-700: oklch(56%   0.15 60);
+
+  --color-error-50:  oklch(96% 0.04 25);
+  --color-error-500: oklch(58% 0.20 25);
+  --color-error-700: oklch(46% 0.19 25);
+
+  --color-info-50:  oklch(96% 0.03 230);
+  --color-info-500: oklch(60% 0.14 230);
+  --color-info-700: oklch(48% 0.13 230);
+
+  /* ─── Color · Surfaces ────────────────────────────────── */
+  --color-bg-1: oklch(99%   0.003 90);   /* app bg */
+  --color-bg-2: oklch(100%  0     0);    /* surface / card */
+  --color-bg-3: oklch(97.2% 0.004 90);   /* sunken / sidebar */
+  --color-bg-hover:    oklch(95.8% 0.005 90);
+  --color-bg-active:   oklch(93.5% 0.006 90);
+  --color-bg-overlay:  oklch(15% 0.01 270 / 0.45);
+
+  /* ─── Color · Text ────────────────────────────────────── */
+  --color-text-primary:    oklch(18% 0.01  270);
+  --color-text-secondary:  oklch(42% 0.008 270);
+  --color-text-tertiary:   oklch(58% 0.006 270);
+  --color-text-disabled:   oklch(72% 0.005 270);
+  --color-text-inverse:    oklch(99% 0     0);
+  --color-text-on-primary: oklch(99% 0     0);
+
+  /* ─── Color · Border ──────────────────────────────────── */
+  --color-border-subtle:  oklch(93% 0.005 90);
+  --color-border-default: oklch(89% 0.005 90);
+  --color-border-strong:  oklch(80% 0.006 90);
+  --color-border-focus:   oklch(40% 0.14  262);
+
+  /* ─── Typography ──────────────────────────────────────── */
+  --font-family-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-family-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Aliases — preview cards + product skin use these short names.
+     Keep both namespaces in sync; never define a font-family elsewhere. */
+  --font-sans:    var(--font-family-sans);
+  --font-mono:    var(--font-family-mono);
+  --font-display: var(--font-family-sans);
+
+  --font-size-xs:   12px;
+  --font-size-sm:   13px;
+  --font-size-md:   14px;   /* base body */
+  --font-size-lg:   16px;
+  --font-size-xl:   18px;
+  --font-size-2xl:  22px;
+  --font-size-3xl:  28px;
+  --font-size-4xl:  36px;
+  --font-size-5xl:  48px;
+
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  --line-height-tight:   1.2;
+  --line-height-snug:    1.35;
+  --line-height-normal:  1.5;
+  --line-height-relaxed: 1.7;
+
+  --letter-spacing-tight:  -0.02em;
+  --letter-spacing-normal: -0.005em;
+  --letter-spacing-wide:    0.04em;
+
+  /* ─── Spacing (4px grid) ──────────────────────────────── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Semantic spacing aliases */
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-4);
+  --space-lg: var(--space-6);
+  --space-xl: var(--space-10);
+
+  /* ─── Radius ──────────────────────────────────────────── */
+  --radius-none: 0;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-full: 9999px;
+
+  /* ─── Border width ────────────────────────────────────── */
+  --border-width-thin:    1px;
+  --border-width-default: 1px;
+  --border-width-thick:   2px;
+
+  /* ─── Shadows · 5 elevations ──────────────────────────── */
+  --shadow-1: 0 1px 0 oklch(0% 0 0 / 0.04);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.05), 0 1px 0 oklch(0% 0 0 / 0.02);
+  --shadow-3: 0 4px 12px oklch(0% 0 0 / 0.06), 0 1px 0 oklch(0% 0 0 / 0.03);
+  --shadow-4: 0 12px 24px oklch(0% 0 0 / 0.08), 0 2px 4px oklch(0% 0 0 / 0.04);
+  --shadow-5: 0 24px 48px oklch(0% 0 0 / 0.12), 0 4px 8px oklch(0% 0 0 / 0.06);
+
+  /* CTA inset highlight (midnight indigo button) */
+  --shadow-cta: inset 0 1px 0 oklch(100% 0 0 / 0.12),
+                0 1px 2px oklch(0% 0 0 / 0.25),
+                0 0 0 0.5px oklch(0% 0 0 / 0.4);
+
+  /* Focus ring */
+  --shadow-focus: 0 0 0 3px oklch(40% 0.14 262 / 0.25);
+
+  /* ─── Z-index scale ───────────────────────────────────── */
+  --z-base:     0;
+  --z-dropdown: 1000;
+  --z-sticky:   1020;
+  --z-overlay:  1040;   /* drawer / fixed sidebar */
+  --z-modal:    1050;
+  --z-popover:  1060;
+  --z-tooltip:  1070;
+  --z-toast:    1080;
+  --z-cmdk:     1090;
+
+  /* ─── Breakpoints (reference; use in JS or @media) ────── */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ─── Motion ──────────────────────────────────────────── */
+  --duration-instant:  80ms;
+  --duration-fast:    120ms;
+  --duration-normal:  200ms;
+  --duration-slow:    320ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --easing-emphasized: cubic-bezier(0.3, 0, 0, 1);
+
+  /* ─── Component sizing tokens (avoid magic numbers) ───── */
+  --control-height-xs: 22px;
+  --control-height-sm: 28px;
+  --control-height-md: 36px;
+  --control-height-lg: 44px;
+  --control-height-xl: 52px;
+  --control-padding-x-sm: 10px;
+  --control-padding-x-md: 14px;
+  --control-padding-x-lg: 18px;
+
+  /* ─── Card system tokens ─────────────────────────────────
+     Strict 3-step scales. Pages MUST pick from these — never
+     invent ad-hoc radius/padding/elevation values on cards. */
+
+  /* Radius — only 3 allowed values */
+  --card-radius-sm: var(--radius-lg);    /*  8px · dense widgets, table rows, inline */
+  --card-radius-md: var(--radius-xl);    /* 12px · DEFAULT · data cards */
+  --card-radius-lg: var(--radius-2xl);   /* 16px · modals, full-bleed surfaces */
+
+  /* Padding — 3 step scale, applied uniformly to head/body/foot */
+  --card-padding-sm: var(--space-3);     /* 12px · dense metric, table cell-flush */
+  --card-padding-md: var(--space-5);     /* 20px · DEFAULT */
+  --card-padding-lg: var(--space-6);     /* 24px · marketing / dialog */
+
+  /* Header band height (when used) */
+  --card-head-py: var(--space-4);        /* 16px vertical */
+
+  /* Elevation — 3 levels; level-1 is the SaaS default */
+  --card-elev-0: none;
+  --card-elev-1: var(--shadow-2);        /* resting card */
+  --card-elev-2: var(--shadow-3);        /* hover / interactive lift */
+
+  /* ─── Chart palette · single source of truth ─────────────
+     Consumed by spec/extensions.css (--color-chart-*) and mirrored
+     as bare triples in dark-mode/theme.css (--chart-*) for Tailwind.
+     Categorical 8 — ordinal; always start at chart-1 and step.
+     Tuned for ≥3:1 distinguishability at 8px markers / 1.5px strokes. */
+  --color-chart-1: oklch(52% 0.24 272);   /* accent indigo */
+  --color-chart-2: oklch(58% 0.14 152);   /* teal-green */
+  --color-chart-3: oklch(60% 0.14 230);   /* sky-blue */
+  --color-chart-4: oklch(70% 0.16  70);   /* amber */
+  --color-chart-5: oklch(60% 0.18 320);   /* magenta */
+  --color-chart-6: oklch(58% 0.20  25);   /* red */
+  --color-chart-7: oklch(50% 0.08 200);   /* slate-blue */
+  --color-chart-8: oklch(60% 0.10 290);   /* violet */
+
+  /* Sequential ramp — heatmaps + density. 100 lightest → 700 darkest */
+  --color-chart-seq-100: oklch(96% 0.03 262);
+  --color-chart-seq-200: oklch(90% 0.06 262);
+  --color-chart-seq-300: oklch(80% 0.09 262);
+  --color-chart-seq-400: oklch(68% 0.13 262);
+  --color-chart-seq-500: oklch(52% 0.16 262);
+  --color-chart-seq-600: oklch(40% 0.14 262);
+  --color-chart-seq-700: oklch(28% 0.10 262);
+
+  /* Diverging ramp — variance vs target (neg ↔ neutral ↔ pos) */
+  --color-chart-div-neg: oklch(58% 0.20 25);
+  --color-chart-div-mid: oklch(72% 0.005 270);
+  --color-chart-div-pos: oklch(58% 0.14 152);
+
+  /* Chart structural */
+  --color-chart-grid:        var(--color-border-subtle);
+  --color-chart-axis:        var(--color-text-tertiary);
+  --color-chart-label:       var(--color-text-tertiary);
+  --color-chart-dim:         color-mix(in oklch, var(--color-text-tertiary) 35%, transparent);
+  --color-chart-tooltip-bg:  oklch(18% 0.01 270);
+  --color-chart-tooltip-fg:  oklch(99% 0 0);
+  --color-chart-zoom-fill:   color-mix(in oklch, var(--color-primary-700) 8%, transparent);
+  --color-chart-zoom-stroke: color-mix(in oklch, var(--color-primary-700) 60%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Dark mode — Linear-influenced
+   ─ Deeper near-black, very slight cool tint (hue 260, very low chroma)
+   ─ Borders are hairlines, almost invisible. Depth via surface, not shadow.
+   ─ Text hierarchy via lightness — secondary muted, not bright.
+   ─ Accent slightly brightened. Semantics stay calm.
+   ─ Shadows rarely visible; bg-2 elevation is the affordance.
+   ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-brand-mono:        oklch(86% 0.005 260);
+  --color-brand-mono-strong: oklch(96% 0.003 260);
+  --color-brand-mono-soft:   oklch(70% 0.006 260);
+
+  /* Primary · light CTA on dark canvas — soft white, not blazing */
+  --color-primary-50:  oklch(20% 0.005 260);
+  --color-primary-100: oklch(26% 0.006 260);
+  --color-primary-200: oklch(34% 0.006 260);
+  --color-primary-300: oklch(50% 0.005 260);
+  --color-primary-400: oklch(66% 0.005 260);
+  --color-primary-500: oklch(78% 0.004 260);
+  --color-primary-600: oklch(92% 0.004 260);   /* hover */
+  --color-primary-700: oklch(88% 0.004 260);   /* CTA bg */
+  --color-primary-800: oklch(82% 0.005 260);   /* active */
+  --color-primary-900: oklch(74% 0.005 260);
+
+  --color-secondary-50:  oklch(22% 0.008 250);
+  --color-secondary-100: oklch(26% 0.010 250);
+  --color-secondary-500: oklch(60% 0.012 250);
+  --color-secondary-700: oklch(76% 0.012 250);
+  --color-secondary-900: oklch(92% 0.005 250);
+
+  /* Accent · slightly brighter indigo to read on dark, still muted */
+  --color-accent-50:  oklch(22% 0.05 264);
+  --color-accent-100: oklch(28% 0.08 264);
+  --color-accent-200: oklch(36% 0.12 264);
+  --color-accent-500: oklch(70% 0.13 264);
+  --color-accent-600: oklch(74% 0.12 264);
+  --color-accent-700: oklch(82% 0.10 264);
+
+  /* Surfaces · Linear's elevation pattern.
+     canvas darker than card; sidebar / sunken deepest. */
+  --color-bg-1: oklch(14% 0.003 260);   /* app canvas */
+  --color-bg-2: oklch(17% 0.004 260);   /* card / surface (one step up) */
+  --color-bg-3: oklch(11% 0.003 260);   /* sidebar / sunken (deepest) */
+  --color-bg-hover:   oklch(22% 0.005 260);
+  --color-bg-active:  oklch(26% 0.006 260);
+  --color-bg-overlay: oklch(0% 0 0 / 0.65);
+
+  /* Text · 5-step ramp with stronger contrast curve */
+  --color-text-primary:    oklch(94% 0.003 260);
+  --color-text-secondary:  oklch(66% 0.005 260);
+  --color-text-tertiary:   oklch(50% 0.005 260);
+  --color-text-disabled:   oklch(38% 0.005 260);
+  --color-text-inverse:    oklch(14% 0.003 260);
+  --color-text-on-primary: oklch(14% 0.003 260);  /* dark text on light CTA */
+
+  /* Borders · barely visible. Linear depends on them, not shadows. */
+  --color-border-subtle:  oklch(20% 0.004 260);
+  --color-border-default: oklch(24% 0.005 260);
+  --color-border-strong:  oklch(32% 0.006 260);
+  --color-border-focus:   oklch(70% 0.13 264);
+
+  /* Semantic · muted, balanced for dark */
+  --color-success-50:  oklch(24% 0.05 152);
+  --color-success-500: oklch(68% 0.13 152);
+  --color-success-700: oklch(78% 0.11 152);
+
+  --color-warning-50:  oklch(26% 0.06 70);
+  --color-warning-500: oklch(76% 0.13 70);
+  --color-warning-700: oklch(84% 0.11 70);
+
+  --color-error-50:    oklch(24% 0.07 25);
+  --color-error-500:   oklch(68% 0.16 25);
+  --color-error-700:   oklch(78% 0.14 25);
+
+  --color-info-50:     oklch(24% 0.05 235);
+  --color-info-500:    oklch(70% 0.12 235);
+  --color-info-700:    oklch(80% 0.10 235);
+
+  /* Shadows · minimal. Borders + bg-2 elevation do the lifting. */
+  --shadow-1: 0 0 0 1px oklch(0% 0 0 / 0.5);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.6);
+  --shadow-3: 0 4px 10px oklch(0% 0 0 / 0.6);
+  --shadow-4: 0 8px 18px oklch(0% 0 0 / 0.7);
+  --shadow-5: 0 24px 48px oklch(0% 0 0 / 0.75);
+
+  /* CTA · subtle inset highlight on the light button */
+  --shadow-cta: inset 0 1px 0 oklch(100% 0 0 / 0.12),
+                0 1px 2px oklch(0% 0 0 / 0.6);
+  --shadow-focus: 0 0 0 3px oklch(70% 0.13 264 / 0.40);
+
+  /* Chart palette · dark — same hues, lifted lightness for dark canvas */
+  --color-chart-1: oklch(66% 0.20 272);
+  --color-chart-2: oklch(70% 0.13 152);
+  --color-chart-3: oklch(70% 0.13 230);
+  --color-chart-4: oklch(78% 0.14  70);
+  --color-chart-5: oklch(70% 0.16 320);
+  --color-chart-6: oklch(68% 0.17  25);
+  --color-chart-7: oklch(64% 0.08 200);
+  --color-chart-8: oklch(70% 0.11 290);
+
+  --color-chart-seq-100: oklch(26% 0.05 262);
+  --color-chart-seq-200: oklch(34% 0.08 262);
+  --color-chart-seq-300: oklch(44% 0.11 262);
+  --color-chart-seq-400: oklch(56% 0.14 262);
+  --color-chart-seq-500: oklch(66% 0.16 262);
+  --color-chart-seq-600: oklch(76% 0.13 262);
+  --color-chart-seq-700: oklch(86% 0.09 262);
+
+  --color-chart-div-neg: oklch(68% 0.16 25);
+  --color-chart-div-mid: oklch(50% 0.005 270);
+  --color-chart-div-pos: oklch(70% 0.13 152);
+
+  --color-chart-tooltip-bg: oklch(26% 0.006 260);
+  --color-chart-tooltip-fg: oklch(94% 0.003 260);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}

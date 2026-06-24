@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TOMS · Icon Consistency Options</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<link rel="stylesheet" href="assets/components.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-family-sans); color: var(--color-text-primary); background: var(--color-bg-1); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 48px 32px 96px; }
+  .eyebrow { font: 600 12px var(--font-family-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-accent-600, oklch(52% 0.24 272)); margin: 0 0 12px; }
+  h1 { font: 600 32px/1.1 var(--font-family-sans); letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 16px; color: var(--color-text-secondary); max-width: 70ch; margin: 0 0 8px; text-wrap: pretty; }
+
+  .opt { margin-top: 30px; background: var(--color-bg-2); border: 1px solid var(--color-border-subtle); border-radius: 16px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .opt__head { padding: 18px 24px; border-bottom: 1px solid var(--color-border-subtle); }
+  .opt__title-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .opt__num { font: 600 13px var(--font-family-mono); color: var(--color-text-tertiary); }
+  .opt__title { font: 600 18px var(--font-family-sans); letter-spacing: -0.01em; }
+  .opt__desc { font-size: 13px; color: var(--color-text-secondary); margin: 8px 0 0; max-width: 78ch; }
+
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  @media (max-width: 760px) { .panes { grid-template-columns: 1fr; } }
+  .pane { padding: 18px 24px 22px; }
+  .pane + .pane { border-left: 1px solid var(--color-border-subtle); }
+  @media (max-width: 760px) { .pane + .pane { border-left: 0; border-top: 1px solid var(--color-border-subtle); } }
+  .pane__label { font: 600 11px var(--font-family-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); margin: 0 0 14px; }
+
+  .row { display: flex; align-items: center; gap: 13px; padding: 9px 0; }
+  .row + .row { border-top: 1px solid var(--color-border-subtle); }
+  .row__name { font: 500 14px var(--font-family-sans); }
+  .row__meta { font-size: 12px; color: var(--color-text-tertiary); }
+
+  .otile { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; flex: none; border: 1px solid var(--color-border-subtle); }
+  .otile > svg { display: block; }
+  .codetile { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; flex: none; border: 1px solid var(--color-border-subtle); font: 600 11px var(--font-family-mono); letter-spacing: -0.01em; }
+  .pickhint { margin-top: 36px; font-size: 13px; color: var(--color-text-tertiary); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">TOMS · Object Icon</p>
+  <h1>Make the two pages consistent</h1>
+  <p class="lede">Right now <strong>Device Models</strong> uses per-model colored code tiles, while <strong>Catalog</strong> uses semantic glyph tiles (devices all indigo) — two color systems. Here are three ways to unify them. Each option shows both pages so you can see they match. Tell me which to lock in.</p>
+
+  <div id="opts"></div>
+  <p class="pickhint">Tell me “Option 1 / 2 / 3” and I’ll apply it across Device Models, Catalog, Goods, and Firmware.</p>
+</div>
+
+<script>
+  var GLYPH = {
+    device:    '<g><rect x="5" y="2" width="14" height="20" rx="3.2" opacity=".32"/><rect x="7.3" y="4.4" width="9.4" height="8.6" rx="1.6"/><circle cx="12" cy="18.4" r="1.35"/></g>',
+    accessory: '<g><path d="M12 2.5 20.6 7 12 11.5 3.4 7 12 2.5Z"/><path d="M3.4 7 12 11.5v9.9L3.4 16.9V7Z" opacity=".34"/><path d="M20.6 7 12 11.5v9.9l8.6-4.5V7Z" opacity=".55"/></g>',
+    service:   '<g><path d="M16.9 2.2a5.2 5.2 0 0 0-5.06 6.35L3.6 16.85a2.4 2.4 0 0 0 3.4 3.4l8.28-8.27A5.2 5.2 0 0 0 21.8 7.1a.8.8 0 0 0-1.34-.36l-2.42 2.42a1.3 1.3 0 0 1-1.84 0l-.86-.86a1.3 1.3 0 0 1 0-1.84l2.42-2.42a.8.8 0 0 0-.36-1.34 5.3 5.3 0 0 0-1.5-.26Z"/><circle cx="5.4" cy="18.45" r="1.15" opacity=".42"/></g>'
+  };
+  function hueOf(s){ var h=0; for (var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return h%360; }
+  var SEM = { device:262, accessory:230, service:70 };
+
+  function glyphTile(cat, hue, size){ size=size||40; var gs=Math.round(size*0.52);
+    return '<span class="otile" style="width:'+size+'px;height:'+size+'px;background:oklch(96% 0.03 '+hue+');color:oklch(50% 0.13 '+hue+')">'+
+      '<svg viewBox="0 0 24 24" width="'+gs+'" height="'+gs+'" fill="currentColor">'+GLYPH[cat]+'</svg></span>'; }
+  function codeTile(code, hue, size){ size=size||40;
+    return '<span class="codetile" style="width:'+size+'px;height:'+size+'px;background:oklch(96% 0.03 '+hue+');color:oklch(42% 0.10 '+hue+')">'+code+'</span>'; }
+
+  // Device Models list (model code + name)
+  var MODELS = [
+    ['N950','Smart Android terminal'],
+    ['S30','Compact countertop terminal'],
+    ['S60','Dual-screen smart POS'],
+    ['S90','Portable wireless terminal'],
+    ['N750','Slim mobile Android handheld'],
+    ['X800','Unattended kiosk module']
+  ];
+  // Catalog list (category, name, modelCode|null)
+  var CATALOG = [
+    ['device','N950 Production','N950'],
+    ['device','S90 Sample','S90'],
+    ['accessory','Thermal receipt paper',null],
+    ['service','On-site setup service',null],
+    ['accessory','USB-C cable 1m',null]
+  ];
+
+  // tileFns per option:  modelTileFn(code) and catalogTileFn(cat, modelCode)
+  var OPTIONS = [
+    {
+      title: 'Mono indigo (one brand color)',
+      desc: 'Every device is indigo on both pages. Device Models shows indigo code tiles; Catalog shows the indigo device glyph. Fully one system, but no per-model color variety.',
+      model: function(code){ return codeTile(code, 262); },
+      cat: function(cat){ return glyphTile(cat, SEM[cat]); }
+    },
+    {
+      title: 'Per-model color, glyph on Catalog',
+      desc: 'Device color is driven by the model hue and shared across pages — N950 is the same color in both. Device Models keeps colored code tiles; Catalog shows the device glyph tinted with that model’s hue. Accessories/services stay semantic (info-blue / amber).',
+      model: function(code){ return codeTile(code, hueOf(code)); },
+      cat: function(cat, mc){ return cat==='device' ? glyphTile('device', hueOf(mc)) : glyphTile(cat, SEM[cat]); }
+    },
+    {
+      title: 'Per-model color, code tiles everywhere',
+      desc: 'Both pages show the colored model-code tile for devices (Catalog device rows show “N950”, etc. — same tile as Device Models). Accessories/services use the semantic glyph. Maximum cross-page consistency for devices; keeps the model code visible.',
+      model: function(code){ return codeTile(code, hueOf(code)); },
+      cat: function(cat, mc){ return cat==='device' ? codeTile(mc, hueOf(mc)) : glyphTile(cat, SEM[cat]); }
+    }
+  ];
+
+  document.getElementById('opts').innerHTML = OPTIONS.map(function(o, i){
+    var mRows = MODELS.map(function(m){
+      return '<div class="row">'+o.model(m[0])+'<div><div class="row__name">'+m[0]+'</div><div class="row__meta">'+m[1]+'</div></div></div>';
+    }).join('');
+    var cRows = CATALOG.map(function(r){
+      return '<div class="row">'+o.cat(r[0], r[2])+'<div><div class="row__name">'+r[1]+'</div><div class="row__meta">'+(r[2]||r[0])+'</div></div></div>';
+    }).join('');
+    return '<section class="opt">'+
+      '<div class="opt__head"><div class="opt__title-row"><span class="opt__num">Option '+(i+1)+'</span><span class="opt__title">'+o.title+'</span></div>'+
+        '<p class="opt__desc">'+o.desc+'</p></div>'+
+      '<div class="panes">'+
+        '<div class="pane"><p class="pane__label">Device Models page</p>'+mRows+'</div>'+
+        '<div class="pane"><p class="pane__label">Catalog page</p>'+cRows+'</div>'+
+      '</div></section>';
+  }).join('');
+</script>
+</body>
+</html>
