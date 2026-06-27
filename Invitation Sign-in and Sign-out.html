@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Invitation · Sign in &amp; Sign out</title>
+  <link rel="stylesheet" href="assets/tokens.css" />
+  <link rel="stylesheet" href="assets/components.css" />
+  <link rel="stylesheet" href="screens/onboarding-flow.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: var(--font-family-sans); color: var(--color-text-primary); background: var(--color-bg-1); -webkit-font-smoothing: antialiased; }
+    *, *::before, *::after { box-sizing: border-box; }
+    #root { height: 100%; }
+    button { font-family: inherit; }
+    @keyframes boot-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #boot-splash > div:first-child { animation: none; } }
+  </style>
+  <script>
+    // Tweak defaults — host can rewrite the JSON between markers.
+    window.__INVITE_TWEAKS__ = /*EDITMODE-BEGIN*/{
+      "entry": "Signed out",
+      "theme": "light"
+    }/*EDITMODE-END*/;
+  </script>
+</head>
+<body>
+  <div id="root">
+    <div id="boot-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--color-bg-1);font-family:var(--font-family-sans);">
+      <div style="width:34px;height:34px;border-radius:50%;border:2.5px solid var(--color-border-default);border-top-color:var(--color-primary-700);animation:boot-spin 0.7s linear infinite;"></div>
+      <div style="font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-tertiary);">Loading invitation</div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Project components + data (window-exported), then the shared onboarding flow -->
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="data-tables.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="onboarding.jsx"></script>
+
+  <script type="text/babel">
+    const { useState: useStateInv, useEffect: useEffInv } = React;
+
+    // ── Signed-in operator (the "current device session"). Mirrors the
+    //    CURRENT_USER record the in-app demo flow seeds. ──────────────
+    const INVITE_CURRENT_USER = {
+      id: 'u-2',
+      username: 'jordan.diaz',
+      email: 'jordan.d@carbon',
+      name: 'Jordan Diaz',
+      initials: 'JD',
+      country: 'US',
+      org: 'NPT · Carbon Admin Console',
+    };
+
+    // ── The pending invitation this link resolves to. Shape matches the
+    //    USER row onboarding.jsx reads (email / invitedBy / roles / dates). ─
+    const now = Date.now();
+    const INVITE_RECORD = {
+      id: 'inv-7k2qp',
+      email: 'kai.tanaka@example.com',
+      displayName: 'Kai Tanaka',
+      invitedBy: 'admin@carbon',
+      invitedAt: new Date(now - 2 * 86400000).toISOString(),
+      inviteExpiresAt: new Date(now + 5 * 86400000).toISOString(),
+      roleIds: ['r-admin-ops'],
+      status: 'PENDING',
+    };
+
+    function InviteDemo() {
+      const toast = window.useToast();
+      const [t, setTweak] = window.useTweaks(window.__INVITE_TWEAKS__);
+      const [nonce, setNonce] = useStateInv(0);
+      const signedIn = t.entry === 'Signed in';
+      const [sessionUser, setSessionUser] = useStateInv(signedIn ? INVITE_CURRENT_USER : null);
+
+      // Switching entry state (or restarting) remounts Onboarding via `key`
+      // and resets which account holds the current session.
+      useEffInv(() => {
+        setSessionUser(signedIn ? INVITE_CURRENT_USER : null);
+      }, [t.entry, nonce]);
+
+      useEffInv(() => {
+        document.documentElement.dataset.theme = t.theme === 'dark' ? 'dark' : 'light';
+      }, [t.theme]);
+
+      const restart = () => setNonce((n) => n + 1);
+      // After accepting (Welcome → "Go to dashboard") or exiting the demo,
+      // land on the Carbon admin home.
+      const goDashboard = () => { window.location.href = 'index.html'; };
+
+      return (
+        <>
+          <window.Onboarding
+            key={`${t.entry}-${nonce}`}
+            token={INVITE_RECORD.id}
+            invitation={INVITE_RECORD}
+            currentUser={sessionUser}
+            onAccept={(payload) => {
+              const acct = payload.account || {};
+              const who = acct.name || acct.displayName || INVITE_RECORD.displayName;
+              toast({
+                kind: 'success',
+                title: 'Invitation accepted',
+                msg: `${who} joined ${window.PLATFORM_ENTITY.name}${payload.viaExisting ? ' with an existing account' : ' as a new account'}.`,
+              });
+            }}
+            onSignOut={() => setSessionUser(null)}
+            onExit={goDashboard}
+          />
+
+          <window.TweaksPanel title="Tweaks">
+            <window.TweakSection label="Demo flow" />
+            <window.TweakRadio
+              label="Entry state"
+              value={t.entry}
+              options={['Signed in', 'Signed out']}
+              onChange={(v) => { setTweak('entry', v); setNonce((n) => n + 1); }} />
+            <window.TweakButton label="Restart flow" secondary onClick={restart} />
+            <window.TweakSection label="Appearance" />
+            <window.TweakRadio
+              label="Theme"
+              value={t.theme}
+              options={['light', 'dark']}
+              onChange={(v) => setTweak('theme', v)} />
+          </window.TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <window.ToastProvider>
+        <InviteDemo />
+      </window.ToastProvider>
+    );
+  </script>
+</body>
+</html>

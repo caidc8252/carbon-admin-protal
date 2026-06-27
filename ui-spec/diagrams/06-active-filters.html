@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§4.5 Active filters · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §4.5</div>
+  <h1>Active filters（活动过滤芯片）</h1>
+  <p class="lede">
+    <b>无论页面有无高级搜索</b>，只要存在 ≥1 个已生效（<code>applied</code>）条件，就在条件区与列表卡之间渲染一行 Active filters 芯片。
+    芯片把「当前在过滤什么」显性化，并提供逐条 <code>×</code> 的撤销入口。行最左固定渲染 <code>ACTIVE FILTERS:</code> overline 前缀（2026-06-10 修订）。空态整行 <code>display:none</code>，不占位。
+  </p>
+
+  <!-- 位置 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--fix">FIX</span><h2>位置与渲染</h2></div>
+    <p class="sec-desc">位置 = 条件区<b>下方</b>、列表卡<b>上方</b>，单独成行。与上方条件区间距 <code>12</code>、与下方列表卡间距 <code>16</code>（§5.4）。随内容滚走、不吸顶。芯片代表 <code>applied</code>（非 draft）。</p>
+    <!-- condition row -->
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:4px 0;">
+      <span class="ctrl ctrl--input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <span>Search devices…</span>
+      </span>
+      <span class="ctrl ctrl--select"><span>Status: Online</span><span>⌄</span></span>
+      <button class="btn btn--secondary btn--sm">Search</button>
+    </div>
+    <!-- active filters row -->
+    <div class="chip-row" style="margin:12px 0 16px;">
+      <span class="chip-row__prefix">Active filters:</span>
+      <span class="chip"><span class="chip__lbl">Status:</span><span class="chip__val">Online</span><span class="chip__x">×</span></span>
+      <span class="chip"><span class="chip__lbl">Model:</span><span class="chip__val">NL750</span><span class="chip__x">×</span></span>
+      <span class="chip"><span class="chip__lbl">Merchant:</span><span class="chip__val">Acme Coffee</span><span class="chip__x">×</span></span>
+    </div>
+    <!-- list -->
+    <div class="card" style="overflow:hidden;">
+      <div class="list-head"><div class="list-head__count"><b>18</b> devices</div><button class="btn btn--secondary btn--sm">Export</button></div>
+      <table class="tbl"><tbody>
+        <tr><td style="font-family:var(--mono);">NL750-K9F2H7B3</td><td>Acme Coffee · MTL #4</td><td><span class="pill pill--ok"><span class="dot"></span>Online</span></td></tr>
+        <tr><td style="font-family:var(--mono);">NL750-J1D8M2X0</td><td>Acme Coffee · MTL #2</td><td><span class="pill pill--ok"><span class="dot"></span>Online</span></td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <!-- 行为 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--fix">FIX</span><h2>去掉「Clear all」，保留逐条 ×</h2></div>
+    <p class="sec-desc">
+      <b>移除「Clear all」</b>：它会一键重置 applied 并触发一次无条件空查询，与「重搭条件」的真实意图不符（大数据列表上还会误拉全量）。
+      <b>保留每条芯片的 <code>×</code></b>：移除一条 = 立即把该条 applied 重置为默认并重查（回第 1 页），同时同步对应 draft 控件，保持条件区与芯片一致。
+    </p>
+    <div class="note">芯片样式即 <code>AppliedChip</code> 组件（2026-06-10 修订）：高 24、全圆角、底 <code>--color-primary-50</code>、边 <code>primary-500@30%</code>、文字 <code>--color-primary-700</code>；内容为 <code>Label: Value</code> 同行文本（12px，label 500 / value 400）；<code>×</code> 为 16×16 命中区（无描边），hover 底 <code>primary-100</code>。行前缀 <code>ACTIVE FILTERS:</code>（uppercase 10px/600/0.08em、<code>--fg3</code>）随行显隐。禁止手写芯片，统一复用组件。</div>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§2 新建/编辑表单 + WizardFooter · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .form-mock{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+  @media (max-width:760px){.form-mock{grid-template-columns:1fr;}}
+  .fld{margin-bottom:14px;}
+  .fld__lbl{font-size:12px;font-weight:600;color:var(--fg2);margin-bottom:5px;display:block;}
+  .fld__lbl .req{color:var(--danger-700);}
+  .summary{position:relative;}
+  .summary__h{font-size:13px;font-weight:600;margin-bottom:10px;}
+  .summary__row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--fg2);padding:6px 0;border-bottom:1px solid var(--border);}
+  .summary__row:last-child{border-bottom:0;}
+  .summary__row b{font-family:var(--mono);color:var(--fg1);}
+  .wizard-foot{display:flex;justify-content:flex-end;gap:10px;padding-top:16px;margin-top:18px;border-top:1px solid var(--border);}
+  .foot-anno{font-size:11.5px;color:var(--fg3);margin-top:8px;text-align:right;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §2</div>
+  <h1>新建 / 编辑表单 + 分步向导底栏</h1>
+  <p class="lede">
+    统一 <code>&lt;FormPage&gt;</code> / <code>&lt;FormWizard&gt;</code> 外壳，一律走 <code>.page</code>，<b>禁止自画整屏头栏</b>。
+    操作按钮放<b>标题栏右侧</b>（Cancel secondary + 主操作 primary），与详情页一致；不再用 sticky 底栏。
+    逻辑分组 <b>≥3 用 Stepper 分步向导</b>，否则单页表单。表单/详情内容<b>居中（max-width 1200）</b>，不铺满。
+  </p>
+
+  <!-- 表单外壳 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>表单外壳（标题栏右侧操作）</h2></div>
+    <p class="sec-desc">标题栏承载标题 + 副标题 + 右侧操作；正文是居中的字段卡。下例为单页编辑表单。</p>
+    <div class="tb" style="margin-bottom:16px;">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__main">
+            <div class="tb__title">Edit customer</div>
+            <div class="tb__sub">Update company profile and contract terms.</div>
+          </div>
+          <div class="tb__actions"><button class="btn btn--secondary">Cancel</button><button class="btn btn--primary">Save changes</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="card card--pad" style="max-width:680px;">
+      <div class="fld"><label class="fld__lbl">Company name <span class="req">*</span></label><div class="ctrl ctrl--md" style="width:100%;">Pinegate Apparel</div></div>
+      <div class="fld"><label class="fld__lbl">Contract type <span class="req">*</span></label><div class="ctrl ctrl--md ctrl--select" style="width:100%;"><span>MERCHANT</span><span>⌄</span></div></div>
+    </div>
+  </section>
+
+  <!-- 分步向导 + WizardFooter -->
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>分步向导底栏 · WizardFooter</h2><span class="desc">全部右对齐 · 退出由标题栏返回箭头承担</span></div>
+    <p class="sec-desc">
+      底部「上一步 / 下一步 / 末步主操作」统一收敛到 <code>&lt;WizardFooter&gt;</code>：<code>.wizard-foot</code> = <code>padding-top:16</code> + 顶部 1px 分隔线，<b>全部右对齐</b>。
+      上一步 = secondary + 前置 <code>chevL</code> + 文案「Back」（第 1 步 disabled 并保留）；下一步 = primary + 后置 <code>chevR</code> + 文案「Next」；末步 = primary + <code>check</code> + 上下文动词（如 Create order）。<b>向导底栏不放 Cancel。</b>
+    </p>
+    <div class="card card--pad form-mock">
+      <div>
+        <div class="fld"><label class="fld__lbl">Customer <span class="req">*</span></label><div class="ctrl ctrl--md ctrl--select" style="width:100%;"><span>Northwind Commerce</span><span>⌄</span></div></div>
+        <div class="fld"><label class="fld__lbl">Shipping address</label><div class="ctrl ctrl--md" style="width:100%;">123 Rue Saint-Paul, Montréal</div></div>
+        <div class="wizard-foot">
+          <button class="btn btn--secondary btn--sm">‹ Back</button>
+          <button class="btn btn--primary btn--sm">Next ›</button>
+        </div>
+        <div class="foot-anno">末步时 Next 自动切换为「✓ Create order」</div>
+      </div>
+      <div class="summary">
+        <div class="summary__h">Order summary</div>
+        <div class="summary__row"><span>Customer</span><b>Northwind</b></div>
+        <div class="summary__row"><span>Models</span><b>—</b></div>
+        <div class="summary__row"><span>Units</span><b>0</b></div>
+        <div class="summary__row"><span>Subtotal</span><b>$0.00</b></div>
+      </div>
+    </div>
+    <div class="contrast"><span class="ok">✓</span> Summary 侧栏要么所有向导都带、要么都不带（不要一个向导有、一个没有）。</div>
+  </section>
+</div>
+</body>
+</html>

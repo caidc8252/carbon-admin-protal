@@ -1,0 +1,71 @@
+/* Shared shell for design-system review cards. Each card imports this + colors_and_type.css. */
+@import url("../colors_and_type.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg1);
+  color: var(--fg1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.card {
+  box-sizing: border-box;
+  width: 700px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card.tight   { padding: 18px 22px; gap: 12px; }
+.card.spread  { padding: 32px; gap: 20px; }
+
+/* small helpers */
+.row    { display: flex; align-items: center; gap: 12px; }
+.col    { display: flex; flex-direction: column; gap: 6px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.spacer { flex: 1; }
+
+/* swatch primitives */
+.swatch {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.swatch__chip {
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-1);
+}
+.swatch__chip--lg { height: 72px; }
+.swatch__name {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg1);
+  letter-spacing: -0.005em;
+}
+.swatch__val {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg3);
+}
+.tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg3);
+}
+
+/* token-row used for spacing / radii / shadows */
+.token-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-1);
+}
+.token-row:last-child { border-bottom: 0; }
+.token-row__name { font-family: var(--font-mono); font-size: 11px; color: var(--fg1); width: 90px; }
+.token-row__val  { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3); width: 70px; text-align: right; }
+.token-row__demo { flex: 1; display: flex; align-items: center; gap: 8px; }

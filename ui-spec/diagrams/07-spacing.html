@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§7.4 内容区块间距节奏 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .rhythm{max-width:640px;}
+  .blk{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:12.5px;color:var(--fg2);}
+  .blk b{color:var(--fg1);}
+  .gap{display:flex;align-items:center;gap:10px;padding:0 4px;}
+  .gap__line{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--border-strong) 0 5px,transparent 5px 10px);}
+  .gap__val{font:600 11px/1 var(--mono);color:var(--primary-700);background:var(--primary-50);border:1px solid var(--primary-200);border-radius:5px;padding:3px 7px;}
+  .tbl-spacing td{padding:9px 14px;}
+  .tbl-spacing td:first-child{color:var(--fg1);}
+  .tbl-spacing td:nth-child(2){font-family:var(--mono);color:var(--primary-700);font-weight:600;text-align:right;width:70px;}
+  .tbl-spacing td:last-child{color:var(--fg3);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §7.4</div>
+  <h1>内容区块间距 · 统一节奏</h1>
+  <p class="lede">
+    内容区各功能块（标题栏 ↔ 搜索/条件区 ↔ 列表卡 ↔ 分页…）间距统一走 4px 栅格的 <code>--space-*</code>，<b>禁止各页手写裸数字 margin</b>。
+  </p>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--fix">FIX</span><h2>垂直节奏</h2></div>
+    <p class="sec-desc">修正「搜索栏与标题栏间距不对」：标题栏与首块固定 <code>24</code>（由 <code>.content</code>/<code>.page</code> 顶部内边距承担），<b>搜索区不再叠加 sticky 的 padding-top</b>。</p>
+    <div class="rhythm">
+      <div class="blk"><b>标题栏 TitleBar</b> · 页面标题 + 操作</div>
+      <div class="gap"><span class="gap__val">24 · --space-6</span><span class="gap__line"></span></div>
+      <div class="blk">搜索 / 条件区（透明、无背景）</div>
+      <div class="gap"><span class="gap__val">12 · --space-3</span><span class="gap__line"></span></div>
+      <div class="blk" style="border-style:dashed;">Active filters 行（条件区下方）</div>
+      <div class="gap"><span class="gap__val">16 · --space-4</span><span class="gap__line"></span></div>
+      <div class="blk"><b>列表卡 ListCard</b>（含卡内分页页脚）</div>
+      <div class="gap"><span class="gap__val">16 · --space-4</span><span class="gap__line"></span></div>
+      <div class="blk">相邻独立卡片 / 区块</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>节奏速查</h2></div>
+    <div class="card" style="overflow:hidden;max-width:640px;">
+      <table class="tbl tbl-spacing">
+        <tbody>
+          <tr><td>标题栏 ↓ 内容首块</td><td>24</td><td>.content / .page 顶部内边距（--space-6）</td></tr>
+          <tr><td>搜索/条件区 ↓ 列表卡</td><td>16</td><td>.list-toolbar-wrap padding-bottom（--space-4）</td></tr>
+          <tr><td>Active filters ↓ 列表卡</td><td>16</td><td>同节奏（--space-4）</td></tr>
+          <tr><td>Active filters ↑ 条件区</td><td>12</td><td>--space-3</td></tr>
+          <tr><td>列表卡 ↔ 卡内分页</td><td>—</td><td>分页为卡片页脚，无外间距</td></tr>
+          <tr><td>相邻独立卡片 / 区块</td><td>16</td><td>--space-4</td></tr>
+          <tr><td>内容区底部留白</td><td>64</td><td>.page 底部内边距</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="contrast"><span class="x">✕</span> 块间距一律取 <code>--space-*</code> token，不写裸数字 margin。</div>
+  </section>
+</div>
+</body>
+</html>

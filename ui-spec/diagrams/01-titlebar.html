@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§1 & §8 标题栏统一模板 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §1 · §8</div>
+  <h1>标题栏统一模板 · 五个标准形态</h1>
+  <p class="lede">
+    全站标题栏统一为一套模板（原型 = Ticket 详情标题栏）：<b>纯白底、非卡片、底部 1px 横线</b>，固定不滚。
+    行布局 <code>[返回] [实体图标] [eyebrow / 标题+徽章 / 副标题 / meta] ··· [操作]</code>，操作恒在最右，遵循 CTA 唯一性（§0）。
+    按需启用插槽，缺省自动收起。<b>§1：全站只保留一层主标题</b>——由标题栏承载，正文不再写 26px 大标题，面包屑只给路径。
+  </p>
+  <div class="note">本页对应 §8.3 的五个形态 A/B/C/D/E + E′。底部行（Tab / 步骤 / 状态轨）三选一、同一时刻只放一种；步骤/状态轨画法见 <code>07-stepper.html</code>（变体 B）。</div>
+
+  <!-- D -->
+  <section>
+    <div class="sec-h"><span class="tag">D</span><h2>列表 / 首页</h2><span class="desc">标题 + 副标题 + 操作 · 无返回/eyebrow · 操作垂直居底</span></div>
+    <p class="sec-desc">单行标题<b>必带副标题</b>（一句话说明该页能做什么），避免标题栏显空。行 <code>align-items:flex-end</code>，按钮底部与标题块底部对齐；单行内边距收紧到 <code>10</code>。</p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row tb__row--d">
+          <div class="tb__main">
+            <div class="tb__title">Factory Images</div>
+            <div class="tb__sub">Declare what each batch pre-installs — model, firmware, PEP baseline and apps.</div>
+          </div>
+          <div class="tb__actions"><button class="btn btn--primary">New factory image</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section>
+    <div class="sec-h"><span class="tag">B</span><h2>详情默认形态（eyebrow 隐藏）</h2><span class="desc">返回 + 标题 + 徽章（同行）+ meta + 操作</span></div>
+    <p class="sec-desc">详情页默认。返回纯图标 <code>36×36</code>；<b>徽章与标题同行</b>（标题右侧），一眼读到「这是什么 + 什么状态」；meta 行用 <code>·</code> 分隔次要信息。eyebrow（编号）默认隐藏，编号交给面包屑/meta。</p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__main">
+            <div class="tb__titlerow">
+              <div class="tb__title">Stuck terminal won't boot after firmware push</div>
+              <span class="pill pill--info"><span class="dot"></span>Working</span>
+              <span class="pill">High</span>
+            </div>
+            <div class="tb__meta">TK-1042 · Requester Acme Coffee · Assignee jordan.d · opened 2d ago</div>
+          </div>
+          <div class="tb__actions"><button class="btn">Reassign</button><button class="btn btn--primary">Reply</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- A -->
+  <section>
+    <div class="sec-h"><span class="tag">A</span><h2>eyebrow 显示</h2><span class="desc">返回 + eyebrow(编号) + 标题 + 徽章 + meta + 操作</span></div>
+    <p class="sec-desc">仅当编号是用户高频引用的主标识时才启用。编号置于标题上方一行，mono <code>12.5px</code> tertiary。</p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__main">
+            <div class="tb__eyebrow">TK-1042</div>
+            <div class="tb__titlerow">
+              <div class="tb__title">Stuck terminal won't boot</div>
+              <span class="pill pill--info"><span class="dot"></span>Working</span>
+            </div>
+            <div class="tb__meta">Requester Acme Coffee · opened 2d ago</div>
+          </div>
+          <div class="tb__actions"><button class="btn btn--primary">Reply</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- C -->
+  <section>
+    <div class="sec-h"><span class="tag">C</span><h2>带实体图标</h2><span class="desc">返回 + 图标(48×48) + 标题 + 徽章 + meta + 操作</span></div>
+    <p class="sec-desc">有 logo/头像的实体（如 Customer）在返回按钮后插入 <code>48×48</code>（radius 10）。<b>有图标 ⇒ 用本模板。</b></p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__icon">PA</div>
+          <div class="tb__main">
+            <div class="tb__titlerow">
+              <div class="tb__title">Pinegate Apparel</div>
+              <span class="pill pill--ok"><span class="dot"></span>MERCHANT</span>
+              <span class="pill pill--info"><span class="dot"></span>Onboarding</span>
+            </div>
+            <div class="tb__meta">2 contracts · 5 operators · since 2024</div>
+          </div>
+          <div class="tb__actions"><button class="btn btn--primary">Edit info</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- E -->
+  <section>
+    <div class="sec-h"><span class="tag">E</span><h2>带底部 Tab 栏</h2><span class="desc">任一形态 + 底部 Tab 行 · active 带 2px 主色下划线</span></div>
+    <p class="sec-desc">Tab 行附在<b>同一条标题栏底部</b>，底部 1px 横线移到 Tab 行之下；Tab 留在固定标题栏内，内容在其下滚动（§7.2）。</p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__icon">PA</div>
+          <div class="tb__main">
+            <div class="tb__titlerow">
+              <div class="tb__title">Pinegate Apparel</div>
+              <span class="pill pill--ok"><span class="dot"></span>MERCHANT</span>
+            </div>
+          </div>
+          <div class="tb__actions"><button class="btn">Edit info</button></div>
+        </div>
+        <div class="tb__bottom">
+          <div class="tabs">
+            <button class="tab is-active">Overview</button>
+            <button class="tab">Contracts</button>
+            <button class="tab">Operators &amp; roles</button>
+            <button class="tab">Devices</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- E' -->
+  <section>
+    <div class="sec-h"><span class="tag">E′</span><h2>带底部 步骤 / 状态轨</h2><span class="desc">任一形态 + 底部 Stepper 或 StatusTrack（变体 B 画法）</span></div>
+    <p class="sec-desc">底部行除 Tab 外，也可放<b>步骤 Stepper</b>（向导进度）或<b>状态轨 StatusTrack</b>（生命周期，如工单 New→Working→Replied→Closed）。三者同槽位、同一时刻只放一种。画法统一走 <code>07-stepper.html</code> 变体 B（22 圆点 / 柔和 / 单行）。</p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__main">
+            <div class="tb__title--mono tb__title">TK-1042</div>
+            <div class="tb__badges" style="margin-top:8px;">
+              <span class="pill pill--info"><span class="dot"></span>Working</span>
+              <span class="pill">High</span>
+            </div>
+          </div>
+          <div class="tb__actions"><button class="btn">Reassign</button><button class="btn btn--primary">Reply</button></div>
+        </div>
+        <div class="tb__bottom"><div class="track" id="status-track"></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const CHECK='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>';
+  (function(){
+    const steps=['New','Working','Replied','Closed'], cur=1, owner={i:1,label:'NPT'};
+    const el=document.getElementById('status-track');
+    el.innerHTML=steps.map((s,i)=>{
+      const st=i<cur?'is-done':i===cur?'is-here':'is-future';
+      const dot=i<cur?CHECK:(i+1);
+      const own=(owner.i===i&&i===cur)?`<span class="track__owner">${owner.label}</span>`:'';
+      const bar=i<steps.length-1?`<span class="track__bar ${i<cur?'bar-done':'bar-idle'}"></span>`:'';
+      return `<span class="track__step ${st}"><span class="track__dot">${dot}</span><span class="track__lbl">${s}${own}</span></span>${bar}`;
+    }).join('');
+  })();
+</script>
+</body>
+</html>

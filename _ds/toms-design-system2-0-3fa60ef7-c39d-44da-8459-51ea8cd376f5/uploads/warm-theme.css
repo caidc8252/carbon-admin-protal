@@ -1,0 +1,211 @@
+/* ═══════════════════════════════════════════════════════════════
+   TOMS Design System · WARM THEME
+   Developer Handoff · v1.0 · OKLCH color space
+   ───────────────────────────────────────────────────────────────
+   Surfaces / text / borders live on the warm axis (hue 90).
+   Brand primary stays on TOMS Indigo (hue 262) — unchanged from cool.
+   Semantic + chart colors keep their chromatic hues by definition.
+
+   LAYER 1  — Primitive scales (raw values, do not consume in markup)
+   LAYER 2  — Semantic tokens (dev naming — consume THESE)
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
+:root {
+  /* ───────────────────────────────────────────────────────────
+     LAYER 1 · PRIMITIVES
+     ─────────────────────────────────────────────────────────── */
+
+  /* Primary · TOMS Indigo (hue 262) */
+  --p-primary-50:  oklch(97% 0.012 262);
+  --p-primary-100: oklch(94% 0.025 262);
+  --p-primary-200: oklch(86% 0.060 262);
+  --p-primary-300: oklch(72% 0.100 262);
+  --p-primary-400: oklch(55% 0.140 262);
+  --p-primary-500: oklch(40% 0.140 262);
+  --p-primary-600: oklch(32% 0.100 262);
+  --p-primary-700: oklch(24% 0.060 262);
+  --p-primary-800: oklch(18% 0.040 262);
+  --p-primary-900: oklch(12% 0.025 262);
+
+  /* Neutral · warm (hue 90) — surfaces, text, borders */
+  --p-neutral-0:   oklch(100%  0     0 );
+  --p-neutral-50:  oklch(99%   0.003 90);
+  --p-neutral-100: oklch(97.2% 0.004 90);
+  --p-neutral-150: oklch(95.8% 0.005 90);
+  --p-neutral-200: oklch(93.5% 0.006 90);
+  --p-neutral-250: oklch(91%   0.008 90);
+  --p-neutral-300: oklch(89%   0.010 90);
+  --p-neutral-400: oklch(80%   0.012 90);
+  --p-neutral-500: oklch(60%   0.010 90);
+  --p-neutral-600: oklch(44%   0.010 90);
+  --p-neutral-700: oklch(30%   0.010 90);
+  --p-neutral-900: oklch(20%   0.010 90);
+
+  /* Semantic primitives — chromatic, hue-locked */
+  --p-success-50:  oklch(96% 0.030 152);
+  --p-success-500: oklch(58% 0.140 152);
+  --p-success-700: oklch(46% 0.130 152);
+
+  --p-warning-50:  oklch(96.5% 0.040 80);
+  --p-warning-500: oklch(70%   0.160 70);
+  --p-warning-700: oklch(56%   0.150 60);
+
+  --p-danger-50:   oklch(96% 0.040 25);
+  --p-danger-500:  oklch(58% 0.200 25);
+  --p-danger-700:  oklch(46% 0.190 25);
+
+  --p-info-50:     oklch(96% 0.030 230);
+  --p-info-500:    oklch(60% 0.140 230);
+  --p-info-700:    oklch(48% 0.130 230);
+
+  /* ───────────────────────────────────────────────────────────
+     LAYER 2 · SEMANTIC TOKENS  (consume these in components)
+     ─────────────────────────────────────────────────────────── */
+
+  /* Primary */
+  --primary:            var(--p-primary-700);
+  --primary-hover:      var(--p-primary-600);
+  --primary-active:     var(--p-primary-800);
+  --primary-foreground: var(--p-neutral-0);
+  --primary-subtle:     var(--p-primary-50);
+
+  /* Secondary (muted warm neutral — non-CTA buttons / chips) */
+  --secondary:            var(--p-neutral-200);
+  --secondary-hover:      var(--p-neutral-250);
+  --secondary-active:     oklch(88% 0.012 90);
+  --secondary-foreground: var(--p-neutral-900);
+
+  /* Accent (subtle warm hover surface) */
+  --accent:            var(--p-neutral-150);
+  --accent-foreground: var(--p-neutral-900);
+
+  /* Status · Success / Warning / Danger / Info */
+  --success:            var(--p-success-500);
+  --success-foreground: var(--p-neutral-0);
+  --success-subtle:     var(--p-success-50);
+
+  --warning:            var(--p-warning-500);
+  --warning-foreground: var(--p-neutral-900);
+  --warning-subtle:     var(--p-warning-50);
+
+  --danger:             var(--p-danger-500);
+  --danger-foreground:  var(--p-neutral-0);
+  --danger-subtle:      var(--p-danger-50);
+
+  --info:               var(--p-info-500);
+  --info-foreground:    var(--p-neutral-0);
+  --info-subtle:        var(--p-info-50);
+
+  /* Background / Foreground */
+  --background:          var(--p-neutral-50);
+  --foreground:          var(--p-neutral-900);
+  --card:                var(--p-neutral-0);
+  --card-foreground:     var(--p-neutral-900);
+  --popover:             var(--p-neutral-0);
+  --popover-foreground:  var(--p-neutral-900);
+  --muted:               var(--p-neutral-100);
+  --muted-foreground:    var(--p-neutral-600);
+  --subtle:              var(--p-neutral-500);   /* tertiary text */
+
+  /* Border / Input / Ring */
+  --border:         var(--p-neutral-300);
+  --border-subtle:  var(--p-neutral-200);
+  --border-strong:  var(--p-neutral-400);
+  --input:          var(--p-neutral-300);
+  --input-hover:    var(--p-neutral-400);
+  --ring:           var(--p-primary-500);
+
+  /* Chart palette · data-series only */
+  --chart-1: oklch(52% 0.160 240);   /* blue   */
+  --chart-2: oklch(60% 0.130 195);   /* cyan   */
+  --chart-3: oklch(55% 0.140 152);   /* green  */
+  --chart-4: oklch(68% 0.140 90);    /* yellow */
+  --chart-5: oklch(62% 0.170 60);    /* orange */
+
+  /* ───────────────────────────────────────────────────────────
+     TYPOGRAPHY
+     ─────────────────────────────────────────────────────────── */
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-md:  14px;
+  --text-lg:  16px;
+  --text-xl:  18px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  --text-4xl: 36px;
+
+  --font-regular:  400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  --leading-tight:   1.2;
+  --leading-snug:    1.35;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.7;
+
+  --tracking-tight:  -0.02em;
+  --tracking-normal: -0.005em;
+  --tracking-wide:    0.04em;
+
+  /* ───────────────────────────────────────────────────────────
+     RADIUS
+     ─────────────────────────────────────────────────────────── */
+  --radius-none: 0;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-full: 9999px;
+  --radius: var(--radius-lg);          /* shadcn default alias */
+
+  /* ───────────────────────────────────────────────────────────
+     SPACING (4px grid)
+     ─────────────────────────────────────────────────────────── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ───────────────────────────────────────────────────────────
+     SHADOW · 5 elevations  (warm-neutral cast)
+     ─────────────────────────────────────────────────────────── */
+  --shadow-1: 0 1px 0 oklch(0% 0 0 / 0.04);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.05), 0 1px 0 oklch(0% 0 0 / 0.02);
+  --shadow-3: 0 4px 12px oklch(0% 0 0 / 0.06), 0 1px 0 oklch(0% 0 0 / 0.03);
+  --shadow-4: 0 12px 24px oklch(0% 0 0 / 0.08), 0 2px 4px oklch(0% 0 0 / 0.04);
+  --shadow-5: 0 24px 48px oklch(0% 0 0 / 0.12), 0 4px 8px oklch(0% 0 0 / 0.06);
+  --shadow-focus: 0 0 0 3px oklch(40% 0.140 262 / 0.25);
+
+  /* ───────────────────────────────────────────────────────────
+     MOTION
+     ─────────────────────────────────────────────────────────── */
+  --duration-fast:   120ms;
+  --duration-normal: 200ms;
+  --easing: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ───────────────────────────────────────────────────────────
+     CONTROL SIZING
+     ─────────────────────────────────────────────────────────── */
+  --control-h-sm: 28px;
+  --control-h-md: 36px;
+  --control-h-lg: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-fast: 0ms; --duration-normal: 0ms; }
+}

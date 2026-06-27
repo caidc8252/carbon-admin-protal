@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§3 列表卡 & 分页 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §3</div>
+  <h1>列表卡 & 分页 · 行操作 · Load more</h1>
+  <p class="lede">
+    所有列表统一为 4 段：<b>① list-head 计数行</b>（sticky）· <b>② thead 表头+排序</b>（sticky）· <b>③ 表体</b>（横向铺满）· <b>④ 分页</b>（卡片页脚）。
+    由 <code>ListCard</code> 组件承载，各页不自画。
+  </p>
+
+  <!-- 列表卡解剖 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--keep">KEEP</span><h2>列表卡解剖</h2></div>
+    <p class="sec-desc">list-head 左「<code>&lt;N&gt; &lt;unit&gt;</code>」<b>不加前置图标</b>、不附「filtered from N」；右放 Export。可排序列带 ▲▼ 指示器，未激活列淡显。</p>
+    <div class="card" style="overflow:hidden;">
+      <div class="list-head">
+        <div class="list-head__count"><b>248</b> orders</div>
+        <button class="btn btn--secondary btn--sm">Export</button>
+      </div>
+      <table class="tbl">
+        <thead><tr>
+          <th>Order</th>
+          <th>Customer</th>
+          <th><span class="sort is-active">Created <span class="arr">▼</span></span></th>
+          <th class="num"><span class="sort">Total <span class="arr">▲▼</span></span></th>
+          <th style="width:90px;">Status</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="font-family:var(--mono);">SO-2026-0184</td><td>Northwind Commerce</td><td>May 9, 2026</td><td class="num">$7,429.00</td><td><span class="pill pill--warn"><span class="dot"></span>Pending</span></td></tr>
+          <tr><td style="font-family:var(--mono);">SO-2026-0183</td><td>Helios Payments</td><td>May 8, 2026</td><td class="num">$1,290.00</td><td><span class="pill pill--ok"><span class="dot"></span>Shipped</span></td></tr>
+          <tr><td style="font-family:var(--mono);">SO-2026-0182</td><td>Brightleaf Retail</td><td>May 7, 2026</td><td class="num">$540.00</td><td><span class="pill pill--ok"><span class="dot"></span>Complete</span></td></tr>
+        </tbody>
+      </table>
+      <div class="pager">
+        <div class="pager__rows">Rows <span class="ctrl ctrl--select" style="width:64px;height:26px;"><span>25</span><span>⌄</span></span> <span class="pager__showing">Showing 1–25 of 248</span></div>
+        <div class="pager__nav">
+          <span class="pgbtn">«</span><span class="pgbtn">‹</span>
+          <span class="pgbtn is-active">1</span><span class="pgbtn">2</span><span class="pgbtn">3</span><span class="pgbtn">…</span><span class="pgbtn">10</span>
+          <span class="pgbtn">›</span><span class="pgbtn">»</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 分页规约 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--fix">FIX</span><h2>分页：三区块 · 去「跳转到第 N 页」</h2></div>
+    <p class="sec-desc">只保留 <b>Rows per page</b>（默认 25，选项 10/25/50/100）· <b>Showing X–Y of N</b>（tabular-nums）· <b>页码器</b>（≤7 全展开，更多则首/末/当前±2 + <code>…</code>）。<b>移除「Go to page ___ Go」</b>；改每页行数自动回第 1 页。</p>
+  </section>
+
+  <!-- 行操作 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>行操作：图标 + 悬浮 tooltip + 受控动词</h2></div>
+    <p class="sec-desc">行右操作 = 纯图标按钮（30×30）+ tooltip。<b>0 个</b>→整行可点 + 行尾 <code>chevR</code>；<b>1–2 个</b>→图标并排（中性在前、破坏性最后）；<b>≥3 个或含破坏性</b>→收进竖向三点 kebab。一行只用一种承载，不混用。除行尾 <code>chevR</code> 外禁止无 tooltip 的纯图标。</p>
+    <div class="card" style="overflow:hidden;max-width:560px;">
+      <table class="tbl">
+        <tbody>
+          <tr><td>jordan.d@toms</td><td style="text-align:right;"><div style="display:inline-flex;gap:6px;"><span class="iconbtn" title="Edit">✎</span><span class="iconbtn" title="Lock">🔒</span></div></td></tr>
+          <tr><td>casey.m@toms</td><td style="text-align:right;"><div style="display:inline-flex;gap:6px;"><span class="iconbtn" title="Edit">✎</span><span class="iconbtn" title="More">⋮</span></div></td></tr>
+          <tr><td>Northwind Commerce</td><td style="text-align:right;color:var(--fg4);">›</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="contrast"><span class="x">✕</span> 破坏性（Revoke / Terminate / Unpublish / Cancel）标红 tone；<b>Delete 例外用中性</b>（删除走确认弹窗，避免一列全红）。不可逆操作必走确认弹窗。</div>
+    <div class="note">完整动词→图标词表见 ui-spec.md §3.5（Edit/Details/Copy/Lock/Suspend/Unpublish/Bind/Revoke/Terminate/Delete…），每词唯一语义，禁止近义混用。</div>
+  </section>
+
+  <!-- Load more -->
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>Load more（分页的替代选型）</h2><span class="desc">与页码分页二选一、不并存</span></div>
+    <p class="sec-desc">仅用于「流式 / 次级 / 总数不重要」的列表（活动流、通知、详情页关联子列表）。总数放<b>区块标题</b>（<code>Comments · 24</code>），页脚<b>只放居中 sm 中性按钮</b> + 前置 chevron-down，不显示进度行。初始 10、每次 +10、追加不翻页。基准实现 = <code>tickets.jsx</code> 的 <code>CommentsCard</code>。</p>
+    <div class="card card--pad" style="max-width:560px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Comments · 24</div>
+      <div style="font-size:12.5px;color:var(--fg2);line-height:1.7;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;">jordan.d · 2d ago — Pushed firmware 2.4.1, awaiting reboot.</div>
+      <div style="font-size:12.5px;color:var(--fg2);line-height:1.7;">casey.m · 1d ago — Terminal back online, transactions resumed.</div>
+      <div style="display:flex;justify-content:center;margin-top:16px;"><button class="btn btn--secondary btn--sm">⌄ Load more</button></div>
+    </div>
+    <div class="legend">
+      <span>可加载 · <span class="kbd">⌄ Load more</span></span>
+      <span>加载中 · <span class="kbd">⟳ Loading…</span>（disabled，去 chevron）</span>
+      <span>全部加载完 · 移除按钮、页脚留空</span>
+    </div>
+  </section>
+</div>
+</body>
+</html>

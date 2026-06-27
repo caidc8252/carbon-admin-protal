@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Merchant Apps Tab — design proposal</title>
+  <style>
+/* ─────────────────────────────────────────────────────────────
+   TOMS Design System — Tokens v1.0
+   Engineering-grade · Light + Dark · OKLCH color space
+   Single source of truth; do not hardcode values in components.
+   ───────────────────────────────────────────────────────────── */
+
+/* Canonical font load — every surface that imports tokens.css gets these.
+   Weight 450 is used by the Terminal Manager skin (cmdk / shell / charts).  */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
+:root, [data-theme="light"] {
+  /* ─── Color · Brand ───────────────────────────────────── */
+  --color-brand-mono:        oklch(22% 0.015 270);
+  --color-brand-mono-strong: oklch(14% 0.012 270);
+  --color-brand-mono-soft:   oklch(28% 0.02  270);
+
+  /* ─── Color · Primary (CTA — midnight indigo) ─────────── */
+  --color-primary-50:  oklch(97%  0.012 262);
+  --color-primary-100: oklch(94%  0.025 262);
+  --color-primary-200: oklch(86%  0.06  262);
+  --color-primary-300: oklch(72%  0.10  262);
+  --color-primary-400: oklch(55%  0.14  262);
+  --color-primary-500: oklch(40%  0.14  262);
+  --color-primary-600: oklch(32%  0.10  262);
+  --color-primary-700: oklch(24%  0.06  262);  /* default CTA bg */
+  --color-primary-800: oklch(18%  0.04  262);
+  --color-primary-900: oklch(12%  0.025 262);
+
+  /* ─── Color · Secondary (cool steel — secondary actions) */
+  --color-secondary-50:  oklch(97%  0.005 250);
+  --color-secondary-100: oklch(94%  0.008 250);
+  --color-secondary-500: oklch(56%  0.02  250);
+  --color-secondary-700: oklch(38%  0.018 250);
+  --color-secondary-900: oklch(22%  0.012 250);
+
+  /* ─── Color · Accent (interactive highlights) ─────────── */
+  --color-accent-50:  oklch(97% 0.02 265);
+  --color-accent-100: oklch(93% 0.05 265);
+  --color-accent-200: oklch(86% 0.10 265);
+  --color-accent-500: oklch(58% 0.22 270);
+  --color-accent-600: oklch(52% 0.24 272);
+  --color-accent-700: oklch(46% 0.24 274);
+
+  /* ─── Color · Semantic ────────────────────────────────── */
+  --color-success-50:  oklch(96% 0.03  152);
+  --color-success-500: oklch(58% 0.14  152);
+  --color-success-700: oklch(46% 0.13  152);
+
+  --color-warning-50:  oklch(96.5% 0.04 80);
+  --color-warning-500: oklch(70%   0.16 70);
+  --color-warning-700: oklch(56%   0.15 60);
+
+  --color-error-50:  oklch(96% 0.04 25);
+  --color-error-500: oklch(58% 0.20 25);
+  --color-error-700: oklch(46% 0.19 25);
+
+  --color-info-50:  oklch(96% 0.03 230);
+  --color-info-500: oklch(60% 0.14 230);
+  --color-info-700: oklch(48% 0.13 230);
+
+  /* ─── Color · Surfaces ────────────────────────────────── */
+  --color-bg-1: oklch(99%   0.003 90);   /* app bg */
+  --color-bg-2: oklch(100%  0     0);    /* surface / card */
+  --color-bg-3: oklch(97.2% 0.004 90);   /* sunken / sidebar */
+  --color-bg-hover:    oklch(95.8% 0.005 90);
+  --color-bg-active:   oklch(93.5% 0.006 90);
+  --color-bg-overlay:  oklch(15% 0.01 270 / 0.45);
+
+  /* ─── Color · Text ────────────────────────────────────── */
+  --color-text-primary:    oklch(18% 0.01  270);
+  --color-text-secondary:  oklch(42% 0.008 270);
+  --color-text-tertiary:   oklch(58% 0.006 270);
+  --color-text-disabled:   oklch(72% 0.005 270);
+  --color-text-inverse:    oklch(99% 0     0);
+  --color-text-on-primary: oklch(99% 0     0);
+
+  /* ─── Color · Border ──────────────────────────────────── */
+  --color-border-subtle:  oklch(93% 0.005 90);
+  --color-border-default: oklch(89% 0.005 90);
+  --color-border-strong:  oklch(80% 0.006 90);
+  --color-border-focus:   oklch(40% 0.14  262);
+
+  /* ─── Typography ──────────────────────────────────────── */
+  --font-family-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-family-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Aliases — preview cards + product skin use these short names.
+     Keep both namespaces in sync; never define a font-family elsewhere. */
+  --font-sans:    var(--font-family-sans);
+  --font-mono:    var(--font-family-mono);
+  --font-display: var(--font-family-sans);
+
+  --font-size-xs:   12px;
+  --font-size-sm:   13px;
+  --font-size-md:   14px;   /* base body */
+  --font-size-lg:   16px;
+  --font-size-xl:   18px;
+  --font-size-2xl:  22px;
+  --font-size-3xl:  28px;
+  --font-size-4xl:  36px;
+  --font-size-5xl:  48px;
+
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  --line-height-tight:   1.2;
+  --line-height-snug:    1.35;
+  --line-height-normal:  1.5;
+  --line-height-relaxed: 1.7;
+
+  --letter-spacing-tight:  -0.02em;
+  --letter-spacing-normal: -0.005em;
+  --letter-spacing-wide:    0.04em;
+
+  /* ─── Spacing (4px grid) ──────────────────────────────── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Semantic spacing aliases */
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-4);
+  --space-lg: var(--space-6);
+  --space-xl: var(--space-10);
+
+  /* ─── Radius ──────────────────────────────────────────── */
+  --radius-none: 0;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-full: 9999px;
+
+  /* ─── Border width ────────────────────────────────────── */
+  --border-width-thin:    1px;
+  --border-width-default: 1px;
+  --border-width-thick:   2px;
+
+  /* ─── Shadows · 5 elevations ──────────────────────────── */
+  --shadow-1: 0 1px 0 oklch(0% 0 0 / 0.04);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.05), 0 1px 0 oklch(0% 0 0 / 0.02);
+  --shadow-3: 0 4px 12px oklch(0% 0 0 / 0.06), 0 1px 0 oklch(0% 0 0 / 0.03);
+  --shadow-4: 0 12px 24px oklch(0% 0 0 / 0.08), 0 2px 4px oklch(0% 0 0 / 0.04);
+  --shadow-5: 0 24px 48px oklch(0% 0 0 / 0.12), 0 4px 8px oklch(0% 0 0 / 0.06);
+
+  /* CTA inset highlight (midnight indigo button) */
+  --shadow-cta: inset 0 1px 0 oklch(100% 0 0 / 0.12),
+                0 1px 2px oklch(0% 0 0 / 0.25),
+                0 0 0 0.5px oklch(0% 0 0 / 0.4);
+
+  /* Focus ring */
+  --shadow-focus: 0 0 0 3px oklch(40% 0.14 262 / 0.25);
+
+  /* ─── Z-index scale ───────────────────────────────────── */
+  --z-base:     0;
+  --z-dropdown: 1000;
+  --z-sticky:   1020;
+  --z-overlay:  1040;   /* drawer / fixed sidebar */
+  --z-modal:    1050;
+  --z-popover:  1060;
+  --z-tooltip:  1070;
+  --z-toast:    1080;
+  --z-cmdk:     1090;
+
+  /* ─── Breakpoints (reference; use in JS or @media) ────── */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ─── Motion ──────────────────────────────────────────── */
+  --duration-instant:  80ms;
+  --duration-fast:    120ms;
+  --duration-normal:  200ms;
+  --duration-slow:    320ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --easing-emphasized: cubic-bezier(0.3, 0, 0, 1);
+
+  /* ─── Component sizing tokens (avoid magic numbers) ───── */
+  --control-height-xs: 22px;
+  --control-height-sm: 28px;
+  --control-height-md: 36px;
+  --control-height-lg: 44px;
+  --control-height-xl: 52px;
+  --control-padding-x-sm: 10px;
+  --control-padding-x-md: 14px;
+  --control-padding-x-lg: 18px;
+
+  /* ─── Card system tokens ─────────────────────────────────
+     Strict 3-step scales. Pages MUST pick from these — never
+     invent ad-hoc radius/padding/elevation values on cards. */
+
+  /* Radius — only 3 allowed values */
+  --card-radius-sm: var(--radius-lg);    /*  8px · dense widgets, table rows, inline */
+  --card-radius-md: var(--radius-xl);    /* 12px · DEFAULT · data cards */
+  --card-radius-lg: var(--radius-2xl);   /* 16px · modals, full-bleed surfaces */
+
+  /* Padding — 3 step scale, applied uniformly to head/body/foot */
+  --card-padding-sm: var(--space-3);     /* 12px · dense metric, table cell-flush */
+  --card-padding-md: var(--space-5);     /* 20px · DEFAULT */
+  --card-padding-lg: var(--space-6);     /* 24px · marketing / dialog */
+
+  /* Header band height (when used) */
+  --card-head-py: var(--space-4);        /* 16px vertical */
+
+  /* Elevation — 3 levels; level-1 is the SaaS default */
+  --card-elev-0: none;
+  --card-elev-1: var(--shadow-2);        /* resting card */
+  --card-elev-2: var(--shadow-3);        /* hover / interactive lift */
+
+  /* ─── Chart palette · single source of truth ─────────────
+     Consumed by spec/extensions.css (--color-chart-*) and mirrored
+     as bare triples in dark-mode/theme.css (--chart-*) for Tailwind.
+     Categorical 8 — ordinal; always start at chart-1 and step.
+     Tuned for ≥3:1 distinguishability at 8px markers / 1.5px strokes. */
+  --color-chart-1: oklch(52% 0.24 272);   /* accent indigo */
+  --color-chart-2: oklch(58% 0.14 152);   /* teal-green */
+  --color-chart-3: oklch(60% 0.14 230);   /* sky-blue */
+  --color-chart-4: oklch(70% 0.16  70);   /* amber */
+  --color-chart-5: oklch(60% 0.18 320);   /* magenta */
+  --color-chart-6: oklch(58% 0.20  25);   /* red */
+  --color-chart-7: oklch(50% 0.08 200);   /* slate-blue */
+  --color-chart-8: oklch(60% 0.10 290);   /* violet */
+
+  /* Sequential ramp — heatmaps + density. 100 lightest → 700 darkest */
+  --color-chart-seq-100: oklch(96% 0.03 262);
+  --color-chart-seq-200: oklch(90% 0.06 262);
+  --color-chart-seq-300: oklch(80% 0.09 262);
+  --color-chart-seq-400: oklch(68% 0.13 262);
+  --color-chart-seq-500: oklch(52% 0.16 262);
+  --color-chart-seq-600: oklch(40% 0.14 262);
+  --color-chart-seq-700: oklch(28% 0.10 262);
+
+  /* Diverging ramp — variance vs target (neg ↔ neutral ↔ pos) */
+  --color-chart-div-neg: oklch(58% 0.20 25);
+  --color-chart-div-mid: oklch(72% 0.005 270);
+  --color-chart-div-pos: oklch(58% 0.14 152);
+
+  /* Chart structural */
+  --color-chart-grid:        var(--color-border-subtle);
+  --color-chart-axis:        var(--color-text-tertiary);
+  --color-chart-label:       var(--color-text-tertiary);
+  --color-chart-dim:         color-mix(in oklch, var(--color-text-tertiary) 35%, transparent);
+  --color-chart-tooltip-bg:  oklch(18% 0.01 270);
+  --color-chart-tooltip-fg:  oklch(99% 0 0);
+  --color-chart-zoom-fill:   color-mix(in oklch, var(--color-primary-700) 8%, transparent);
+  --color-chart-zoom-stroke: color-mix(in oklch, var(--color-primary-700) 60%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Dark mode — Linear-influenced
+   ─ Deeper near-black, very slight cool tint (hue 260, very low chroma)
+   ─ Borders are hairlines, almost invisible. Depth via surface, not shadow.
+   ─ Text hierarchy via lightness — secondary muted, not bright.
+   ─ Accent slightly brightened. Semantics stay calm.
+   ─ Shadows rarely visible; bg-2 elevation is the affordance.
+   ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-brand-mono:        oklch(86% 0.005 260);
+  --color-brand-mono-strong: oklch(96% 0.003 260);
+  --color-brand-mono-soft:   oklch(70% 0.006 260);
+
+  /* Primary · light CTA on dark canvas — soft white, not blazing */
+  --color-primary-50:  oklch(20% 0.005 260);
+  --color-primary-100: oklch(26% 0.006 260);
+  --color-primary-200: oklch(34% 0.006 260);
+  --color-primary-300: oklch(50% 0.005 260);
+  --color-primary-400: oklch(66% 0.005 260);
+  --color-primary-500: oklch(78% 0.004 260);
+  --color-primary-600: oklch(92% 0.004 260);   /* hover */
+  --color-primary-700: oklch(88% 0.004 260);   /* CTA bg */
+  --color-primary-800: oklch(82% 0.005 260);   /* active */
+  --color-primary-900: oklch(74% 0.005 260);
+
+  --color-secondary-50:  oklch(22% 0.008 250);
+  --color-secondary-100: oklch(26% 0.010 250);
+  --color-secondary-500: oklch(60% 0.012 250);
+  --color-secondary-700: oklch(76% 0.012 250);
+  --color-secondary-900: oklch(92% 0.005 250);
+
+  /* Accent · slightly brighter indigo to read on dark, still muted */
+  --color-accent-50:  oklch(22% 0.05 264);
+  --color-accent-100: oklch(28% 0.08 264);
+  --color-accent-200: oklch(36% 0.12 264);
+  --color-accent-500: oklch(70% 0.13 264);
+  --color-accent-600: oklch(74% 0.12 264);
+  --color-accent-700: oklch(82% 0.10 264);
+
+  /* Surfaces · Linear's elevation pattern.
+     canvas darker than card; sidebar / sunken deepest. */
+  --color-bg-1: oklch(14% 0.003 260);   /* app canvas */
+  --color-bg-2: oklch(17% 0.004 260);   /* card / surface (one step up) */
+  --color-bg-3: oklch(11% 0.003 260);   /* sidebar / sunken (deepest) */
+  --color-bg-hover:   oklch(22% 0.005 260);
+  --color-bg-active:  oklch(26% 0.006 260);
+  --color-bg-overlay: oklch(0% 0 0 / 0.65);
+
+  /* Text · 5-step ramp with stronger contrast curve */
+  --color-text-primary:    oklch(94% 0.003 260);
+  --color-text-secondary:  oklch(66% 0.005 260);
+  --color-text-tertiary:   oklch(50% 0.005 260);
+  --color-text-disabled:   oklch(38% 0.005 260);
+  --color-text-inverse:    oklch(14% 0.003 260);
+  --color-text-on-primary: oklch(14% 0.003 260);  /* dark text on light CTA */
+
+  /* Borders · barely visible. Linear depends on them, not shadows. */
+  --color-border-subtle:  oklch(20% 0.004 260);
+  --color-border-default: oklch(24% 0.005 260);
+  --color-border-strong:  oklch(32% 0.006 260);
+  --color-border-focus:   oklch(70% 0.13 264);
+
+  /* Semantic · muted, balanced for dark */
+  --color-success-50:  oklch(24% 0.05 152);
+  --color-success-500: oklch(68% 0.13 152);
+  --color-success-700: oklch(78% 0.11 152);
+
+  --color-warning-50:  oklch(26% 0.06 70);
+  --color-warning-500: oklch(76% 0.13 70);
+  --color-warning-700: oklch(84% 0.11 70);
+
+  --color-error-50:    oklch(24% 0.07 25);
+  --color-error-500:   oklch(68% 0.16 25);
+  --color-error-700:   oklch(78% 0.14 25);
+
+  --color-info-50:     oklch(24% 0.05 235);
+  --color-info-500:    oklch(70% 0.12 235);
+  --color-info-700:    oklch(80% 0.10 235);
+
+  /* Shadows · minimal. Borders + bg-2 elevation do the lifting. */
+  --shadow-1: 0 0 0 1px oklch(0% 0 0 / 0.5);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.6);
+  --shadow-3: 0 4px 10px oklch(0% 0 0 / 0.6);
+  --shadow-4: 0 8px 18px oklch(0% 0 0 / 0.7);
+  --shadow-5: 0 24px 48px oklch(0% 0 0 / 0.75);
+
+  /* CTA · subtle inset highlight on the light button */
+  --shadow-cta: inset 0 1px 0 oklch(100% 0 0 / 0.12),
+                0 1px 2px oklch(0% 0 0 / 0.6);
+  --shadow-focus: 0 0 0 3px oklch(70% 0.13 264 / 0.40);
+
+  /* Chart palette · dark — same hues, lifted lightness for dark canvas */
+  --color-chart-1: oklch(66% 0.20 272);
+  --color-chart-2: oklch(70% 0.13 152);
+  --color-chart-3: oklch(70% 0.13 230);
+  --color-chart-4: oklch(78% 0.14  70);
+  --color-chart-5: oklch(70% 0.16 320);
+  --color-chart-6: oklch(68% 0.17  25);
+  --color-chart-7: oklch(64% 0.08 200);
+  --color-chart-8: oklch(70% 0.11 290);
+
+  --color-chart-seq-100: oklch(26% 0.05 262);
+  --color-chart-seq-200: oklch(34% 0.08 262);
+  --color-chart-seq-300: oklch(44% 0.11 262);
+  --color-chart-seq-400: oklch(56% 0.14 262);
+  --color-chart-seq-500: oklch(66% 0.16 262);
+  --color-chart-seq-600: oklch(76% 0.13 262);
+  --color-chart-seq-700: oklch(86% 0.09 262);
+
+  --color-chart-div-neg: oklch(68% 0.16 25);
+  --color-chart-div-mid: oklch(50% 0.005 270);
+  --color-chart-div-pos: oklch(70% 0.13 152);
+
+  --color-chart-tooltip-bg: oklch(26% 0.006 260);
+  --color-chart-tooltip-fg: oklch(94% 0.003 260);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TOMS · colors_and_type.css
+   Single-import surface for color + type. Pulls primitives from
+   tokens/tokens.css and exposes a flat semantic API:
+     fg1 / fg2 / fg3 / bg1 / bg2 / bg3 / accent / success / …
+     h1 / h2 / h3 / body / mono / caption / overline / code
+   Apps that don't need the deep token system can just include this.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ─── Type families ─────────────────────────────────────── */
+  --font-sans:    "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* TOMS has no display/serif face — keep sans for display, mono for data. */
+  --font-display: var(--font-sans);
+
+  /* ─── Foreground (alias) ────────────────────────────────── */
+  --fg1: var(--color-text-primary);     /* primary text, headings */
+  --fg2: var(--color-text-secondary);   /* body, sub-titles */
+  --fg3: var(--color-text-tertiary);    /* hints, metadata */
+  --fg4: oklch(70% 0.005 270);          /* chrome / quaternary (dividers, kbd) */
+  --fg-on-accent: var(--color-text-on-primary);
+
+  /* ─── Background (alias) ────────────────────────────────── */
+  --bg1: var(--color-bg-1);             /* app canvas */
+  --bg2: var(--color-bg-2);             /* card / surface */
+  --bg3: var(--color-bg-3);             /* sunken / sidebar */
+  --bg-hover:  var(--color-bg-hover);
+  --bg-active: var(--color-bg-active);
+
+  /* ─── Border (alias) ────────────────────────────────────── */
+  --border-1: var(--color-border-subtle);
+  --border-2: var(--color-border-default);
+  --border-3: var(--color-border-strong);
+
+  /* ─── Accent — midnight indigo CTA (mono-graphite) ──────── */
+  --accent:        var(--color-primary-700);
+  --accent-hover:  var(--color-primary-600);
+  --accent-active: var(--color-primary-800);
+  --accent-soft:   var(--color-primary-50);
+  --accent-on:     var(--color-text-on-primary);
+
+  /* ─── Accent aliases — single muted indigo, no vivid trio ─ */
+  --accent-vivid:      var(--color-accent-600);
+  --accent-vivid-soft: var(--color-accent-100);
+
+  /* ─── Semantic ──────────────────────────────────────────── */
+  --success:    var(--color-success-500); --success-bg: var(--color-success-50);
+  --warning:    var(--color-warning-500); --warning-bg: var(--color-warning-50);
+  --error:      var(--color-error-500);   --error-bg:   var(--color-error-50);
+  --info:       var(--color-info-500);    --info-bg:    var(--color-info-50);
+}
+
+/* ─── Semantic type classes ───────────────────────────────── */
+/* Use as class names on real tags, eg. <h1 class="h1">… */
+
+.h1 {
+  font-family: var(--font-display);
+  font-size:    var(--font-size-3xl);   /* 28px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--fg1);
+}
+.h2 {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-2xl);   /* 22px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--fg1);
+}
+.h3 {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-xl);    /* 18px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-snug);
+  color: var(--fg1);
+}
+.h4 {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-lg);    /* 16px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-snug);
+  color: var(--fg1);
+}
+/* Hero numbers / KPIs — always mono */
+.hero-num {
+  font-family: var(--font-mono);
+  font-size:    var(--font-size-4xl);   /* 36px */
+  font-weight:  var(--font-weight-medium);
+  line-height:  1.05;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--fg1);
+}
+.body, p {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-md);    /* 14px */
+  font-weight:  var(--font-weight-regular);
+  line-height:  var(--line-height-normal);
+  color: var(--fg1);
+}
+.body-sm {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-sm);    /* 13px */
+  line-height:  var(--line-height-normal);
+  color: var(--fg2);
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-xs);    /* 12px */
+  line-height:  var(--line-height-normal);
+  color: var(--fg3);
+}
+.overline {
+  font-family: var(--font-sans);
+  font-size:    11px;
+  font-weight:  var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+.mono, code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size:    var(--font-size-sm);
+  font-feature-settings: "zero", "ss01";
+  letter-spacing: 0;
+}
+code {
+  background: var(--bg3);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-1);
+  color: var(--fg1);
+}
+kbd {
+  background: var(--bg2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  font-size: 11px;
+  color: var(--fg3);
+  box-shadow: var(--shadow-1);
+}
+
+/* Numerals — always tabular for tables / KPIs */
+.num, table, .tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+</style>
+  <style>
+    /* ── page chrome ─────────────────────────────────────────── */
+    body {
+      margin: 0;
+      background: var(--bg1);
+      color: var(--fg1);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .doc {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+    .doc__head {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border-1);
+      margin-bottom: 28px;
+    }
+    .doc__eyebrow {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg3);
+      font-weight: 500;
+    }
+    .doc__title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .doc__sub {
+      color: var(--fg2);
+      font-size: 14px;
+      max-width: 720px;
+    }
+
+    .section {
+      margin-top: 44px;
+    }
+    .section + .section { margin-top: 56px; }
+    .section__title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section__title .step {
+      display: inline-grid;
+      place-items: center;
+      width: 22px; height: 22px; border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-on);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .section__sub {
+      font-size: 13px;
+      color: var(--fg2);
+      margin: 0 0 18px 32px;
+      max-width: 760px;
+    }
+
+    /* ── annotation rail ─────────────────────────────────────── */
+    .canvas {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 24px;
+      align-items: start;
+    }
+    .annot {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .annot__item {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .annot__num {
+      display: inline-block;
+      background: var(--accent-on);
+      color: var(--bg2);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .annot__title {
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .annot__body {
+      font-size: 12px;
+      color: var(--fg2);
+      line-height: 1.5;
+    }
+    .annot__body code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg3);
+      padding: 0 4px;
+      border-radius: 3px;
+      color: var(--fg1);
+    }
+
+    /* ── shared cards ────────────────────────────────────────── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 12px;
+      box-shadow: var(--shadow-2);
+      overflow: hidden;
+    }
+    .card__head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-1);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card__title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+    }
+    .card__caption {
+      font-size: 12px;
+      color: var(--fg3);
+      margin-top: 3px;
+    }
+
+    /* ── KPI strip ───────────────────────────────────────────── */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .kpi {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .kpi__label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .kpi__val {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--fg1);
+    }
+    .kpi__val--ok { color: var(--success); }
+    .kpi__val--warn { color: var(--warning); }
+
+    /* ── table ───────────────────────────────────────────────── */
+    table.tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.tbl th {
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border-1);
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+    }
+    table.tbl td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border-1);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    table.tbl tbody tr:last-child td { border-bottom: 0; }
+    table.tbl tbody tr.row {
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--easing-standard);
+    }
+    table.tbl tbody tr.row:hover { background: var(--bg-hover); }
+    table.tbl tbody tr.row.open { background: var(--bg-hover); }
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── app cell ───────────────────────────────────────────── */
+    .appcell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .appicon {
+      width: 32px; height: 32px;
+      flex: none;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .appicon--pos       { background: oklch(82% 0.07 250); color: oklch(28% 0.05 250); }
+    .appicon--receipt   { background: oklch(82% 0.07 145); color: oklch(28% 0.05 145); }
+    .appicon--loyalty   { background: oklch(82% 0.07 35);  color: oklch(28% 0.05 35); }
+    .appicon--insights  { background: oklch(82% 0.07 290); color: oklch(28% 0.05 290); }
+
+    .app__name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg1);
+    }
+    .app__pkg {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── pills / badges ─────────────────────────────────────── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    .pill--upload   { background: var(--info-bg);    color: var(--info); }
+    .pill--subscr   { background: var(--bg3);        color: var(--fg2); }
+    .pill--ok       { background: var(--success-bg); color: var(--success); }
+    .pill--warn     { background: var(--warning-bg); color: var(--warning); }
+    .pill--danger   { background: var(--danger-bg);  color: var(--danger); }
+    .pill--info     { background: var(--info-bg);    color: var(--info); }
+    .pill--neutral  { background: var(--bg3);        color: var(--fg2); }
+    .pill .dot {
+      width: 5px; height: 5px; border-radius: 999px; background: currentColor;
+    }
+    .pill .ico {
+      display: inline-block; width: 10px; height: 10px; flex: none;
+    }
+
+    /* lag chip — version drift hint */
+    .lag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: 6px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    /* coverage cell */
+    .cov {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 140px;
+    }
+    .cov__num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .cov__bar {
+      flex: 1;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--bg3);
+      overflow: hidden;
+      min-width: 50px;
+    }
+    .cov__fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+    .cov__fill--ok   { background: var(--success); }
+    .cov__fill--info { background: var(--info); }
+    .cov__fill--warn { background: var(--warning); }
+
+    /* chevron */
+    .chev {
+      display: inline-block;
+      width: 12px; height: 12px;
+      transition: transform var(--duration-fast) var(--easing-standard);
+      color: var(--fg3);
+    }
+    .chev--open { transform: rotate(90deg); color: var(--fg1); }
+
+    /* ── EXPANDED ROW BODY ──────────────────────────────────── */
+    .expand {
+      background: var(--bg1);
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-1);
+    }
+    .expand__grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .expand__card {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .banner {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .banner--warn {
+      border-color: oklch(80% 0.10 80);
+    }
+    .banner__row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      flex-wrap: wrap;
+    }
+    .banner--warn .banner__row { background: var(--warning-bg); }
+    .banner--ok   .banner__row { background: var(--success-bg); }
+    .banner__num {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .banner--warn .banner__num { color: var(--warning); }
+    .banner--ok   .banner__num { color: var(--success); }
+    .banner__chips {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+    }
+    .banner__strategy {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-1);
+    }
+    .banner__strategy:last-child { border-bottom: 0; }
+    .overline {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    /* sub-table inside expand */
+    table.subtbl {
+      width: 100%;
+      border-collapse: collapse;
+      background: transparent;
+    }
+    table.subtbl th {
+      padding: 8px 12px;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+      text-align: left;
+      border-bottom: 1px solid var(--border-1);
+    }
+    table.subtbl td {
+      padding: 10px 12px;
+      font-size: 12.5px;
+      border-bottom: 1px solid var(--border-1);
+      vertical-align: middle;
+    }
+    table.subtbl tbody tr:last-child td { border-bottom: 0; }
+    .sn-link {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-on);
+      text-decoration: none;
+      border-bottom: 1px dashed currentColor;
+    }
+    .sn-link:hover { color: var(--accent-700); }
+
+    .ontarget-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+    }
+    .ontarget-toggle .ico-check {
+      color: var(--success);
+    }
+
+    /* ── modal preview ──────────────────────────────────────── */
+    .modal-preview {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      box-shadow: var(--shadow-4);
+      border-radius: 12px;
+      max-width: 540px;
+      margin: 24px auto;
+    }
+    .modal-preview__head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-preview__title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .modal-preview__body {
+      padding: 16px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 12px;
+      font-size: 12.5px;
+      align-items: baseline;
+    }
+    .kv__k {
+      color: var(--fg3);
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+
+    /* ── outline diff legend ────────────────────────────────── */
+    .diff {
+      margin: 28px 0;
+      padding: 16px 18px;
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      background: var(--bg2);
+    }
+    .diff__title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .diff ul {
+      margin: 0;
+      padding: 0 0 0 20px;
+      font-size: 12.5px;
+      color: var(--fg2);
+      line-height: 1.6;
+    }
+    .diff li { margin-bottom: 4px; }
+    .diff__keep { color: var(--success); font-weight: 600; }
+    .diff__drop { color: var(--danger); font-weight: 600; text-decoration: line-through; }
+    .diff__new  { color: var(--accent-on); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <header class="doc__head">
+      <span class="doc__eyebrow">Design proposal · v1 · review before build</span>
+      <h1 class="doc__title">Customer Detail → Apps tab (MERCHANT contracts)</h1>
+      <p class="doc__sub">
+        Hybrid of the original <code>MerchantAppsTabRO</code> (row-expand + pending banner + per-terminal table) and the new App Pool model (PARTNER_APPLICATION + MERCHANT_APPLICATION + DEVICE_APP_STRATEGY). Below uses <strong>Bluefin Market (c-007)</strong> as the demo — 3 provisioned apps, 14 terminals, each app on a different rollout shape (bulk-aligned · bulk-rolling · per-terminal).
+      </p>
+    </header>
+
+    <!-- ─── DIFF SUMMARY ──────────────────────────────────── -->
+    <div class="diff">
+      <div class="diff__title">What's different from the version I shipped (and removed)</div>
+      <ul>
+        <li><span class="diff__keep">KEEP</span> — single table, row click expands, "N of M pending" banner, on-target collapse, per-terminal table inside (the original UX).</li>
+        <li><span class="diff__new">ADD</span> — Publisher (ISV) + Source (Upload / Subscription) columns sourced from PARTNER_APPLICATION + APPLICATIONS.</li>
+        <li><span class="diff__new">ADD</span> — Approved-version "↑ upstream X.Y.Z" lag indicator when the ISO has approved an older PAV than the upstream latest (POS Pro 4.3.1 vs 4.3.2 demo case).</li>
+        <li><span class="diff__new">ADD</span> — Strategy column shows a single "Bulk · ⤴ Reboot" chip for uniform rollouts, "Mixed (3 variants)" for per-terminal — clicking opens the strategy modal.</li>
+        <li><span class="diff__drop">DROP</span> — separate Coverage column from my removed version. Coverage is now compact (X/Y on target + tiny bar) so it can live in the Terminals column, freeing a slot for Source.</li>
+        <li><span class="diff__drop">DROP</span> — separate KPI strip from my removed version. Replaced with a single 1-line summary above the table — the apps table is already a scannable summary; an extra strip was redundant.</li>
+      </ul>
+    </div>
+
+    <!-- ─── SECTION 1 · Collapsed table ──────────────────── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">1</span>Collapsed table</h2>
+      <p class="section__sub">Top-level view. Three apps; coverage + strategy uniformity readable at a glance.</p>
+      <div class="canvas">
+        <div>
+          <!-- summary line replaces KPI strip -->
+          <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:14px; font-size:13px; color:var(--fg2)">
+            <span><strong style="color:var(--fg1); font-family:var(--font-mono); font-size:14px">3</strong> apps provisioned</span>
+            <span>·</span>
+            <span><strong style="color:var(--fg1); font-family:var(--font-mono); font-size:14px">14</strong> terminals reached</span>
+            <span>·</span>
+            <span><strong style="color:var(--success); font-family:var(--font-mono); font-size:14px">11/14</strong> on target across all apps</span>
+            <span style="margin-left:auto; font-size:11.5px; color:var(--fg3)">Read-only · maintained by Northwind Commerce (ISO)</span>
+          </div>
+
+          <div class="card">
+            <table class="tbl">
+              <colgroup>
+                <col style="width:30px"/>
+                <col style="width:24%"/>
+                <col style="width:14%"/>
+                <col style="width:90px"/>
+                <col style="width:13%"/>
+                <col style="width:16%"/>
+                <col style="width:14%"/>
+                <col style="width:110px"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Application</th>
+                  <th>Publisher (ISV)</th>
+                  <th>Source</th>
+                  <th>Approved version</th>
+                  <th>Terminals</th>
+                  <th>Strategy</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Row 1 · POS Pro · bulk-aligned · all on target -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="appcell">
+                      <div class="appicon appicon--pos">NP</div>
+                      <div style="min-width:0">
+                        <div class="app__name">Northwind POS Pro</div>
+                        <div class="app__pkg">com.northwind.pos.pro</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Northwind Commerce</span></td>
+                  <td><span class="pill pill--upload">UPLOAD</span></td>
+                  <td>
+                    <span class="mono" style="font-weight:500">4.3.2</span>
+                  </td>
+                  <td>
+                    <div class="cov">
+                      <span class="cov__num" style="color:var(--success)">14 / 14</span>
+                      <div class="cov__bar"><div class="cov__fill cov__fill--ok" style="width:100%"></div></div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pill pill--info" title="Click to view rollout rules">
+                      <span class="dot"></span>Bulk · Reboot
+                    </span>
+                  </td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Active</span></td>
+                </tr>
+
+                <!-- Row 2 · Smart Receipt · bulk-rolling · 11/14 -->
+                <tr class="row open">
+                  <td><span class="chev chev--open">▸</span></td>
+                  <td>
+                    <div class="appcell">
+                      <div class="appicon appicon--receipt">SR</div>
+                      <div style="min-width:0">
+                        <div class="app__name">Smart Receipt</div>
+                        <div class="app__pkg">com.northwind.smartreceipt</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Northwind Commerce</span></td>
+                  <td><span class="pill pill--upload">UPLOAD</span></td>
+                  <td>
+                    <span class="mono" style="font-weight:500">1.1.8</span>
+                  </td>
+                  <td>
+                    <div class="cov">
+                      <span class="cov__num" style="color:var(--warning)">11 / 14</span>
+                      <div class="cov__bar"><div class="cov__fill cov__fill--warn" style="width:78%"></div></div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pill pill--info">
+                      <span class="dot"></span>Bulk · Reboot
+                    </span>
+                  </td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Active</span></td>
+                </tr>
+
+                <!-- ─── EXPANDED BODY for Smart Receipt ─── -->
+                <tr>
+                  <td colspan="8" style="padding:0">
+                    <div class="expand">
+
+                      <!-- pending banner -->
+                      <div class="banner banner--warn">
+                        <div class="banner__row">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor"/><path d="M10.3 3.6 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/></svg>
+                          <span><span class="banner__num">3</span> <span style="font-weight:500; font-size:12.5px">of 14 terminals pending upgrade</span></span>
+                          <span style="font-size:11.5px; color:var(--fg3)">· target <span class="mono" style="font-weight:500">1.1.8</span></span>
+                          <div class="banner__chips">
+                            <span class="pill pill--neutral">1 awaiting</span>
+                            <span class="pill pill--info">1 in flight</span>
+                            <span class="pill pill--danger">1 failed</span>
+                          </div>
+                        </div>
+                        <div class="banner__strategy">
+                          <div class="overline">How they'll upgrade</div>
+                          <div style="font-size:12.5px">
+                            <span class="mono" style="font-weight:500">1.1.8</span>
+                            <span style="color:var(--fg3)"> · </span>On next reboot
+                            <span style="color:var(--fg3)"> · </span>Wi-Fi / Ethernet only
+                            <span style="color:var(--fg3); margin-left:8px; font-size:11.5px">Bulk-applied · last edit 2026-05-08 by Henry Tremblay</span>
+                          </div>
+                        </div>
+
+                        <!-- pending terminals -->
+                        <table class="subtbl">
+                          <thead>
+                            <tr>
+                              <th style="width:24%">Serial (SN)</th>
+                              <th style="width:18%">VarSheet (TID)</th>
+                              <th style="width:14%">Model</th>
+                              <th style="width:18%">Store</th>
+                              <th style="width:14%">State</th>
+                              <th>Last seen</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><a class="sn-link" href="#">NL750-K9F2H7B3</a></td>
+                              <td class="mono" style="color:var(--fg2)">TID-90041</td>
+                              <td>N750P</td>
+                              <td>Bluefin · Downtown</td>
+                              <td><span class="pill pill--neutral"><span class="dot"></span>Awaiting</span></td>
+                              <td style="color:var(--fg3); font-size:11.5px">12 min ago</td>
+                            </tr>
+                            <tr>
+                              <td><a class="sn-link" href="#">NL750-K9F2J24A</a></td>
+                              <td class="mono" style="color:var(--fg2)">TID-90042</td>
+                              <td>N750P</td>
+                              <td>Bluefin · Downtown</td>
+                              <td><span class="pill pill--info"><span class="dot"></span>Downloading</span></td>
+                              <td style="color:var(--fg3); font-size:11.5px">just now</td>
+                            </tr>
+                            <tr>
+                              <td><a class="sn-link" href="#">NL750-K7B22DEC</a></td>
+                              <td class="mono" style="color:var(--fg2)">TID-90109</td>
+                              <td>N750P</td>
+                              <td>Bluefin · Pier 14</td>
+                              <td><span class="pill pill--danger"><span class="dot"></span>Failed</span></td>
+                              <td style="color:var(--fg3); font-size:11.5px">2 h ago</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- on-target collapsed pile -->
+                      <button class="ontarget-toggle" type="button">
+                        <span class="chev" style="color:var(--fg3)">▸</span>
+                        <svg class="ico-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 7"/></svg>
+                        <span style="font-weight:500; font-size:12.5px"><span class="mono">11</span> terminals on target</span>
+                        <span style="font-size:11.5px; color:var(--fg3); margin-left:4px">Running <span class="mono">1.1.8</span></span>
+                      </button>
+
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 3 · Loyalty+ · per-terminal MIXED -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="appcell">
+                      <div class="appicon appicon--loyalty">L+</div>
+                      <div style="min-width:0">
+                        <div class="app__name">Loyalty+</div>
+                        <div class="app__pkg">com.helios.loyaltyplus</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Helios Software</span></td>
+                  <td><span class="pill pill--subscr">SUBSCRIPTION</span></td>
+                  <td>
+                    <span class="mono" style="font-weight:500">1.3.4</span>
+                  </td>
+                  <td>
+                    <div class="cov">
+                      <span class="cov__num" style="color:var(--info)">8 / 14</span>
+                      <div class="cov__bar"><div class="cov__fill cov__fill--info" style="width:57%"></div></div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pill pill--warn">
+                      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor"/><path d="M10.3 3.6 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/></svg>
+                      Mixed · 3 variants
+                    </span>
+                  </td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Active</span></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── annotation rail ── -->
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">A</div>
+            <div class="annot__title">Read-only label is one line, not a banner</div>
+            <div class="annot__body">Admin's only job here is to look. The "maintained by &lt;ISO&gt;" hint lives in the summary row in <code>fg3</code> — no banner needed.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">B</div>
+            <div class="annot__title">Source pill distinguishes UPLOAD vs SUBSCRIPTION</div>
+            <div class="annot__body">From <code>PARTNER_APPLICATION.source</code>. Upload = ISO self-published; Subscription = ISO subscribed to another ISV's app. Affects nothing functional in this read-only view but matters for operator mental model (escalation paths differ).</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">C</div>
+            <div class="annot__title">Coverage merged into Terminals column</div>
+            <div class="annot__body">Numeric (<code>X / Y</code>) + tiny bar in one cell. Saves a column. Color = success / info / warning by % on target.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">D</div>
+            <div class="annot__title">Strategy chip is the entry to detail modal</div>
+            <div class="annot__body"><code>Bulk · Reboot</code> = uniform across all terminals. <code>Mixed · N variants</code> = at least one terminal differs. Click → strategy detail modal (see §3).</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">E</div>
+            <div class="annot__title">Status derives from upstream + ma.status</div>
+            <div class="annot__body">If the upstream <code>APPLICATIONS.status</code> flips to <code>UNPUBLISHED</code> / <code>ARCHIVE</code>, this column shows "Unpublished upstream" (amber). Otherwise <code>ma.status</code>.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 2 · Per-terminal expanded (mixed) ─────── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">2</span>Expanded · per-terminal mixed</h2>
+      <p class="section__sub">Loyalty+ → expanded. Strategy is per-terminal, so the "How they'll upgrade" line splits into the matrix below — each terminal carries its own row of timing / network / target version.</p>
+      <div class="canvas">
+        <div>
+          <div class="card">
+            <div class="expand" style="border-top:0">
+              <div class="expand__grid">
+                <div class="expand__card" style="background:var(--warning-bg); border-color:oklch(80% 0.10 80)">
+                  <div class="overline" style="color:var(--warning)">UPDATE STRATEGY · MIXED</div>
+                  <div style="font-size:12.5px; color:var(--fg2); line-height:1.55">
+                    Each terminal carries its own timing / network / target version. <strong style="color:var(--fg1)">3 distinct strategy variants</strong> in this fleet. Inspect rows below for per-device detail; strategies are edited from the ISO's portal.
+                  </div>
+                </div>
+                <div class="expand__card">
+                  <div class="overline">VERSIONS</div>
+                  <div style="font-size:12.5px; color:var(--fg2); line-height:1.7">
+                    <div><span style="color:var(--fg3)">Approved:</span> <span class="mono" style="font-weight:500; color:var(--fg1)">1.3.4</span></div>
+                    <div><span style="color:var(--fg3)">Upstream latest:</span> <span class="mono" style="color:var(--fg1)">1.3.4</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:var(--bg2); border:1px solid var(--border-1); border-radius:8px; overflow:hidden">
+                <table class="subtbl">
+                  <thead>
+                    <tr>
+                      <th style="width:20%">Terminal</th>
+                      <th style="width:16%">Store</th>
+                      <th style="width:12%">State</th>
+                      <th style="width:11%">Installed</th>
+                      <th style="width:11%">Target</th>
+                      <th>Strategy</th>
+                      <th style="width:80px">Set by</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div style="display:flex; flex-direction:column; gap:1px">
+                          <a class="sn-link" href="#">NL910-A2B4F019</a>
+                          <span style="font-size:11px; color:var(--fg3)">N910</span>
+                        </div>
+                      </td>
+                      <td>Bluefin · Downtown</td>
+                      <td><span class="pill pill--ok"><span class="dot"></span>On target</span></td>
+                      <td class="mono" style="font-size:12px">1.3.4</td>
+                      <td class="mono" style="font-size:12px">1.3.4</td>
+                      <td style="font-size:11.5px; color:var(--fg2)">Immediate · Any network</td>
+                      <td><span class="pill pill--neutral">Per-terminal</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div style="display:flex; flex-direction:column; gap:1px">
+                          <a class="sn-link" href="#">NL910-A2B4F1C8</a>
+                          <span style="font-size:11px; color:var(--fg3)">N910</span>
+                        </div>
+                      </td>
+                      <td>Bluefin · Downtown</td>
+                      <td><span class="pill pill--neutral"><span class="dot"></span>Awaiting</span></td>
+                      <td class="mono" style="font-size:12px; color:var(--fg3)">—</td>
+                      <td class="mono" style="font-size:12px; font-weight:600; color:var(--warning)">1.3.4</td>
+                      <td style="font-size:11.5px; color:var(--fg2)">Reboot · Wi-Fi / Ethernet only</td>
+                      <td><span class="pill pill--neutral">Per-terminal</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div style="display:flex; flex-direction:column; gap:1px">
+                          <a class="sn-link" href="#">NL750-K9F2H7B3</a>
+                          <span style="font-size:11px; color:var(--fg3)">N750P</span>
+                        </div>
+                      </td>
+                      <td>Bluefin · Pier 14</td>
+                      <td><span class="pill pill--info"><span class="dot"></span>Downloading</span></td>
+                      <td class="mono" style="font-size:12px; color:var(--fg3)">—</td>
+                      <td class="mono" style="font-size:12px; font-weight:600; color:var(--warning)">1.3.4</td>
+                      <td style="font-size:11.5px; color:var(--fg2)">Reboot or 10m idle · Cellular OK · 200 MB</td>
+                      <td><span class="pill pill--neutral">Per-terminal</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div style="display:flex; flex-direction:column; gap:1px">
+                          <a class="sn-link" href="#">NL750-K7B22DEC</a>
+                          <span style="font-size:11px; color:var(--fg3)">N750P</span>
+                        </div>
+                      </td>
+                      <td>Bluefin · Pier 14</td>
+                      <td><span class="pill pill--danger"><span class="dot"></span>Failed</span></td>
+                      <td class="mono" style="font-size:12px; color:var(--fg3)">—</td>
+                      <td class="mono" style="font-size:12px; font-weight:600; color:var(--warning)">1.3.4</td>
+                      <td style="font-size:11.5px; color:var(--fg2)">Reboot · Wi-Fi / Ethernet only</td>
+                      <td><span class="pill pill--neutral">Per-terminal</span></td>
+                    </tr>
+                    <tr>
+                      <td colspan="7" style="text-align:center; color:var(--fg3); font-size:11.5px; padding:8px 12px">…10 more terminals collapsed for this mock</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">F</div>
+            <div class="annot__title">Two-card summary head</div>
+            <div class="annot__body">Strategy summary (left) explains uniformity; Versions card (right) shows approved vs upstream lag. Both surface info that was buried in the original "How they'll upgrade" line.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">G</div>
+            <div class="annot__title">Target column highlights drift</div>
+            <div class="annot__body">When <code>installed ≠ target</code>, Target renders in <code>warning</code> bold mono. On-target rows render Installed = Target in default fg.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">H</div>
+            <div class="annot__title">SN is the only clickable</div>
+            <div class="annot__body">Per the previous round, clicking SN opens that terminal's device-detail page with Back returning to <code>customerDetail/apps</code> (extend the <code>__openTerminalFromCustomer</code> contract with tab='apps').</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">I</div>
+            <div class="annot__title">No bulk-summary banner for mixed</div>
+            <div class="annot__body">Unlike Smart Receipt (§1) — that had a pending-rollup banner because the strategy was uniform. For mixed, the banner would be misleading, so we collapse to "3 distinct variants" + the per-row truth.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 3 · Strategy modal ───────────────────── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">3</span>Strategy detail modal</h2>
+      <p class="section__sub">Opens when admin clicks the Strategy chip in the collapsed table. Pure read-out — no edit controls (the entire tab is read-only).</p>
+      <div class="canvas">
+        <div>
+          <div class="modal-preview">
+            <div class="modal-preview__head">
+              <div>
+                <div class="modal-preview__title">Upgrade strategy — Smart Receipt</div>
+                <div style="font-size:11.5px; color:var(--fg3); margin-top:2px">com.northwind.smartreceipt · provisioned 2026-02-20</div>
+              </div>
+              <button style="background:transparent; border:0; cursor:pointer; color:var(--fg3); font-size:18px; padding:4px 8px">×</button>
+            </div>
+            <div class="modal-preview__body">
+              <div class="kv">
+                <div class="kv__k">Source</div>
+                <div><span class="pill pill--upload">UPLOAD</span> <span style="color:var(--fg3); font-size:11.5px; margin-left:4px">Self-published by Northwind Commerce</span></div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Approved version</div>
+                <div>
+                  <span class="mono" style="font-weight:500">1.1.8</span>
+                  <span style="color:var(--fg3); font-size:11.5px; margin-left:4px">· upstream latest also 1.1.8</span>
+                </div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Rollout</div>
+                <div>
+                  <span class="pill pill--info"><span class="dot"></span>Bulk · same across 14 terminals</span>
+                </div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Timing</div>
+                <div>On next reboot</div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Network</div>
+                <div>Wi-Fi / Ethernet only <span style="color:var(--fg3); font-size:11.5px">· cellular blocked</span></div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Last edit</div>
+                <div>2026-05-08 14:00 UTC <span style="color:var(--fg3); font-size:11.5px">by Henry Tremblay (ISO operator)</span></div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Coverage</div>
+                <div>
+                  <div class="cov" style="min-width:200px">
+                    <span class="cov__num" style="color:var(--warning)">11 / 14</span>
+                    <div class="cov__bar"><div class="cov__fill cov__fill--warn" style="width:78%"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">J</div>
+            <div class="annot__title">Modal mirrors expanded card — for non-mixed only</div>
+            <div class="annot__body">If admin clicks the chip on a <code>Mixed</code> row, the chip is non-interactive (or the modal lists the N variants succinctly). Up to you which feels better — I'd vote non-interactive + tooltip "Expand the row to see per-terminal strategies".</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">K</div>
+            <div class="annot__title">"Set by" is recorded but anonymized</div>
+            <div class="annot__body">We show the ISO operator's name from <code>DEVICE_APP_STRATEGY.setByUserId</code>. If sensitive, fall back to "an ISO operator at &lt;ISO name&gt;".</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── Questions for you ─────────────────────────────── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">?</span>Questions before I build</h2>
+      <ol style="font-size:13.5px; color:var(--fg2); line-height:1.7; padding-left:28px">
+        <li>
+          <strong style="color:var(--fg1)">Source pill placement</strong> — is it OK as its own column, or do you want it folded into the Application cell as a subtitle chip (less visual weight)?
+        </li>
+        <li>
+          <strong style="color:var(--fg1)">"Mixed (3 variants)" affordance</strong> — currently the chip itself is the trigger, but for mixed rows that's a dead-end (the modal would just say "expand the row"). Options: (a) chip is non-interactive when mixed; (b) chip says "Expand to view" and scrolls the row open. I'd vote (a).
+        </li>
+        <li>
+          <strong style="color:var(--fg1)">Version-lag chip</strong> — the demo case is c-014 POS Pro: ISO approved 4.3.1, upstream is 4.3.2, ISO explicitly <code>SKIP</code>ped 4.3.2. Show "↑ 4.3.2 upstream · skipped by ISO" in amber, or just "↑ 4.3.2 upstream"? Skipped feels like useful context for admins.
+        </li>
+        <li>
+          <strong style="color:var(--fg1)">Status column</strong> — original tab didn't have one. Worth keeping for the upstream-unpublished case, or drop?
+        </li>
+        <li>
+          <strong style="color:var(--fg1)">KPI strip</strong> — I removed it; the 1-line summary above the table now does the same job in 12% of the vertical space. OK?
+        </li>
+      </ol>
+    </div>
+
+  </div>
+</body>
+</html>

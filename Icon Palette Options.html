@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TOMS · Object Icon — Palette Options</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<link rel="stylesheet" href="assets/components.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-family-sans); color: var(--color-text-primary); background: var(--color-bg-1); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 48px 32px 96px; }
+  .eyebrow { font: 600 12px var(--font-family-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-accent-600, oklch(52% 0.24 272)); margin: 0 0 12px; }
+  h1 { font: 600 32px/1.1 var(--font-family-sans); letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 16px; color: var(--color-text-secondary); max-width: 64ch; margin: 0 0 8px; text-wrap: pretty; }
+
+  .opt { margin-top: 28px; background: var(--color-bg-2); border: 1px solid var(--color-border-subtle); border-radius: 16px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .opt__head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 18px 24px; border-bottom: 1px solid var(--color-border-subtle); }
+  .opt__num { font: 600 13px var(--font-family-mono); color: var(--color-text-tertiary); }
+  .opt__title { font: 600 18px var(--font-family-sans); letter-spacing: -0.01em; }
+  .opt__desc { font-size: 13px; color: var(--color-text-secondary); flex: 1 1 280px; min-width: 0; }
+  .tag { font: 500 11px var(--font-family-mono); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--color-border-subtle); }
+  .tag--on { color: var(--color-success-700, oklch(46% 0.13 152)); background: var(--color-success-50, oklch(96% 0.03 152)); border-color: transparent; }
+  .tag--off { color: var(--color-warning-700, oklch(56% 0.15 60)); background: var(--color-warning-50, oklch(96.5% 0.04 80)); border-color: transparent; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 18px; padding: 26px 24px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 78px; }
+  .cell__name { font: 500 11px var(--font-family-sans); color: var(--color-text-tertiary); text-align: center; }
+  .otile { width: 44px; height: 44px; border-radius: 8px; display: grid; place-items: center; flex: none; border: 1px solid var(--color-border-subtle); }
+  .otile > svg { display: block; }
+
+  /* in-context strip */
+  .ctx { border-top: 1px dashed var(--color-border-subtle); padding: 8px 24px 16px; }
+  .ctx__row { display: flex; align-items: center; gap: 13px; padding: 10px 4px; }
+  .ctx__row + .ctx__row { border-top: 1px solid var(--color-border-subtle); }
+  .ctx__name { font: 500 14px var(--font-family-sans); }
+  .ctx__meta { font-size: 12px; color: var(--color-text-tertiary); }
+  .pickhint { margin-top: 36px; font-size: 13px; color: var(--color-text-tertiary); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">TOMS · Object Icon</p>
+  <h1>Palette options — pick one</h1>
+  <p class="lede">Same refined duotone glyphs, four background-color directions. TOMS is a single-indigo + neutral system with no per-category palette, so options 3–4 are off-system to varying degrees. Compare and tell me which to lock in.</p>
+
+  <div id="opts"></div>
+
+  <p class="pickhint">Tell me “Option 1 / 2 / 3 / 4” and I’ll apply it to the component, the guide, and Catalog.</p>
+</div>
+
+<script>
+  var GLYPH = {
+    device:    '<g><rect x="5" y="2" width="14" height="20" rx="3.2" opacity=".32"/><rect x="7.3" y="4.4" width="9.4" height="8.6" rx="1.6"/><circle cx="12" cy="18.4" r="1.35"/></g>',
+    accessory: '<g><path d="M12 2.5 20.6 7 12 11.5 3.4 7 12 2.5Z"/><path d="M3.4 7 12 11.5v9.9L3.4 16.9V7Z" opacity=".34"/><path d="M20.6 7 12 11.5v9.9l8.6-4.5V7Z" opacity=".55"/></g>',
+    service:   '<g><path d="M16.9 2.2a5.2 5.2 0 0 0-5.06 6.35L3.6 16.85a2.4 2.4 0 0 0 3.4 3.4l8.28-8.27A5.2 5.2 0 0 0 21.8 7.1a.8.8 0 0 0-1.34-.36l-2.42 2.42a1.3 1.3 0 0 1-1.84 0l-.86-.86a1.3 1.3 0 0 1 0-1.84l2.42-2.42a.8.8 0 0 0-.36-1.34 5.3 5.3 0 0 0-1.5-.26Z"/><circle cx="5.4" cy="18.45" r="1.15" opacity=".42"/></g>',
+    app:       '<g><rect x="3.4" y="3.4" width="7.2" height="7.2" rx="2.3"/><rect x="13.4" y="3.4" width="7.2" height="7.2" rx="2.3" opacity=".4"/><rect x="3.4" y="13.4" width="7.2" height="7.2" rx="2.3" opacity=".4"/><rect x="13.4" y="13.4" width="7.2" height="7.2" rx="2.3"/></g>',
+    merchant:  '<g><path d="M3.6 3.4h16.8l1.2 4.1a2.7 2.7 0 0 1-5.2 1.02 2.7 2.7 0 0 1-5.2 0 2.7 2.7 0 0 1-5.2 0A2.7 2.7 0 0 1 2.4 7.5l1.2-4.1Z"/><path d="M5 11.3a3.8 3.8 0 0 0 3.5-1.05 3.8 3.8 0 0 0 7 0A3.8 3.8 0 0 0 19 11.3v8.4a1.7 1.7 0 0 1-1.7 1.7H6.7A1.7 1.7 0 0 1 5 19.7v-8.4Z" opacity=".34"/><rect x="9.7" y="14.2" width="4.6" height="7.2" rx="1"/></g>',
+    customer:  '<g><circle cx="12" cy="8" r="4.2"/><path d="M3.8 20.4c0-3.8 3.7-6.2 8.2-6.2s8.2 2.4 8.2 6.2a1.3 1.3 0 0 1-1.3 1.3H5.1a1.3 1.3 0 0 1-1.3-1.3Z" opacity=".4"/></g>',
+    firmware:  '<g><rect x="5" y="5" width="14" height="14" rx="3.2" opacity=".32"/><rect x="8.7" y="8.7" width="6.6" height="6.6" rx="1.9"/><g><rect x="9" y="1.6" width="1.7" height="3" rx=".85"/><rect x="13.3" y="1.6" width="1.7" height="3" rx=".85"/><rect x="9" y="19.4" width="1.7" height="3" rx=".85"/><rect x="13.3" y="19.4" width="1.7" height="3" rx=".85"/><rect x="1.6" y="9" width="3" height="1.7" rx=".85"/><rect x="1.6" y="13.3" width="3" height="1.7" rx=".85"/><rect x="19.4" y="9" width="3" height="1.7" rx=".85"/><rect x="19.4" y="13.3" width="3" height="1.7" rx=".85"/></g></g>',
+    card:      '<g><rect x="2.4" y="5" width="19.2" height="14" rx="3" opacity=".32"/><rect x="2.4" y="8.2" width="19.2" height="2.8"/><rect x="5" y="14" width="5" height="2.2" rx="1.1"/></g>'
+  };
+  var CATS = ['device','accessory','service','app','merchant','customer','firmware','card'];
+  var LABEL = { device:'Device', accessory:'Accessory', service:'Service', app:'App', merchant:'Merchant', customer:'Customer', firmware:'Firmware', card:'Card' };
+  var HUE = { device:272, accessory:195, service:65, app:300, merchant:150, customer:230, firmware:25, card:250 };
+  var SEM = { device:262, accessory:230, service:70, app:264, merchant:152, customer:230, firmware:25, card:262 };
+
+  // Each scheme → {bg, fg} for a category.
+  var SCHEMES = [
+    { title: 'Neutral tile + indigo glyph', sys: 'on',
+      desc: 'Every tile the neutral DS surface; only the glyph carries brand indigo. Most on-system — matches the avatar convention. Categories read by shape, not color.',
+      color: function(){ return { bg: 'var(--color-bg-3)', fg: 'oklch(44% 0.12 262)' }; } },
+    { title: 'Single indigo (brand)', sys: 'on',
+      desc: 'One light-indigo tile + indigo glyph for everything. A hint of brand color, fully on-palette, still one family.',
+      color: function(){ return { bg: 'oklch(96.5% 0.022 262)', fg: 'oklch(46% 0.13 262)' }; } },
+    { title: 'Per-category multi-color (current)', sys: 'off',
+      desc: 'Each category its own hue. Best at-a-glance differentiation, but these hues are not in the TOMS palette (I picked them).',
+      color: function(c){ return { bg: 'oklch(97.2% 0.02 ' + HUE[c] + ')', fg: 'oklch(58% 0.085 ' + HUE[c] + ')' }; } },
+    { title: 'DS semantic mapping', sys: 'off',
+      desc: 'Reuses the DS semantic hues (indigo / info-blue / warning-amber / success-green / error-red). On-palette, but borrowing status colors for objects can imply meaning that isn’t there.',
+      color: function(c){ return { bg: 'oklch(96% 0.03 ' + SEM[c] + ')', fg: 'oklch(50% 0.13 ' + SEM[c] + ')' }; } }
+  ];
+
+  function tile(cat, scheme, size) {
+    size = size || 44;
+    var col = scheme.color(cat);
+    var gs = Math.round(size * 0.52);
+    return '<span class="otile" style="width:' + size + 'px;height:' + size + 'px;background:' + col.bg + ';color:' + col.fg + '">' +
+      '<svg viewBox="0 0 24 24" width="' + gs + '" height="' + gs + '" fill="currentColor" aria-hidden="true">' + GLYPH[cat] + '</svg></span>';
+  }
+
+  var CTX = [
+    ['device','N950 Production','Smart Android terminal'],
+    ['accessory','Thermal receipt paper','80mm × 80m · BPA-free'],
+    ['service','On-site setup service','Engineer visit · training'],
+    ['app','Inventory Sync','Published app · v2.4.1']
+  ];
+
+  document.getElementById('opts').innerHTML = SCHEMES.map(function (s, i) {
+    var cells = CATS.map(function (c) {
+      return '<div class="cell">' + tile(c, s) + '<span class="cell__name">' + LABEL[c] + '</span></div>';
+    }).join('');
+    var ctx = CTX.map(function (r) {
+      return '<div class="ctx__row">' + tile(r[0], s, 40) +
+        '<div><div class="ctx__name">' + r[1] + '</div><div class="ctx__meta">' + r[2] + '</div></div></div>';
+    }).join('');
+    return '<section class="opt">' +
+      '<div class="opt__head"><span class="opt__num">Option ' + (i + 1) + '</span>' +
+        '<span class="opt__title">' + s.title + '</span>' +
+        '<span class="tag ' + (s.sys === 'on' ? 'tag--on">on-system' : 'tag--off">off-system') + '</span>' +
+        '<span class="opt__desc">' + s.desc + '</span></div>' +
+      '<div class="row">' + cells + '</div>' +
+      '<div class="ctx">' + ctx + '</div>' +
+    '</section>';
+  }).join('');
+</script>
+</body>
+</html>

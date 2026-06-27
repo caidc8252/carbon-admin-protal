@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Device header · New ticket placement</title>
+  <link rel="stylesheet" href="../assets/tokens.css" />
+  <link rel="stylesheet" href="../assets/components.css" />
+  <link rel="stylesheet" href="../assets/devices-aliases.css" />
+  <link rel="stylesheet" href="../app-publish/tds/colors_and_type.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; background: var(--color-bg-1); color: var(--color-text-primary);
+           font-family: "Geist", system-ui, sans-serif; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 32px 80px; }
+    .page-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .page-sub { font-size: 13.5px; color: var(--color-text-secondary); margin: 0 0 32px; max-width: 720px; line-height: 1.55; }
+
+    .opt { margin-bottom: 30px; }
+    .opt__tag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
+                letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-primary-700);
+                margin-bottom: 10px; }
+    .opt__tag .badge { font-size: 9.5px; padding: 1px 6px; border-radius: 4px; background: var(--color-primary-50);
+                       letter-spacing: 0.04em; }
+    .opt__note { font-size: 12px; color: var(--color-text-tertiary); margin: 8px 2px 0; line-height: 1.5; }
+
+    /* device header (mirrors the app's .det-header) */
+    .det-header { display: flex; align-items: flex-start; gap: 18px; padding: 24px 28px;
+                  background: var(--color-bg-2); border: 1px solid var(--color-border-default);
+                  border-radius: 12px; box-shadow: var(--shadow-1); }
+    .det-header__main { flex: 1; min-width: 0; }
+    .det-header__title { font-family: "Geist Mono", monospace; font-size: 22px; font-weight: 600;
+                         letter-spacing: -0.02em; margin: 0 0 6px; display: flex; align-items: center;
+                         gap: 10px; flex-wrap: wrap; }
+    .det-header__meta { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px;
+                        color: var(--color-text-secondary); line-height: 1.4; margin-top: 4px; }
+    .det-header__meta span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .tile { width: 56px; height: 56px; border-radius: 12px; flex: none; background: #11151c;
+            display: grid; place-items: center; }
+    .tile svg { color: #7f8794; }
+    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px;
+            font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .pill--success { color: var(--color-success-700); background: var(--color-success-50);
+                     border: 1px solid color-mix(in oklab, var(--color-success-500) 25%, transparent); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .model { font-family: "Geist Mono", monospace; font-size: 12px; color: var(--color-text-secondary); }
+    .sep { font-size: 11.5px; color: var(--color-text-tertiary); }
+    .kpis { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex: none; }
+    .kpis__row { display: flex; align-items: center; gap: 12px; color: var(--color-text-secondary); }
+    .kpis__upd { font-size: 11.5px; color: var(--color-text-tertiary); }
+    .kpis__upd .mono { font-family: "Geist Mono", monospace; }
+    .ico { color: var(--color-text-tertiary); }
+
+    /* candidate button styles */
+    .btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+           font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap;
+           border-radius: 8px; padding: 7px 13px 7px 11px; transition: all .12s ease; }
+    .btn svg { flex: none; }
+    .btn--secondary { background: var(--color-bg-2); color: var(--color-text-secondary);
+                      border: 1px solid var(--color-border-default); }
+    .btn--secondary:hover { color: var(--color-primary-700);
+                            border-color: color-mix(in oklab, var(--color-primary-500) 35%, transparent);
+                            background: color-mix(in oklab, var(--color-primary-500) 8%, transparent); }
+    .btn--primary { background: var(--color-primary-700); color: #fff; border: 1px solid transparent;
+                    box-shadow: var(--shadow-cta, 0 1px 2px rgba(0,0,0,.12)); }
+    .btn--ghost { background: transparent; color: var(--color-primary-700); border: 1px solid transparent; }
+    .btn--ghost:hover { background: color-mix(in oklab, var(--color-primary-500) 10%, transparent); }
+    .btn--pill { border-radius: 999px; }
+
+    .actions-row { display: flex; gap: 8px; margin-top: 14px; }
+    .styleboard { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; padding: 18px 20px;
+                  background: var(--color-bg-2); border: 1px solid var(--color-border-default);
+                  border-radius: 12px; }
+    .styleboard__cell { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .styleboard__lbl { font-size: 10.5px; color: var(--color-text-tertiary); letter-spacing: 0.04em; }
+    hr.div { border: 0; border-top: 1px solid var(--color-border-subtle); margin: 40px 0 30px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="page-title">Device header — “New ticket” placement</h1>
+    <p class="page-sub">Three placement options for the new-ticket action on the device-detail header, rendered with the real TOMS tokens. Pick one (and a button style + label) and I'll wire it into the live screen.</p>
+
+    <!-- CURRENT -->
+    <div class="opt">
+      <div class="opt__tag">Current <span class="badge">for reference</span></div>
+      <div class="det-header" id="cardCurrent"></div>
+      <p class="opt__note">Action is wedged into the title line as a pill — reads like a status chip, easy to miss.</p>
+    </div>
+
+    <hr class="div" />
+
+    <!-- OPTION A -->
+    <div class="opt">
+      <div class="opt__tag">Option A — top-right action <span class="badge">recommended</span></div>
+      <div class="det-header" id="cardA"></div>
+      <p class="opt__note">Pulled out of the title into a dedicated top-right slot, stacked above the telemetry. Title stays pure identity; the action has a clear home. Secondary outline button.</p>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="opt">
+      <div class="opt__tag">Option B — action row under the title</div>
+      <div class="det-header" id="cardB"></div>
+      <p class="opt__note">A left-aligned actions cluster beneath the meta. Best if more device actions are coming later (Reboot, Reassign, Export…).</p>
+    </div>
+
+    <hr class="div" />
+
+    <!-- STYLE BOARD -->
+    <div class="opt">
+      <div class="opt__tag">Button style candidates</div>
+      <div class="styleboard" id="styleboard"></div>
+      <p class="opt__note">My pick: <b>secondary outline</b> — present but not loud. Primary indigo overstates it on a read-only inspection page; warning-tint would falsely imply the device is already broken.</p>
+    </div>
+  </div>
+
+  <script>
+    const I = {
+      device: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+      building: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/><path d="M10 21v-4h4v4"/></svg>',
+      home: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+      plus: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+      wifi: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01"/></svg>',
+      cloud: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 6 18z"/></svg>',
+      battery: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2"/><rect x="5" y="9" width="10" height="6" rx="1" fill="currentColor" stroke="none"/></svg>',
+      clock: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    };
+    const tile = `<div class="tile">${I.device}</div>`;
+    const titleCore = `<span>N950-0014-9281</span>
+        <span class="pill pill--success"><span class="dot"></span>Active</span>`;
+    const model = `<span class="sep">·</span><span class="model">N950</span>`;
+    const meta = `<div class="det-header__meta">
+        <span>${I.building}<a href="#" style="color:var(--color-text-primary);text-decoration:none;font-weight:500">Northwind Commerce</a></span>
+        <span>${I.home}<span style="color:var(--color-text-secondary)"><a href="#" style="color:var(--color-text-primary);text-decoration:none;font-weight:500">Riverside Coffee Co.</a>
+          <span style="color:var(--color-text-tertiary)"> / </span>Riverside Coffee Co.
+          <span style="font-size:9.5px;padding:1px 5px;border-radius:4px;font-weight:700;letter-spacing:.04em;background:var(--color-bg-3);color:var(--color-text-tertiary)">HQ</span></span></span>
+      </div>`;
+    const kpis = `<div class="kpis">
+        <div class="kpis__row"><span class="ico" style="color:var(--color-success-500)">${I.cloud}</span><span class="ico">${I.wifi}</span><span class="ico" style="color:var(--color-success-700)">${I.battery}</span><span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:500">87%</span></div>
+        <div class="kpis__upd">${I.clock} Updated <span class="mono">2026-05-12 14:25</span> · 5 min ago</div>
+      </div>`;
+    const btnA = `<button class="btn btn--secondary">${I.plus}New Ticket</button>`;
+    const btnInlinePill = `<button class="btn btn--secondary btn--pill" style="padding:3px 11px 3px 9px;font-size:11.5px;font-weight:500">${I.plus}New ticket</button>`;
+
+    // CURRENT — inline in title
+    document.getElementById('cardCurrent').innerHTML =
+      tile +
+      `<div class="det-header__main">
+        <h1 class="det-header__title">${titleCore} ${btnInlinePill} ${model}</h1>
+        ${meta}
+      </div>` + kpis;
+
+    // OPTION A — title clean; action top-right above telemetry
+    document.getElementById('cardA').innerHTML =
+      tile +
+      `<div class="det-header__main">
+        <h1 class="det-header__title">${titleCore} ${model}</h1>
+        ${meta}
+      </div>
+      <div class="kpis">
+        ${btnA}
+        ${kpis.replace('<div class="kpis">','<div class="kpis" style="margin-top:2px">')}
+      </div>`;
+
+    // OPTION B — action row under title
+    document.getElementById('cardB').innerHTML =
+      tile +
+      `<div class="det-header__main">
+        <h1 class="det-header__title">${titleCore} ${model}</h1>
+        ${meta}
+        <div class="actions-row">${btnA}</div>
+      </div>` + kpis;
+
+    // STYLE BOARD
+    const styles = [
+      { lbl: 'Secondary (pick)', cls: 'btn--secondary', label: 'New Ticket' },
+      { lbl: 'Secondary · pill', cls: 'btn--secondary btn--pill', label: 'New Ticket' },
+      { lbl: 'Ghost', cls: 'btn--ghost', label: 'New Ticket' },
+      { lbl: 'Primary (loud)', cls: 'btn--primary', label: 'New Ticket' },
+      { lbl: 'Label: Report Issue', cls: 'btn--secondary', label: 'Report Issue' },
+    ];
+    document.getElementById('styleboard').innerHTML = styles.map(s =>
+      `<div class="styleboard__cell"><button class="btn ${s.cls}">${I.plus}${s.label}</button><span class="styleboard__lbl">${s.lbl}</span></div>`
+    ).join('');
+  </script>
+</body>
+</html>

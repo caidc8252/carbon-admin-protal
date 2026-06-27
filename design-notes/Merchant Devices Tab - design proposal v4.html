@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Merchant Devices Tab — design proposal v4</title>
+  <style>
+    :root {
+      --bg1: oklch(99% 0.003 90);
+      --bg2: oklch(100% 0 0);
+      --bg3: oklch(96% 0.004 90);
+      --bg-hover: oklch(96% 0.005 90);
+      --fg1: oklch(20% 0.01 260);
+      --fg2: oklch(38% 0.01 260);
+      --fg3: oklch(58% 0.01 260);
+      --border-1: oklch(91% 0.005 260);
+      --accent-on: oklch(38% 0.16 268);
+      --accent-soft: oklch(94% 0.04 268);
+      --success: oklch(40% 0.10 150);
+      --success-bg: oklch(96% 0.05 150);
+      --warning: oklch(44% 0.10 75);
+      --warning-bg: oklch(96% 0.06 75);
+      --danger: oklch(46% 0.18 27);
+      --danger-bg: oklch(96% 0.04 27);
+      --info: oklch(42% 0.12 240);
+      --info-bg: oklch(96% 0.04 240);
+      --font-sans: "Geist", "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+      --shadow-2: 0 1px 2px 0 oklch(20% 0.01 260 / 0.04), 0 1px 3px 0 oklch(20% 0.01 260 / 0.06);
+      --shadow-overlay: 0 20px 40px -8px oklch(20% 0.01 260 / 0.18), 0 8px 16px oklch(20% 0.01 260 / 0.10);
+      --duration-fast: 120ms;
+      --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    }
+    body { margin: 0; background: var(--bg1); color: var(--fg1); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; }
+    .doc { max-width: 1320px; margin: 0 auto; padding: 40px 32px 80px; }
+    .doc__head {
+      display: flex; flex-direction: column; gap: 8px;
+      padding-bottom: 28px; border-bottom: 1px solid var(--border-1);
+      margin-bottom: 28px;
+    }
+    .doc__eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg3); font-weight: 500; }
+    .doc__title { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+    .doc__sub { color: var(--fg2); font-size: 14px; max-width: 900px; }
+    .doc__sub code { font-family: var(--font-mono); font-size: 12.5px; background: var(--bg3); padding: 1px 5px; border-radius: 4px; }
+    .section { margin-top: 44px; }
+    .section + .section { margin-top: 56px; }
+    .section__title { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+    .section__title .step { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-on); font-size: 11px; font-weight: 600; font-family: var(--font-mono); }
+    .section__sub { font-size: 13px; color: var(--fg2); margin: 0 0 18px 32px; max-width: 880px; }
+    .canvas { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
+    .annot { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .annot__item { background: var(--bg2); border: 1px solid var(--border-1); border-radius: 8px; padding: 12px 14px; }
+    .annot__num { display: inline-block; background: var(--accent-on); color: var(--bg2); font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; padding: 1px 6px; border-radius: 4px; margin-bottom: 6px; }
+    .annot__title { font-size: 12.5px; font-weight: 600; margin-bottom: 4px; }
+    .annot__body { font-size: 12px; color: var(--fg2); line-height: 1.55; }
+    .annot__body code { font-family: var(--font-mono); font-size: 11px; background: var(--bg3); padding: 0 4px; border-radius: 3px; color: var(--fg1); }
+
+    .summary-box { margin-bottom: 28px; padding: 16px 18px; background: var(--bg2); border: 1px solid var(--border-1); border-radius: 10px; }
+    .summary-box__t { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+    .summary-box ul { margin: 0; padding: 0 0 0 20px; font-size: 12.5px; color: var(--fg2); line-height: 1.6; }
+    .summary-box li { margin-bottom: 4px; }
+    .keep { color: var(--success); font-weight: 600; }
+    .drop { color: var(--danger); font-weight: 600; text-decoration: line-through; }
+    .new { color: var(--accent-on); font-weight: 600; }
+
+    .card { background: var(--bg2); border: 1px solid var(--border-1); border-radius: 12px; box-shadow: var(--shadow-2); overflow: hidden; }
+
+    .tabs-preview { display: flex; border-bottom: 1px solid var(--border-1); padding: 0 20px; }
+    .tabs-preview__t { padding: 12px 16px; font-size: 13px; color: var(--fg3); border-bottom: 2px solid transparent; cursor: default; }
+    .tabs-preview__t.active { color: var(--fg1); border-bottom-color: var(--accent-on); font-weight: 500; }
+    .tabs-preview__t.drop { color: oklch(70% 0.04 27); text-decoration: line-through; }
+
+    table.tbl { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    table.tbl th { background: var(--bg1); border-bottom: 1px solid var(--border-1); padding: 10px 12px; text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg3); font-weight: 500; }
+    table.tbl td { padding: 14px 12px; border-bottom: 1px solid var(--border-1); font-size: 13px; vertical-align: middle; }
+    table.tbl tbody tr:last-child td { border-bottom: 0; }
+    table.tbl tbody tr.row { cursor: pointer; }
+    table.tbl tbody tr.row:hover { background: var(--bg-hover); }
+    table.tbl tbody tr.row.open { background: var(--bg-hover); }
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; letter-spacing: 0.03em; }
+    .pill .dot { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+    .pill--ok { background: var(--success-bg); color: var(--success); }
+    .pill--info { background: var(--info-bg); color: var(--info); }
+    .pill--warn { background: var(--warning-bg); color: var(--warning); }
+    .pill--danger { background: var(--danger-bg); color: var(--danger); }
+    .pill--neutral { background: var(--bg3); color: var(--fg2); }
+
+    .dev { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .dev__icon { width: 32px; height: 32px; flex: none; border-radius: 7px; background: oklch(94% 0.01 260); color: var(--fg2); display: grid; place-items: center; }
+    .dev__sn { font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; color: var(--accent-on); text-decoration: none; border-bottom: 1px dashed currentColor; }
+    .dev__sub { font-size: 11.5px; color: var(--fg3); }
+
+    .appsum { display: flex; align-items: baseline; gap: 8px; }
+    .appsum__count { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+    .appsum__hint { font-size: 11px; color: var(--fg3); }
+
+    .textlink {
+      color: var(--accent-on); font-size: 12px; cursor: pointer;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    .textlink:hover { border-bottom-color: currentColor; }
+    .textlink--muted { color: var(--fg3); cursor: default; }
+
+    .chev { display: inline-block; width: 12px; height: 12px; transition: transform var(--duration-fast) var(--easing-standard); color: var(--fg3); }
+    .chev--open { transform: rotate(90deg); color: var(--fg1); }
+
+    /* expanded */
+    .expand { background: var(--bg1); padding: 16px 20px; border-top: 1px solid var(--border-1); }
+    .expand__card { background: var(--bg2); border: 1px solid var(--border-1); border-radius: 10px; overflow: hidden; }
+    .expand__card__head { padding: 10px 14px; border-bottom: 1px solid var(--border-1); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .expand__card__title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg3); }
+    .expand__card__meta { font-size: 11.5px; color: var(--fg3); font-family: var(--font-mono); }
+
+    table.subtbl { width: 100%; border-collapse: collapse; }
+    table.subtbl th { padding: 8px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg3); font-weight: 500; text-align: left; border-bottom: 1px solid var(--border-1); }
+    table.subtbl td { padding: 11px 12px; font-size: 12px; border-bottom: 1px solid var(--border-1); vertical-align: middle; }
+    table.subtbl tbody tr:last-child td { border-bottom: 0; }
+
+    .app-pkg {
+      font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3);
+    }
+
+    .ver { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+    .ver--stale { color: var(--warning); }
+    .ver--missing { color: var(--fg3); font-style: italic; font-weight: 400; }
+
+    /* strategy chip — borrows the click-to-modal pattern from the original Apps tab */
+    .strat-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 500;
+      cursor: pointer; border: 0;
+      font-family: inherit;
+    }
+    .strat-btn--casual { background: var(--bg3); color: var(--fg2); }
+    .strat-btn--immediate { background: var(--danger-bg); color: var(--danger); }
+    .strat-btn--custom { background: var(--info-bg); color: var(--info); }
+    .strat-btn:hover { filter: brightness(0.96); }
+    .strat-btn .ico { width: 9px; height: 9px; opacity: 0.7; }
+
+    /* modal preview */
+    .modal-preview {
+      background: var(--bg2); border: 1px solid var(--border-1);
+      box-shadow: var(--shadow-overlay); border-radius: 12px;
+      max-width: 480px; margin: 24px 0;
+    }
+    .modal-preview--wide { max-width: 680px; }
+    .modal-preview__head { padding: 16px 20px; border-bottom: 1px solid var(--border-1); display: flex; align-items: center; justify-content: space-between; }
+    .modal-preview__title { font-size: 15px; font-weight: 600; }
+    .modal-preview__sub { font-size: 11.5px; color: var(--fg3); margin-top: 2px; }
+    .modal-preview__body { padding: 16px 20px 20px; }
+    .modal-preview__filter { padding: 12px 20px; border-bottom: 1px solid var(--border-1); display: flex; gap: 8px; align-items: center; }
+
+    .kv { display: grid; grid-template-columns: 140px 1fr; gap: 12px; font-size: 12.5px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border-1); }
+    .kv:last-child { border-bottom: 0; }
+    .kv__k { color: var(--fg3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+    .kv__v { color: var(--fg1); }
+
+    .filter-chip { padding: 4px 10px; border-radius: 999px; background: var(--bg3); color: var(--fg2); font-size: 11.5px; cursor: default; }
+    .filter-chip.active { background: var(--accent-soft); color: var(--accent-on); font-weight: 500; }
+
+    .ev { display: grid; grid-template-columns: 140px 16px 1fr auto; gap: 10px; padding: 9px 20px; border-bottom: 1px solid var(--border-1); align-items: flex-start; }
+    .ev:last-of-type { border-bottom: 0; }
+    .ev__time { font-family: var(--font-mono); font-size: 11px; color: var(--fg3); padding-top: 2px; }
+    .ev__dot { width: 8px; height: 8px; border-radius: 999px; margin-top: 6px; justify-self: center; background: var(--fg3); }
+    .ev__dot--ok { background: var(--success); }
+    .ev__dot--warn { background: var(--warning); }
+    .ev__dot--err { background: var(--danger); }
+    .ev__dot--info { background: var(--info); }
+    .ev__body { font-size: 12.5px; color: var(--fg2); line-height: 1.5; }
+    .ev__body strong { color: var(--fg1); font-weight: 500; }
+    .ev__body .pkg { font-family: var(--font-mono); font-size: 11px; color: var(--fg3); margin-left: 4px; }
+    .ev__dur { font-family: var(--font-mono); font-size: 11px; color: var(--fg3); align-self: center; }
+
+    .empty { padding: 60px 24px; text-align: center; background: var(--bg2); border: 1px solid var(--border-1); border-radius: 12px; }
+    .empty__text { font-size: 14px; color: var(--fg2); margin-bottom: 4px; }
+    .empty__hint { font-size: 12px; color: var(--fg3); }
+  </style>
+</head>
+<body>
+  <div class="doc">
+
+    <header class="doc__head">
+      <span class="doc__eyebrow">Design proposal · v4.1 · column-order tweak + last-seen rename</span>
+      <h1 class="doc__title">Customer detail · Devices tab</h1>
+      <p class="doc__sub">
+        Devices tab = device table only. No KPI strip, no store chips, no behavior flags. Apps appear inside the row-expansion with the original Apps-tab idiom: <strong>target/installed mono versions + status pill + strategy chip → modal</strong>. Events open via a per-row text link.
+      </p>
+    </header>
+
+    <!-- ─── changes from v3 ─── -->
+    <div class="summary-box">
+      <div class="summary-box__t">Changes from v3 (per your feedback round 2)</div>
+      <ul>
+        <li><span class="drop">Top summary line + store chip filter</span> — removed. Tab now opens straight to the device table.</li>
+        <li><span class="drop">Behavior flags</span> (KIOSK / BOOT / LOCKED / HIDDEN) — pulled from the row entirely. Re-add later if needed.</li>
+        <li><span class="drop">Inline strategy fragment</span> ("CASUAL · Wi-Fi only · 02:00–04:00") in the expanded sub-table — gone. Only the strategy chip remains; click to inspect.</li>
+        <li><span class="new">Strategy chip → modal</span> — mirrors the original <code>MerchantAppsTabRO</code> pattern. The chip itself shows just the urgency (<code>CASUAL</code>/<code>IMMEDIATE</code>/<code>CUSTOM</code>); the modal lays out network, install time, cellular cap, install windows.</li>
+        <li><span class="new">Status pill borrows from original Apps tab</span> — <code>_TERM_STATES</code> equivalents: Installed · Awaiting · Downloading · Failed · Not installed. Derived per app per device using REQUEST_APPS vs INSTALLED_APPS + latest DEVICE_EVENT.</li>
+        <li><span class="new">"View events"</span> as a right-aligned text link in each row, not a button.</li>
+        <li><span class="keep">Kept</span> — empty state "未添加任何终端", row expansion, single "Configured apps" sub-card with one row per configured app.</li>
+      </ul>
+    </div>
+
+    <!-- ─── changes from v4 ─── -->
+    <div class="summary-box" style="background: var(--accent-soft); border-color: oklch(85% 0.08 268)">
+      <div class="summary-box__t" style="color: var(--accent-on)">Tweaks since v4 (round 3)</div>
+      <ul>
+        <li><span class="new">Sub-table column order</span> — now <strong>App · Installed · Target · Strategy · Status</strong>. Installed leads ("what's actually there"); Status is computed at the right.</li>
+        <li><span class="new">Device-table "Last sync" → "Last seen"</span> — terminology aligned with the device's last self-report timestamp.</li>
+        <li>Strategy chip stays <em>urgency-only</em>, no network suffix — settled per your previous answer.</li>
+      </ul>
+    </div>
+
+    <!-- ─── tab strip ─── -->
+    <div class="card" style="margin-bottom: 36px">
+      <div class="tabs-preview">
+        <div class="tabs-preview__t">Overview</div>
+        <div class="tabs-preview__t">Contracts</div>
+        <div class="tabs-preview__t">Operators &amp; roles</div>
+        <div class="tabs-preview__t active">Devices</div>
+        <div class="tabs-preview__t drop">Apps</div>
+      </div>
+    </div>
+
+    <!-- ─── §1 Devices list ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">1</span>Devices list (no chrome above the table)</h2>
+      <p class="section__sub">
+        Bluefin Market (c-007) example. The tab opens straight to the table; no chip filter, no count line, no KPIs.
+      </p>
+
+      <div class="canvas">
+        <div>
+          <div class="card">
+            <table class="tbl">
+              <colgroup>
+                <col style="width: 30px"/>
+                <col style="width: 28%"/>
+                <col style="width: 16%"/>
+                <col style="width: 12%"/>
+                <col style="width: 20%"/>
+                <col style="width: 14%"/>
+                <col style="width: 110px"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Terminal</th>
+                  <th>Store</th>
+                  <th>Status</th>
+                  <th>Configured apps</th>
+                  <th>Last seen</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- All-good -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width:0">
+                        <a class="dev__sn">NL750-K9F2H7A1</a>
+                        <div class="dev__sub">N750P · TID-90040</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Downtown</span></td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Online</span></td>
+                  <td>
+                    <div class="appsum">
+                      <span class="appsum__count">3</span>
+                      <span class="appsum__hint" style="color:var(--success)">all installed</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size:11.5px; color:var(--fg3)">2 min ago</span></td>
+                  <td style="text-align:right"><a class="textlink">View events</a></td>
+                </tr>
+
+                <!-- Open row -->
+                <tr class="row open">
+                  <td><span class="chev chev--open">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width:0">
+                        <a class="dev__sn">NL750-K9F2H7B3</a>
+                        <div class="dev__sub">N750P · TID-90041</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Downtown</span></td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Online</span></td>
+                  <td>
+                    <div class="appsum">
+                      <span class="appsum__count">3</span>
+                      <span class="appsum__hint" style="color:var(--warning)">1 to install</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size:11.5px; color:var(--fg3)">12 min ago</span></td>
+                  <td style="text-align:right"><a class="textlink">View events</a></td>
+                </tr>
+
+                <!-- EXPANDED -->
+                <tr>
+                  <td colspan="7" style="padding:0">
+                    <div class="expand">
+                      <div class="expand__card">
+                        <div class="expand__card__head">
+                          <div class="expand__card__title">Configured apps · 3</div>
+                          <span class="expand__card__meta">REQUEST_APPS · last config 2026-05-08 by Henry Tremblay (ISO)</span>
+                        </div>
+                        <table class="subtbl">
+                          <thead>
+                            <tr>
+                              <th style="width: 34%">App</th>
+                              <th style="width: 14%">Installed</th>
+                              <th style="width: 14%">Target</th>
+                              <th style="width: 16%">Strategy</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <div style="font-weight:500">Northwind POS Pro</div>
+                                <div class="app-pkg">com.northwind.pos.pro</div>
+                              </td>
+                              <td><span class="ver">4.3.2</span></td>
+                              <td><span class="ver">4.3.2</span></td>
+                              <td>
+                                <button class="strat-btn strat-btn--casual" title="View strategy detail">
+                                  <span class="dot" style="width:5px;height:5px;border-radius:999px;background:currentColor"></span>
+                                  CASUAL
+                                  <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="0.6" fill="currentColor"/><path d="M12 11v6"/></svg>
+                                </button>
+                              </td>
+                              <td><span class="pill pill--ok"><span class="dot"></span>Installed</span></td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div style="font-weight:500">Smart Receipt</div>
+                                <div class="app-pkg">com.northwind.smartreceipt</div>
+                              </td>
+                              <td><span class="ver ver--stale">1.1.7</span></td>
+                              <td><span class="ver">1.1.8</span></td>
+                              <td>
+                                <button class="strat-btn strat-btn--casual">
+                                  <span class="dot" style="width:5px;height:5px;border-radius:999px;background:currentColor"></span>
+                                  CASUAL
+                                  <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="0.6" fill="currentColor"/><path d="M12 11v6"/></svg>
+                                </button>
+                              </td>
+                              <td><span class="pill pill--warn"><span class="dot"></span>Needs upgrade</span></td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div style="font-weight:500">Loyalty+</div>
+                                <div class="app-pkg">com.helios.loyaltyplus</div>
+                              </td>
+                              <td><span class="ver">1.3.4</span></td>
+                              <td><span class="ver">1.3.4</span></td>
+                              <td>
+                                <button class="strat-btn strat-btn--custom">
+                                  <span class="dot" style="width:5px;height:5px;border-radius:999px;background:currentColor"></span>
+                                  CUSTOM
+                                  <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="0.6" fill="currentColor"/><path d="M12 11v6"/></svg>
+                                </button>
+                              </td>
+                              <td><span class="pill pill--ok"><span class="dot"></span>Installed</span></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Failed install -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width:0">
+                        <a class="dev__sn">NL750-K7B22DEC</a>
+                        <div class="dev__sub">N750P · TID-90109</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Pier 14</span></td>
+                  <td><span class="pill pill--neutral"><span class="dot"></span>Offline</span></td>
+                  <td>
+                    <div class="appsum">
+                      <span class="appsum__count">3</span>
+                      <span class="appsum__hint" style="color:var(--danger)">1 install failed</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size:11.5px; color:var(--fg3)">2 h ago</span></td>
+                  <td style="text-align:right"><a class="textlink">View events</a></td>
+                </tr>
+
+                <!-- never synced -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width:0">
+                        <a class="dev__sn">NL910-A2B4F019</a>
+                        <div class="dev__sub">N910 · TID-91082</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size:12.5px">Pier 14</span></td>
+                  <td><span class="pill pill--neutral"><span class="dot"></span>Offline</span></td>
+                  <td>
+                    <div class="appsum">
+                      <span class="appsum__count">3</span>
+                      <span class="appsum__hint" style="color:var(--fg3)">no sync yet</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size:11.5px; color:var(--fg3)">never</span></td>
+                  <td style="text-align:right"><span class="textlink textlink--muted">View events</span></td>
+                </tr>
+
+                <tr><td colspan="7" style="text-align:center; color:var(--fg3); font-size:11.5px; padding:12px">…10 more terminals collapsed in this mock</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">A</div>
+            <div class="annot__title">No chrome above the table</div>
+            <div class="annot__body">Tab body opens directly to the device list. No "all stores" filter, no KPI tiles, no summary line. If admin needs to filter by store, that's a future affordance — not v1.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">B</div>
+            <div class="annot__title">"Configured apps" column = count + 1-word hint</div>
+            <div class="annot__body">Three states: <em>all installed</em> · <em>N to install</em> · <em>N install failed</em> · <em>no sync yet</em>. The number is the count of REQUEST_APPS entries (constant per device); the hint is the only thing that changes.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">C</div>
+            <div class="annot__title">"View events" text link</div>
+            <div class="annot__body">Right-aligned per row; opens the events modal (§3) for that one terminal. Greyed when there's no sync yet.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">D</div>
+            <div class="annot__title">Status pill = original <code>_TERM_STATES</code></div>
+            <div class="annot__body">Installed (green) · Needs upgrade (amber) · Downloading (info) · Failed (red) · Not installed (neutral). Derived from REQUEST vs INSTALLED + latest DEVICE_EVENT for that pkg.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">E</div>
+            <div class="annot__title">Strategy chip is the only strategy surface</div>
+            <div class="annot__body">Shows urgency only (<code>CASUAL</code> / <code>IMMEDIATE</code> / <code>CUSTOM</code>). Network / cell cap / install windows live in the modal (§2). Mirrors the original Apps-tab pattern.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── §2 strategy modal ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">2</span>Strategy modal</h2>
+      <p class="section__sub">Opens when admin clicks the strategy chip on a configured-app row. Per the original Apps tab — focused, read-only, key-value rows.</p>
+      <div class="canvas">
+        <div>
+          <div class="modal-preview">
+            <div class="modal-preview__head">
+              <div>
+                <div class="modal-preview__title">Update strategy — Loyalty+</div>
+                <div class="modal-preview__sub">com.helios.loyaltyplus · target 1.3.4 · for NL750-K9F2H7B3</div>
+              </div>
+              <button style="background:transparent; border:0; cursor:pointer; color:var(--fg3); font-size:18px; padding:4px 8px">×</button>
+            </div>
+            <div class="modal-preview__body">
+              <div class="kv">
+                <div class="kv__k">Urgency</div>
+                <div class="kv__v">
+                  <span class="strat-btn strat-btn--custom" style="cursor:default">
+                    <span class="dot" style="width:5px;height:5px;border-radius:999px;background:currentColor"></span>
+                    CUSTOM
+                  </span>
+                  <span style="color: var(--fg3); font-size: 11.5px; margin-left: 4px">All knobs manually set by ISO</span>
+                </div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Network</div>
+                <div class="kv__v">Wi-Fi / Ethernet + Cellular under cap</div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Cellular cap</div>
+                <div class="kv__v"><span class="mono">200 MB</span></div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Upgrade time</div>
+                <div class="kv__v">Next boot or 10 min idle</div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Install windows</div>
+                <div class="kv__v">
+                  <span class="mono">22:00 – 01:00</span>
+                  <span style="color: var(--fg3); font-size: 11.5px; margin-left: 6px">configured device-local time</span>
+                </div>
+              </div>
+              <div class="kv">
+                <div class="kv__k">Configured</div>
+                <div class="kv__v">2026-05-08 · Henry Tremblay <span style="color: var(--fg3); font-size: 11.5px">(ISO operator)</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">F</div>
+            <div class="annot__title">KV row layout (per original Apps tab)</div>
+            <div class="annot__body">Same idiom as <code>StrategyDetail</code> in the old MerchantAppsTabRO. Label / value rows, label in caps overline, value in body / mono.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">G</div>
+            <div class="annot__title">Header carries pkg + target + SN</div>
+            <div class="annot__body">So the modal is unambiguous when the same app exists on multiple devices.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">H</div>
+            <div class="annot__title">CASUAL / IMMEDIATE collapse the empty rows</div>
+            <div class="annot__body">If urgency = <code>IMMEDIATE</code>, install windows / cell cap are typically empty. We hide rows whose value is null — modal stays tight.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── §3 events modal ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">3</span>Events modal</h2>
+      <p class="section__sub">Opens via "View events" text link on the device row. Scoped to that one terminal.</p>
+      <div class="canvas">
+        <div>
+          <div class="modal-preview modal-preview--wide">
+            <div class="modal-preview__head">
+              <div>
+                <div class="modal-preview__title">Device events — NL750-K9F2H7B3</div>
+                <div class="modal-preview__sub">N750P · TID-90041 · Downtown · last sync 12 min ago</div>
+              </div>
+              <button style="background:transparent; border:0; cursor:pointer; color:var(--fg3); font-size:18px; padding:4px 8px">×</button>
+            </div>
+            <div class="modal-preview__filter">
+              <span style="font-size: 11.5px; color: var(--fg3); margin-right: 4px">Filter</span>
+              <span class="filter-chip active">All</span>
+              <span class="filter-chip">Install</span>
+              <span class="filter-chip">Download</span>
+              <span class="filter-chip">User action</span>
+              <span class="filter-chip">OTA</span>
+              <span style="margin-left:auto; font-size:11px; color:var(--fg3); font-family:var(--font-mono)">Last 7 days · 23 events</span>
+            </div>
+
+            <div class="ev">
+              <span class="ev__time">May 12 · 14:22:08</span>
+              <span class="ev__dot ev__dot--info"></span>
+              <div class="ev__body">Download started · <strong>Smart Receipt 1.1.8</strong><span class="pkg">com.northwind.smartreceipt</span></div>
+              <span class="ev__dur">—</span>
+            </div>
+            <div class="ev">
+              <span class="ev__time">May 12 · 11:08:42</span>
+              <span class="ev__dot ev__dot--ok"></span>
+              <div class="ev__body">App installed successfully · <strong>Loyalty+ 1.3.4</strong><span class="pkg">com.helios.loyaltyplus</span></div>
+              <span class="ev__dur">41 s</span>
+            </div>
+            <div class="ev">
+              <span class="ev__time">May 12 · 10:52:17</span>
+              <span class="ev__dot ev__dot--warn"></span>
+              <div class="ev__body">User postponed upgrade · <strong>Loyalty+ 1.3.4</strong><span class="pkg">com.helios.loyaltyplus</span></div>
+              <span class="ev__dur">—</span>
+            </div>
+            <div class="ev">
+              <span class="ev__time">May 11 · 21:08:53</span>
+              <span class="ev__dot ev__dot--err"></span>
+              <div class="ev__body">App install failed · <strong>Smart Receipt 1.1.8</strong> · disk full<span class="pkg">com.northwind.smartreceipt</span></div>
+              <span class="ev__dur">—</span>
+            </div>
+            <div class="ev">
+              <span class="ev__time">May 11 · 03:54:11</span>
+              <span class="ev__dot ev__dot--info"></span>
+              <div class="ev__body">Firmware sync · <strong>OTA</strong><span class="pkg">n750-base 1.18.2</span></div>
+              <span class="ev__dur">2m 04 s</span>
+            </div>
+
+            <div style="padding: 10px 20px; border-top: 1px solid var(--border-1); display: flex; justify-content: space-between; align-items: center">
+              <span style="font-size: 11.5px; color: var(--fg3)">Showing 5 of 23 events</span>
+              <a class="textlink">Load more</a>
+            </div>
+          </div>
+        </div>
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">I</div>
+            <div class="annot__title">Same as v3 — but now triggered by text link</div>
+            <div class="annot__body">Modal width 680 px; rows show time · status dot · description + pkg · duration.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── §4 empty state ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">4</span>Empty state</h2>
+      <div class="canvas">
+        <div>
+          <div class="empty">
+            <div class="empty__text">未添加任何终端</div>
+            <div class="empty__hint">Terminals are registered on the customer-side ISO portal — they'll appear here once the first device reports in.</div>
+          </div>
+        </div>
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">J</div>
+            <div class="annot__title">Text only</div>
+            <div class="annot__body">No CTA, no illustration. Sub-line explains why.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── confirm ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">✓</span>Ready to build</h2>
+      <p style="font-size: 13.5px; color: var(--fg2); line-height: 1.7; padding-left: 32px; max-width: 880px">
+        All previous open questions resolved:
+      </p>
+      <ul style="font-size: 13px; color: var(--fg2); line-height: 1.7; padding-left: 48px; max-width: 880px">
+        <li>Strategy chip = urgency only, no network suffix.</li>
+        <li>"View events" = single text-link cell, right-aligned.</li>
+        <li>Sub-table column order = App · Installed · Target · Strategy · Status (Status is derived from Installed vs Target).</li>
+        <li>Top device-table column header = "Last seen" (terminal's most recent self-report timestamp).</li>
+      </ul>
+      <p style="font-size: 13.5px; color: var(--fg2); line-height: 1.7; padding-left: 32px; max-width: 880px; margin-top: 14px">
+        Say <strong style="color: var(--fg1)">go</strong> and I'll start the build: data model → tab swap (rename Stores tab to Devices, drop Apps tab) → device row + expansion → strategy modal → events modal → wire "View events" + chip handlers.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

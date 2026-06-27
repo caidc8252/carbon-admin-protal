@@ -1,0 +1,632 @@
+/* global React, ReactDOM, Btn, Input, Icon, Badge, ModelTile, DEVICE_MODELS,
+   productEffectiveStatus, CATEGORY_BADGE, formatPriceRange, useToast, CartTrigger,
+   SEED_CATEGORIES, flattenCategoryTree, categoryDescendantIds, categoryPathLabel,
+   SearchBar, SearchInput, SearchSelect, SearchActions, ActiveFilters, FilterChip, useSearchBar */
+const { useState, useMemo, useRef, useEffect } = React;
+
+// ─── Shop browse (Catalog page for sales) ──────────────────
+// Category tag bar (up to 2 levels) + live search + responsive card grid.
+// Picking a tag filters instantly. Only LISTED products show.
+
+// ─── Spec picker popup (Android PopupWindow style, anchored to trigger) ───
+const SpecPickerModal = ({ product, action, anchorRect, onClose, onConfirm }) => {
+  const specs = product.specs || [];
+  // No inventory concept — only ACTIVE SKUs are offered. Anything shown here is
+  // available to order; we never render "unavailable / out-of-stock" states.
+  const pickVariants = (product.variants || []).filter((v) => v.status === 'ACTIVE');
+  // Integration modes are gone with the model rewrite — keep the picker for
+  // attribute-axis variants only.
+  const intModes = [];
+  const [combo, setCombo] = useState(() => {
+    const v0 = pickVariants[0];
+    const c = {};
+    specs.forEach((a) => { c[a.id] = v0 && v0.combination ? v0.combination[a.id] : a.values[0]?.id; });
+    return c;
+  });
+  // Quantity — resets to 1 whenever the selected variant changes.
+  const [qty, setQty] = useState(1);
+
+  // Find the variant that matches the current combo selection.
+  const variant = useMemo(() => {
+    if (specs.length === 0) return pickVariants[0];
+    return pickVariants.find((v) =>
+      specs.every((a) => v.combination && v.combination[a.id] === combo[a.id])
+    ) || null;
+  }, [combo, product, specs]);
+
+  // Reset qty to 1 when the variant changes.
+  useEffect(() => { setQty(1); }, [variant?.id]);
+
+  const canConfirm = !!variant && qty >= 1;
+
+  // Resolve which variant a given (axisId, valueId) combination would land on,
+  // holding all OTHER axes at the current selection.
+  const variantForValue = (axisId, valueId) =>
+    pickVariants.find((v) =>
+      v.combination && v.combination[axisId] === valueId &&
+      specs.every((a) => a.id === axisId || v.combination[a.id] === combo[a.id])
+    ) || null;
+
+  const valueAvailable = (axisId, valueId) =>
+    pickVariants.some((v) =>
+      v.combination && v.combination[axisId] === valueId &&
+      specs.every((a) => a.id === axisId || v.combination[a.id] === combo[a.id])
+    );
+
+  // ── Anchored positioning (same behaviour as the cart popups) ──
+  const POP_WIDTH = 340;
+  const GAP = 6;
+  const popRef = useRef(null);
+  const [pos, setPos] = useState(() => {
+    const r = anchorRect || { top: 80, left: 80, right: 120, bottom: 110, width: 40, height: 30 };
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // Horizontally center the popup on the anchor's center, clamped to viewport.
+    const left = Math.max(8, Math.min(vw - POP_WIDTH - 8, r.left + r.width / 2 - POP_WIDTH / 2));
+    const estHeight = 300;
+    const showAbove = (r.bottom + GAP + estHeight) > vh && (r.top - GAP - estHeight) > 8;
+    const top = showAbove ? Math.max(8, r.top - GAP - estHeight) : r.bottom + GAP;
+    const arrowLeft = Math.max(12, Math.min(POP_WIDTH - 24, r.left + r.width / 2 - left));
+    return { top, left, arrowLeft, showAbove };
+  });
+
+  useEffect(() => {
+    if (!popRef.current || !anchorRect) return;
+    const h = popRef.current.offsetHeight;
+    const r = anchorRect;
+    const vh = window.innerHeight;
+    if ((r.bottom + GAP + h) > vh && (r.top - GAP - h) > 8) {
+      setPos((p) => ({ ...p, top: Math.max(8, r.top - GAP - h), showAbove: true }));
+    }
+  }, [anchorRect]);
+
+  useEffect(() => {
+    const onDocClick = (e) => { if (popRef.current && !popRef.current.contains(e.target)) onClose(); };
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const t = setTimeout(() => {
+      document.addEventListener('mousedown', onDocClick);
+      document.addEventListener('keydown', onKey);
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  return ReactDOM.createPortal(
+    <div ref={popRef}
+      className={`cart-pop ${pos.showAbove ? 'cart-pop--above' : ''}`}
+      style={{ top: pos.top, left: pos.left, width: POP_WIDTH }}
+      role="dialog" aria-modal="false">
+      <span className="cart-pop__arrow" style={{ left: pos.arrowLeft }}/>
+      <div className="cart-pop__head">
+        <div className="spec-pop__title-wrap">
+          <div className="cart-pop__title">{product.name}</div>
+          <div className="spec-pop__price num">
+            {variant ? `$${variant.price.toFixed(2)}` : formatPriceRange(product)}
+          </div>
+        </div>
+        <button type="button" className="cart-pop__close" onClick={onClose} aria-label="Close">
+          <Icon name="x" size={13}/>
+        </button>
+      </div>
+      <div className="cart-pop__body">
+
+        {specs.map((axis) => (
+          <section key={axis.id} className="cart-pop__section">
+            <div className="cart-pop__lbl">{axis.name}</div>
+            <div className="cart-pop__chips">
+              {axis.values.map((val) => {
+                const isActive = combo[axis.id] === val.id;
+                const ok = valueAvailable(axis.id, val.id);
+                return (
+                  <button key={val.id} type="button"
+                    disabled={!ok}
+                    className={`cart-pop__chip ${isActive ? 'is-active' : ''} ${!ok ? 'is-disabled' : ''}`}
+                    onClick={() => { if (ok) setCombo((c) => ({ ...c, [axis.id]: val.id })); }}>
+                    {val.label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+        {!variant && (
+          <div className="spec-pop__warn">
+            <Icon name="info" size={12}/> This option isn’t available.
+          </div>
+        )}
+        {variant && (
+          <section className="cart-pop__section spec-pop__qty-section">
+            <div className="cart-pop__lbl">Quantity</div>
+            <div className="spec-pop__qty-row">
+              <div className="spec-pop__stepper" role="group" aria-label="Quantity">
+                <button type="button" className="spec-pop__stepper-btn"
+                  disabled={qty <= 1}
+                  aria-label="Decrease quantity"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}>
+                  <Icon name="minus" size={11}/>
+                </button>
+                <input type="number" className="spec-pop__stepper-input num"
+                  value={qty}
+                  min={1}
+                  aria-label="Quantity"
+                  onChange={(e) => {
+                    const raw = parseInt(e.target.value || '1', 10);
+                    if (Number.isNaN(raw)) { setQty(1); return; }
+                    setQty(Math.max(1, raw));
+                  }}/>
+                <button type="button" className="spec-pop__stepper-btn"
+                  aria-label="Increase quantity"
+                  onClick={() => setQty((q) => q + 1)}>
+                  <Icon name="plus" size={11}/>
+                </button>
+              </div>
+              <div className="spec-pop__qty-meta num">
+                {variant && (
+                  <span className="spec-pop__qty-total">${(variant.price * qty).toFixed(2)}</span>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
+      <div className="cart-pop__foot">
+        <button type="button" className="cart-pop__btn cart-pop__btn--ghost" onClick={onClose}>Cancel</button>
+        <button type="button" className="cart-pop__btn cart-pop__btn--primary" disabled={!canConfirm}
+          onClick={() => canConfirm && onConfirm(variant, { qty })}>
+          {action === 'order' ? `Order${qty > 1 ? ` · ${qty}` : ''}` : `Add to cart${qty > 1 ? ` · ${qty}` : ''}`}
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+const ProductsBrowse = ({ products, onOpen, onQuickAdd, cartQty = 0, cartSubtotal = 0, onOpenCart, onOpenOrders, onCheckout, onOrderNow }) => {
+  // Shared pending → applied search pattern (R-01)
+  const {
+    draft, applied, setDraft, runSearch, clearAll, clearOne, hasFilters: hasFilter
+  } = useSearchBar({ q: '', category: 'all', modelId: 'all' });
+  const toast = useToast();
+
+  // Cart shows in the page title by default; once the filter bar pins to the top
+  // (header scrolled out of view) the cart appears in the filter row instead.
+  const headRef = useRef(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = headRef.current;
+    if (!el || !onOpenCart) return undefined;
+    const io = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting), { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [onOpenCart]);
+
+  // Paginate the grid — show a page at a time, "Load more" reveals the next batch.
+  const INITIAL_COUNT = 30;
+  const LOAD_STEP = 30;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const loadMore = () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount((n) => n + LOAD_STEP);
+      setLoadingMore(false);
+    }, 1500);
+  };
+
+  // Only show LISTED products (storefront semantics)
+  const listed = useMemo(
+    () => products.filter((p) => productEffectiveStatus(p) === 'LISTED'),
+    [products]
+  );
+
+  const filtered = useMemo(() => {
+    let rows = listed;
+    if (applied.q.trim()) {
+      const s = applied.q.toLowerCase();
+      // Match name + description only (SKU is intentionally NOT searched here)
+      rows = rows.filter((p) =>
+        p.name.toLowerCase().includes(s) ||
+        (p.desc || '').toLowerCase().includes(s)
+      );
+    }
+    if (applied.category !== 'all') {
+      const cats = window.SEED_CATEGORIES || [];
+      const ids = window.categoryDescendantIds
+        ? new Set(window.categoryDescendantIds(cats, applied.category))
+        : new Set([applied.category]);
+      rows = rows.filter((p) => ids.has(p.categoryId));
+    }
+    if (applied.modelId !== 'all')          rows = rows.filter((p) => p.deviceModelId === applied.modelId);
+    return rows;
+  }, [listed, applied]);
+
+  // Reset pagination whenever the applied filters change.
+  useEffect(() => { setVisibleCount(INITIAL_COUNT); }, [applied]);
+
+  const visibleRows = filtered.slice(0, visibleCount);
+
+  // Models that appear in current listing (for the model filter)
+  const availableModels = useMemo(() => {
+    const ids = new Set(listed.map((p) => p.deviceModelId).filter(Boolean));
+    return (window.DEVICE_MODELS || []).filter((m) => ids.has(m.id));
+  }, [listed]);
+
+  const handleQuickAdd = (product) => {
+    if (product.specs.length > 0) {
+      onOpen(product.id);  // multi-variant → open PDP
+      return;
+    }
+    onQuickAdd(product, product.variants[0], 1);
+    toast({ kind: 'success', title: 'Added to cart', msg: product.name });
+  };
+
+  // ─── Picker modal + fly-to-cart animation ────────────────────
+  const [picker, setPicker] = useState(null); // { product, action: 'add' | 'order' }
+
+  const flyToCart = (srcEl, imgSrc) => {
+    if (!srcEl) return;
+    // There can be TWO .cart-trigger nodes in the DOM at once: one in the
+    // page header (visible while scrolled to the top) and one in the sticky
+    // filter bar (visible after the header scrolls out). Pick whichever is
+    // actually on-screen so the fly path lands at the right target after
+    // the user scrolls.
+    const carts = Array.from(document.querySelectorAll('.cart-trigger'));
+    if (carts.length === 0) return;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const isOnScreen = (r) => r.bottom > 0 && r.top < vh && r.width > 0 && r.height > 0;
+    const onScreen = carts.filter((el) => isOnScreen(el.getBoundingClientRect()));
+    // Prefer on-screen targets; if both header + sticky are on-screen during
+    // the brief transition, the sticky bar comes later in DOM order and wins.
+    const cart = onScreen.length > 0 ? onScreen[onScreen.length - 1] : carts[carts.length - 1];
+    const start = srcEl.getBoundingClientRect();
+    const end = cart.getBoundingClientRect();
+    const fly = document.createElement('div');
+    fly.className = 'shop-fly';
+    if (imgSrc) {
+      const im = document.createElement('img');
+      im.src = imgSrc;
+      fly.appendChild(im);
+    } else {
+      const dot = document.createElement('span');
+      dot.textContent = '+1';
+      fly.appendChild(dot);
+    }
+    const sx = start.left + start.width / 2;
+    const sy = start.top + start.height / 2;
+    fly.style.left = (sx - 24) + 'px';
+    fly.style.top = (sy - 24) + 'px';
+    document.body.appendChild(fly);
+    // force reflow then animate
+    void fly.offsetWidth;
+    const dx = (end.left + end.width / 2) - sx;
+    const dy = (end.top + end.height / 2) - sy;
+    fly.style.transform = `translate(${dx}px, ${dy}px) scale(0.15)`;
+    fly.style.opacity = '0.2';
+    setTimeout(() => {
+      fly.remove();
+      cart.classList.add('cart-trigger--bump');
+      setTimeout(() => cart.classList.remove('cart-trigger--bump'), 420);
+    }, 650);
+  };
+
+  const doAdd = (product, variant, srcEl, silent = false, opts = {}, qty = 1) => {
+    flyToCart(srcEl, product.baseImage);
+    onQuickAdd(product, variant, qty, opts);
+    if (!silent) toast({ kind: 'success', title: 'Added to cart', msg: qty > 1 ? `${product.name} × ${qty}` : product.name });
+  };
+
+  const needsPicker = (product) => {
+    if (product.specs && product.specs.length > 0) return true;
+    return false;
+  };
+
+  const rectOf = (el) => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, left: r.left, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+  };
+
+  const handleAddRequest = (product, srcEl) => {
+    if (needsPicker(product)) {
+      setPicker({ product, action: 'add', srcEl, anchorRect: rectOf(srcEl) });
+      return;
+    }
+    doAdd(product, product.variants[0], srcEl);
+  };
+
+  const handleBuyNow = (product, srcEl) => {
+    if (needsPicker(product)) {
+      setPicker({ product, action: 'order', srcEl, anchorRect: rectOf(srcEl) });
+      return;
+    }
+    if (onOrderNow) onOrderNow(product, product.variants[0], 1);
+    else if (onCheckout) { onQuickAdd(product, product.variants[0], 1); onCheckout(); }
+  };
+
+  const onPickerConfirm = (variant, opts = {}) => {
+    const { product, action, srcEl } = picker;
+    const qty = Math.max(1, opts.qty || 1);
+    // Strip qty from opts so it doesn't leak into the cart-line `opts` object
+    // (qty is a top-level arg downstream, not a per-line option).
+    const lineOpts = { ...opts };
+    delete lineOpts.qty;
+    if (action === 'order') {
+      if (onOrderNow) { setPicker(null); onOrderNow(product, variant, qty, lineOpts); return; }
+      // Fallback if no onOrderNow wired
+      doAdd(product, variant, srcEl, true, lineOpts, qty);
+      setPicker(null);
+      if (onCheckout) setTimeout(() => onCheckout(), 120);
+      return;
+    }
+    doAdd(product, variant, srcEl, false, lineOpts, qty);
+    setPicker(null);
+  };
+
+  return (
+    <div className="page page--wide">
+      <window.TitleBar
+        title="Catalog"
+        subtitle="Browse the catalog and add items to your cart to place a customer order."
+        actions={onOpenCart ? (
+          <>
+            {onOpenOrders && <Btn variant="secondary" size="md" icon="file" onClick={onOpenOrders}>Orders</Btn>}
+            <CartTrigger totalQty={cartQty} subtotal={cartSubtotal} onOpen={onOpenCart} />
+          </>
+        ) : null}
+      />
+
+      <div className="shop-filters">
+        {(() => {
+          const cats = window.SEED_CATEGORIES || [];
+          const topCats = window.childCategories ? window.childCategories(cats, null) : [];
+          const selPath = applied.category !== 'all' && window.categoryPath ? window.categoryPath(cats, applied.category) : [];
+          const activeTop = selPath[0] || null;     // level-1 ancestor of the selection
+          const subCats = activeTop && window.childCategories ? window.childCategories(cats, activeTop.id) : [];
+          const pick = (id) => clearOne('category', id);
+          return (
+            <div className="shop-catbar">
+              <div className="shop-catbar__row">
+                <div className="shop-tags">
+                  <button type="button" className={`shop-tag ${applied.category === 'all' ? 'is-on' : ''}`} onClick={() => pick('all')}>All</button>
+                  {topCats.map((c) => (
+                    <button key={c.id} type="button" className={`shop-tag ${activeTop && activeTop.id === c.id ? 'is-on' : ''}`} onClick={() => pick(c.id)}>{c.name}</button>
+                  ))}
+                </div>
+                <div className="shop-search" title="Searches only the products on this page">
+                  <Icon name="search" size={15}/>
+                  <input value={draft.q} placeholder="Search products on this page…"
+                    onChange={(e) => clearOne('q', e.target.value)}/>
+                  <span className="shop-search__badge">Local</span>
+                  {draft.q ? <button type="button" className="shop-search__clear" onClick={() => clearOne('q', '')} aria-label="Clear search"><Icon name="x" size={13}/></button> : null}
+                </div>
+              </div>
+              {activeTop && subCats.length > 0 ? (
+                <div className="shop-catbar__row shop-catbar__row--sub">
+                  <span className="shop-catbar__crumb">{activeTop.name}</span>
+                  <div className="shop-tags">
+                    <button type="button" className={`shop-tag shop-tag--sub ${applied.category === activeTop.id ? 'is-on' : ''}`} onClick={() => pick(activeTop.id)}>All</button>
+                    {subCats.map((c) => (
+                      <button key={c.id} type="button" className={`shop-tag shop-tag--sub ${applied.category === c.id ? 'is-on' : ''}`} onClick={() => pick(c.id)}>{c.name}</button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="shop-result-bar">
+        <div>
+          Showing <strong>{visibleRows.length}</strong> items
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="empty" style={{ padding: '60px 20px' }}>
+          No items match your filters.
+          <div style={{ marginTop: 10 }}>
+            <Btn size="sm" variant="ghost" onClick={clearAll}>Clear filters</Btn>
+          </div>
+        </div>
+      ) : (
+        <div className="shop-grid">
+          {visibleRows.map((p) => {
+            const cat = CATEGORY_BADGE(p);
+            const model = (window.DEVICE_MODELS || []).find((m) => m.id === p.deviceModelId);
+            const hasVariants = p.specs.length > 0;
+            const img = p.baseImage || null;
+            return (
+              <article key={p.id} className="shop-card" onClick={() => onOpen(p.id)}>
+                <div className="shop-card__img">
+                  {img ? (
+                    <img src={img} alt={p.name}/>
+                  ) : p.type === 'DEVICE' && model ? (
+                    <ModelTile model={model} px={96}/>
+                  ) : (
+                    <div className="shop-card__placeholder">📦</div>
+                  )}
+                </div>
+                <div className="shop-card__body">
+                  <div className="shop-card__name">{p.name}</div>
+                  {p.sku && <div className="shop-card__sku">{p.sku}</div>}
+                  <div className="shop-card__desc">{p.desc}</div>
+                  <div className="shop-card__price-row">
+                    <div className="shop-card__price num">{formatPriceRange(p)}</div>
+                    {hasVariants && (
+                      <div className="shop-card__opts">{p.variants.length} options</div>
+                    )}
+                  </div>
+                  <div className="shop-card__cta">
+                    <Btn variant="primary" size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleBuyNow(p, e.currentTarget); }}>
+                      Order
+                    </Btn>
+                    <button type="button" className="shop-card__addbtn"
+                      title={hasVariants ? 'Choose options & add to cart' : 'Add to cart'}
+                      aria-label="Add to cart"
+                      onClick={(e) => { e.stopPropagation(); handleAddRequest(p, e.currentTarget); }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 4h2l2.4 12.3a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L21 8H6"/>
+                        <circle cx="10" cy="21" r="1.2"/>
+                        <circle cx="18" cy="21" r="1.2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {filtered.length > visibleCount && (
+        <div className="shop-loadmore">
+          <Btn variant="secondary" size="md"
+            disabled={loadingMore}
+            onClick={loadMore}>
+            {loadingMore ? <><span className="shop-loadmore__spinner"/> Loading…</> : 'Load more'}
+          </Btn>
+        </div>
+      )}
+
+      {picker && (
+        <SpecPickerModal
+          product={picker.product}
+          action={picker.action}
+          anchorRect={picker.anchorRect}
+          onClose={() => setPicker(null)}
+          onConfirm={onPickerConfirm}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── Styles ────────────────────────────────────────────────────
+const shopBrowseStyles = `
+/* ui-spec §9 spacing — titlebar→first block = 24 (page top padding),
+   search/condition area scrolls with content (not pinned) and owns the
+   16px gap down to the list. */
+.page--wide { max-width: 1280px; padding-top: 24px; }
+.shop-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
+
+.shop-filters { padding: 0 0 16px; margin-bottom: 0; }
+.shop-catbar { display: flex; flex-direction: column; gap: 10px; }
+.shop-catbar__row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.shop-catbar__row--sub { padding-left: 2px; }
+.shop-catbar__crumb { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); }
+.shop-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.shop-tag { padding: 7px 15px; border-radius: 999px; border: 1px solid var(--color-border-subtle); background: var(--color-bg-2); color: var(--color-text-secondary); font: 500 13px var(--font-family-sans, inherit); cursor: pointer; transition: background var(--duration-fast) var(--easing-standard), border-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard); white-space: nowrap; }
+.shop-tag:hover { border-color: var(--color-border-strong); background: var(--color-bg-hover); color: var(--color-text-primary); }
+.shop-tag.is-on { background: var(--color-primary-700); border-color: var(--color-primary-700); color: #fff; }
+.shop-tag.is-on:hover { background: var(--color-primary-600); border-color: var(--color-primary-600); color: #fff; }
+.shop-tag--sub { padding: 5px 13px; font-size: 12.5px; }
+.shop-tag--sub.is-on { background: var(--color-primary-50); border-color: oklch(60% 0.14 262 / 0.35); color: var(--color-primary-700); }
+.shop-tag--sub.is-on:hover { background: var(--color-primary-50); color: var(--color-primary-700); }
+.shop-search { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--color-border-default); background: var(--color-bg-2); color: var(--color-text-tertiary); min-width: 220px; transition: border-color var(--duration-fast) var(--easing-standard); }
+.shop-search:focus-within { border-color: var(--color-primary-700); box-shadow: var(--shadow-focus); }
+.shop-search input { border: 0; outline: 0; background: transparent; font: 400 13px var(--font-family-sans, inherit); color: var(--color-text-primary); flex: 1; min-width: 0; }
+.shop-search__badge { flex: none; font: 600 9.5px var(--font-family-mono, monospace); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); background: var(--color-bg-3); border: 1px solid var(--color-border-subtle); border-radius: 4px; padding: 2px 6px; }
+.shop-search__clear { display: grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 5px; background: transparent; color: var(--color-text-tertiary); cursor: pointer; }
+.shop-search__clear:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+
+.shop-result-bar { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 12px; color: var(--color-text-tertiary); font-size: 12.5px; }
+.shop-result-bar strong { color: var(--color-text-primary); font-weight: 600; }
+
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.shop-loadmore { display: flex; justify-content: center; padding: 24px 0 4px; }
+.shop-loadmore__spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: shop-spin 0.7s linear infinite; vertical-align: -2px; margin-right: 2px; }
+@keyframes shop-spin { to { transform: rotate(360deg); } }
+
+.shop-card { display: flex; flex-direction: column; background: var(--color-bg-2); border: 1px solid var(--color-border-default); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all var(--duration-fast); box-shadow: var(--shadow-1); }
+.shop-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-2); transform: translateY(-1px); }
+.shop-card__img { position: relative; height: 150px; min-height: 0; background: #fff; display: grid; place-items: center; padding: 12px; border-bottom: 1px solid var(--color-border-subtle); overflow: hidden; }
+.shop-card--sample .shop-card__img { background: linear-gradient(135deg, oklch(96% 0.04 152) 0%, #fff 70%); }
+.shop-card--production .shop-card__img { background: linear-gradient(135deg, var(--color-primary-50, oklch(96% 0.03 255)) 0%, #fff 70%); }
+.shop-card__img img { max-width: 100%; max-height: 100%; min-height: 0; object-fit: contain; }
+.shop-card__placeholder { font-size: 64px; opacity: 0.55; }
+
+.shop-card__corner { position: absolute; top: 14px; right: -36px; width: 130px; padding: 4px 0; transform: rotate(45deg); text-align: center; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2); pointer-events: none; z-index: 2; }
+.shop-card__corner--sample { background: oklch(58% 0.14 152); }
+
+.shop-card__body { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.shop-card__name { font-size: 14px; font-weight: 600; color: var(--color-text-primary); letter-spacing: -0.005em; line-height: 1.3; }
+.shop-card__sku { font: 500 11px var(--font-family-mono); color: var(--color-text-tertiary); }
+.shop-card__desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin-top: 1px; min-height: 1.4em; }
+.shop-card__price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-top: auto; padding-top: 10px; }
+.shop-card__price { font-size: 16px; font-weight: 600; color: var(--color-text-primary); letter-spacing: -0.01em; }
+.shop-card__opts { font-size: 11px; color: var(--color-text-tertiary); }
+.shop-card__cta { margin-top: 8px; display: flex; gap: 6px; align-items: stretch; }
+.shop-card__cta > .tds-btn { flex: 1; justify-content: center; }
+.shop-card__addbtn { width: 32px; min-height: 28px; padding: 0; border-radius: 6px; border: 1px solid var(--color-border-default); background: var(--color-bg-2); color: var(--color-text-primary); cursor: pointer; display: grid; place-items: center; flex: none; transition: all var(--duration-fast); }
+.shop-card__addbtn:hover { background: var(--color-bg-3); border-color: var(--color-border-strong); color: var(--color-primary-700); }
+.shop-card__addbtn:active { transform: scale(0.94); }
+
+/* Fly-to-cart animation ──────────────────────────────────────── */
+.shop-fly { position: fixed; width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary-700); color: #fff; display: grid; place-items: center; box-shadow: 0 6px 18px oklch(0% 0 0 / 0.28); z-index: 9999; pointer-events: none; transition: transform 640ms cubic-bezier(0.5, -0.05, 0.6, 0.7), opacity 640ms ease; font-weight: 700; font-size: 14px; overflow: hidden; }
+.shop-fly img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 4px; box-sizing: border-box; border-radius: 50%; }
+.cart-trigger--bump { animation: cartBump 420ms ease; }
+@keyframes cartBump { 0% { transform: scale(1); } 25% { transform: scale(1.18); } 55% { transform: scale(0.94); } 100% { transform: scale(1); } }
+
+/* Spec picker modal ────────────────────────────────────────── */
+.spec-modal__backdrop { position: fixed; inset: 0; background: oklch(0% 0 0 / 0.42); z-index: 9100; display: grid; place-items: center; padding: 24px; animation: specModalFade 160ms ease; }
+@keyframes specModalFade { from { opacity: 0; } to { opacity: 1; } }
+.spec-modal { width: 100%; max-width: 460px; background: var(--color-bg-1); border-radius: 14px; box-shadow: 0 24px 60px oklch(0% 0 0 / 0.35); overflow: hidden; display: flex; flex-direction: column; max-height: calc(100vh - 48px); animation: specModalRise 200ms cubic-bezier(0.2, 0.7, 0.3, 1); }
+@keyframes specModalRise { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+.spec-modal__head { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--color-border-subtle); }
+.spec-modal__thumb { width: 56px; height: 56px; border-radius: 8px; background: #fff; border: 1px solid var(--color-border-subtle); display: grid; place-items: center; padding: 4px; flex: none; overflow: hidden; }
+.spec-modal__thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.spec-modal__thumb-ph { font-size: 28px; opacity: 0.55; }
+.spec-modal__heading { flex: 1; min-width: 0; }
+.spec-modal__title { font-size: 15px; font-weight: 600; color: var(--color-text-primary); letter-spacing: -0.01em; }
+.spec-modal__price { font-size: 18px; font-weight: 600; color: var(--color-primary-700); margin-top: 2px; }
+.spec-modal__close { width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent; color: var(--color-text-tertiary); cursor: pointer; display: grid; place-items: center; flex: none; }
+.spec-modal__close:hover { background: var(--color-bg-3); color: var(--color-text-primary); }
+.spec-modal__body { padding: 16px 18px 8px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.spec-modal__axis-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: 8px; }
+.spec-modal__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.spec-modal__chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--color-border-default); background: var(--color-bg-2); color: var(--color-text-primary); font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all var(--duration-fast); }
+.spec-modal__chip:hover { border-color: var(--color-border-strong); }
+.spec-modal__chip.is-active { background: var(--color-primary-700); border-color: var(--color-primary-700); color: #fff; }
+.spec-modal__chip.is-disabled { opacity: 0.4; text-decoration: line-through; }
+.spec-modal__warn { font-size: 12px; color: var(--color-warning-700); display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; background: var(--color-warning-50, oklch(96% 0.04 80)); border-radius: 6px; }
+.spec-modal__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px 16px; border-top: 1px solid var(--color-border-subtle); }
+
+.spec-pop__title-wrap { flex: 1; min-width: 0; }
+.spec-pop__price { font-size: 14px; font-weight: 600; color: var(--color-primary-700); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.spec-pop__warn { font-size: 11.5px; color: var(--color-warning-700); display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--color-warning-50, oklch(96% 0.04 80)); border-radius: 6px; }
+.spec-pop__warn--err { color: var(--color-danger-700, oklch(48% 0.18 25)); background: var(--color-danger-50, oklch(96% 0.04 25)); }
+
+/* Quantity stepper inside the spec picker ───────────────── */
+.spec-pop__qty-section { padding-top: 4px; }
+.spec-pop__qty-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.spec-pop__stepper { display: inline-flex; align-items: center; background: var(--color-bg-1); border: 1px solid var(--color-border-default); border-radius: 8px; padding: 2px; }
+.spec-pop__stepper-btn { width: 26px; height: 26px; display: grid; place-items: center; border: 0; background: transparent; cursor: pointer; border-radius: 6px; color: var(--color-text-secondary); }
+.spec-pop__stepper-btn:hover:not(:disabled) { background: var(--color-bg-3); color: var(--color-text-primary); }
+.spec-pop__stepper-btn:active:not(:disabled) { transform: scale(0.92); }
+.spec-pop__stepper-btn:disabled { color: var(--color-text-quaternary, var(--color-text-tertiary)); opacity: 0.45; cursor: not-allowed; }
+.spec-pop__stepper-input { width: 42px; height: 26px; text-align: center; border: 0; background: transparent; font-size: 13px; font-weight: 500; color: var(--color-text-primary); font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.spec-pop__stepper-input::-webkit-inner-spin-button, .spec-pop__stepper-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.spec-pop__stepper-input:focus { outline: none; }
+.spec-pop__qty-meta { font-size: 11.5px; color: var(--color-text-tertiary); display: inline-flex; align-items: baseline; gap: 4px; font-variant-numeric: tabular-nums; }
+
+.spec-pop__qty-total { color: var(--color-text-secondary); font-weight: 500; }
+
+/* stock CSS removed */
+.cart-pop__chip.is-active .cart-pop__chip-tag--low { background: oklch(100% 0 0 / 0.18); color: #fff; }
+`;
+
+if (typeof document !== 'undefined' && !document.getElementById('shop-browse-styles')) {
+  const s = document.createElement('style');
+  s.id = 'shop-browse-styles';
+  s.textContent = shopBrowseStyles;
+  document.head.appendChild(s);
+}
+
+window.ProductsBrowse = ProductsBrowse;

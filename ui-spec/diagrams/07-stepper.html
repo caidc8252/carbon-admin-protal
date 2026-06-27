@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§7.3 Stepper 两种变体 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §7.3</div>
+  <h1>Stepper 两种变体 · §7.3</h1>
+  <p class="lede">
+    全站 stepper 收敛为 <b>两种</b>变体，<b>不是一套</b>。选哪种由<b>放置位置</b>决定、互斥：
+    进入页面正文、独立成卡 ⇒ <b>变体 A（卡片）</b>；挂在标题栏底部（形态 E′）⇒ <b>变体 B（标题底部）</b>。
+    两者画法不同、语义可同（都能承载向导进度或生命周期状态），差异只为匹配「主内容 vs 二级 chrome」两种视觉权重。
+  </p>
+
+  <!-- selection rule -->
+  <div class="duo">
+    <div class="card card--pad">
+      <div class="duo__when">页面正文 · 独立成卡</div>
+      <div class="duo__var">变体 A <code>card</code></div>
+      <div class="duo__body">原型 <b>Order detail StatusPipeline</b><br>36 圆点+图标 · <b>实心当前点</b>+shadow · 两行标签 · 撑满连接条<br>用于：Factory Image 向导、New order 向导、Order detail 订单生命周期</div>
+    </div>
+    <div class="card card--pad">
+      <div class="duo__when">标题栏底部 · 形态 E′</div>
+      <div class="duo__var">变体 B <code>bar</code></div>
+      <div class="duo__body">原型 <b>Ticket StatusTrack</b><br>22 圆点 · <b>柔和当前点</b> · 单行标签 · 紧凑连接条<br>用于：标题栏底部向导进度、工单生命周期状态轨</div>
+    </div>
+  </div>
+
+  <!-- Variant A -->
+  <section>
+    <div class="sec-h"><span class="tag">A · card</span><h2>卡片 Stepper（正文承载）</h2></div>
+    <p class="sec-desc">独立成标准卡，置于标题栏之下、表单/正文之上。当前步 = 实心主色 + 白图标 + shadow；两行标签（<code>STEP N</code> overline + 标题）；连接条等分撑满。下例：订单生命周期，第 2 步进行中。</p>
+    <div class="card" style="padding:6px 22px;"><div class="pipe" id="pipe-order"></div></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--primary-700);border-color:var(--primary-700);"></span>当前 · 实心主色 + shadow</span>
+      <span><span class="swatch" style="background:var(--success-bg);border-color:var(--success-border);"></span>已完成 · ✓ 绿</span>
+      <span><span class="swatch" style="background:var(--bg3);border-color:var(--border);"></span>未达 · 灰</span>
+    </div>
+  </section>
+
+  <!-- Variant B -->
+  <section>
+    <div class="sec-h"><span class="tag">B · bar</span><h2>标题底部 Stepper / StatusTrack（仅限标题栏底部）</h2></div>
+    <p class="sec-desc">挂在标题栏最底部、与 Tab 共用同一槽位，属二级 chrome 故刻意更轻。当前步 = <b>柔和</b>主色（非实心）；单行标签、无 overline；连接条紧凑固定。下例：分步表单向导，第 2 步进行中。</p>
+    <div class="tb">
+      <div class="tb__inner">
+        <div class="tb__row">
+          <div class="tb__back">‹</div>
+          <div class="tb__main">
+            <div class="tb__title">New factory image</div>
+            <div class="tb__sub">Declare what the factory pre-installs on this batch.</div>
+          </div>
+          <div class="tb__actions"><button class="btn">Cancel</button><button class="btn btn--primary">Continue</button></div>
+        </div>
+        <div class="tb__bottom"><div class="track" id="track-wizard"></div></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--primary-100);border-color:rgba(75,74,176,.4);"></span>当前 · 柔和主色（非实心）</span>
+      <span><span class="swatch" style="background:var(--success-bg);border-color:var(--success-border);"></span>已完成 · ✓ 绿</span>
+      <span><span class="swatch" style="background:var(--bg2);border-color:var(--border);"></span>未达 · 灰</span>
+    </div>
+    <div class="contrast"><span class="x">✕</span> 变体 B 不得单独放进页面正文；正文里独立成卡的进度一律用变体 A。</div>
+  </section>
+</div>
+
+<script>
+  const ICON = {
+    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>',
+    card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 9.5h19"/></svg>',
+    box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>',
+    truck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7z"/><circle cx="6.5" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>',
+    flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-2 3 2 3H5"/></svg>'
+  };
+  (function(){
+    const steps=[{name:'Awaiting payment',icon:'card'},{name:'Awaiting shipment',icon:'box'},{name:'Shipped',icon:'truck'},{name:'Complete',icon:'flag'}];
+    const cur=1, el=document.getElementById('pipe-order');
+    el.innerHTML=steps.map((s,i)=>{
+      const st=i<cur?'done':i===cur?'active':'future';
+      const glyph=i<cur?ICON.check:ICON[s.icon];
+      const bar=i<steps.length-1?`<span class="pipe__bar ${i<cur?'pbar-done':'pbar-idle'}"></span>`:'';
+      return `<span class="pipe__step ${st}"><span class="pipe__dot">${glyph}</span><span class="pipe__lbl"><span class="pipe__over">Step ${i+1}</span><span class="pipe__name">${s.name}</span></span></span>${bar}`;
+    }).join('');
+  })();
+  (function(){
+    const steps=['Name & model','PEP & apps','Review'];
+    const cur=1, el=document.getElementById('track-wizard');
+    el.innerHTML=steps.map((s,i)=>{
+      const st=i<cur?'is-done':i===cur?'is-here':'is-future';
+      const dot=i<cur?ICON.check:(i+1);
+      const bar=i<steps.length-1?`<span class="track__bar ${i<cur?'bar-done':'bar-idle'}"></span>`:'';
+      return `<span class="track__step ${st}"><span class="track__dot">${dot}</span><span class="track__lbl">${s}</span></span>${bar}`;
+    }).join('');
+  })();
+</script>
+</body>
+</html>

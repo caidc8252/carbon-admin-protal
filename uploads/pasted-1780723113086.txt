@@ -1,0 +1,317 @@
+# Devices · 数据模型差异分析（设备数据模型 vs 现有 Devices→Devices 功能）
+
+> 日期：2026-06-06
+> 对比双方：
+> - **新模型** —— 业务方提供的设备数据定义：`DEVICE / DEVICE APPLICATION / DEVICE EVENT / DEVICE INFO / DEVICE EXTEND / BATTERY INFO / DEVICE APPLICATION STATISTIC / DEVICE STATISTIC / STORE`
+> - **现有代码（真源）** —— `devices-fleet.jsx`（列表 + 详情四个 Tab + 派生 helper）+ `devices-list-search.jsx`（列表搜索/列预设覆盖）
+> 性质：**差异梳理 + 改造决策依据**。本文不含代码改动，待业务方确认后再实施。
+> 约束（业务方指示）：
+> 1. 不改 Devices 已有的样式风格与栏目布局；
+> 2. 功能下所有模块的数据不能超越模型定义 —— **超出模型的字段提出删除**；
+> 3. **归属本栏目但模型有、UI 缺的字段提出补充**；
+> 4. 终端↔商户/门店关系尚未充分定义、可能变化 —— 只关注"关系"本身，不展开其它无关字段。
+
+---
+
+## 0. 本次分析的范围（Devices → Devices）
+
+| 范围内 | 对应代码 |
+|---|---|
+| 设备列表（含搜索栏 / 列预设 / 翻页 / KPI） | `devices-fleet.jsx` `DevicesListScreen` + `devices-list-search.jsx` 覆盖 |
+| 设备详情 · **Basic information** | `DeviceBasicTab`（Device / Deployment / Network / System / Hardware posture / Location 卡片） |
+| 设备详情 · **Apps & Firmware** | `DeviceAppsTab`（Firmware / Missing / Outdated / Installed / Push history） |
+| 设备详情 · **Monitoring** | `DeviceMonitoringTab` + `deviceTelemetryFor`（Security / Uptime / Network / Location / Settings / Modules / State / SIM traffic） |
+| 设备详情 · **Pre-warning** | `DevicePrewarningTab` + `prewarningFor` |
+
+> 不在本次范围：Device Models、Factory Images（Devices 下的兄弟菜单）；Customer detail 里的 `DevicesTab`（`devices-tab.jsx`）虽复用同一份设备数据，但它属于"客户详情"栏目，本文只在涉及字段对齐时引用它。
+
+---
+
+## 1. 现有设备对象（seed 真源）字段 → 模型映射
+
+现有 `DEVICES_SEED` 每台设备的形状：
+
+```js
+{ sn, model, os, firmware, buildNumber, activatedAt, createdAt, lastSeenAt,
+  state, merchantId, storeId, imei, macAddress,
+  storage:{total,used}, battery:{level,health},
+  hardware:{root,devMode,securityWarnings[]},
+  network:{ sim:{enabled,carrier}, ethernet:{enabled}, wifi:{enabled,ssid} },
+  settings:{timezone,language,autoTimezone,autoTime},
+  apps:[{id,name,version,installedAt,system}] }
+```
+
+| 现有字段 | 模型对应 | 结论 |
+|---|---|---|
+| `sn` | DEVICE.DEVICE SN | ✅ |
+| `model` | DEVICE.MODEL CODE | ✅ |
+| `os` ("Android 14") | DEVICE.OS VERSION / DEVICE INFO.OS+OS VERSION | ✅ |
+| `firmware` | DEVICE.FIRMWARE VERSION | ✅ |
+| `buildNumber` ("8.2.1.127.prod") | — | 🔴 **超模型** → 删除，或并入 DEVICE EXTEND.VERSION INFO |
+| `activatedAt` | DEVICE.ACTIVE TIMESTAMP | ✅ |
+| `createdAt` | DEVICE EXTEND.CREATE TIMESTAMP（DEVICE 本身只有 UPDATE/ACTIVE） | ✅（口径需确认） |
+| `lastSeenAt` | DEVICE EXTEND.UPDATE TIMESTAMP（决策：以此为准） | ✅（取自 EXTEND.UPDATE TIMESTAMP） |
+| `state` = active/inactive/pending | DEVICE.STATUS = 1正常/0锁定/9待激活 | 🟠 **语义错位**（见 §4.1） |
+| `merchantId` / `storeId` | 关系：DEVICE.PARTNER ID（所有者）+ STORE 绑定 | 🟡 关系字段，保留（见 §5） |
+| `imei`（单值） | DEVICE INFO.SIM SLOTS[].IMEI（每卡槽） | 🟠 模型为双卡槽多值（见 §4.2） |
+| `macAddress` | —（模型无设备级 MAC） | 🔴 **超模型** → 删除或核实 |
+| `storage{total,used}` | DEVICE INFO.STORAGE Capacity{total,used,base} | ✅ |
+| `battery{level,health}` | BATTERY INFO.BATTERY AVAILABLE + HEALTH STATUS/BATTERY HEALTH | ✅（极简化，模型远更丰富，见 §3） |
+| `hardware.root` | DEVICE.ROOT MODE / DEVICE EXTEND.SYSTEM SECURITY.IS ROOTED | ✅ |
+| `hardware.devMode` | DEVICE.DEVELOP MODE / SYSTEM STATUS.IS DEVELOPMENT DEVICE | ✅ |
+| `hardware.securityWarnings[]` | DEVICE EXTEND.SYSTEM SECURITY.TAMPER STATUS.REASON[] | ✅ |
+| `network.*` | DEVICE EXTEND.NETWORK.{wifi,ethernet,cellular} | ✅（carrier 由 SIM 派生） |
+| `settings.{timezone,language,autoTimezone,autoTime}` | DEVICE INFO.TIMEZONE/LANG + DEVICE EXTEND.SYSTEM SETTING.TIME | ✅ |
+| `apps[].{name,version,installedAt,system}` | DEVICE APPLICATION.INSTALLED APPS.{appName,versionName,installationTimestamp,…} | ✅ 部分（缺多个标志位，见 §4.3） |
+| `apps[].id` | —（合成主键） | 🟢 内部键，无碍 |
+
+---
+
+## 2. 🔴 超出模型的字段 / 模块（建议删除或下线）
+
+这些在 UI 里出现、但模型没有对应定义，**违反"数据不能超越模型"约束**：
+
+| # | UI 位置 | 内容 | 模型对应 | 处理建议 |
+|---|---|---|---|---|
+| E-1 | Basic · Device / Hardware posture；列表 Hardware 预设 | `macAddress`（设备级 MAC） | 无（模型仅有 nearby-wifi 的 MAC、SIM 的 IMEI） | 删除该列与该行；列表 "IMEI / MAC" 列改为只显 IMEI |
+| E-2 | Basic · System（隐含） | `buildNumber` | 无（VERSION INFO 是分项版本，无单一 build 串） | 删除，或映射进 VERSION INFO（见 §3.4） |
+| E-3 | **Monitoring · SIM data usage 卡片** | 月套餐 `capMb` / 账单周期 `billingResetsOn` / `daysToCap` / 30 天累计曲线 | 无套餐/账单概念；DEVICE STATISTIC 只有 mobile rx/tx/total bytes | 🔴 删除"套餐封顶/账单/预估到顶"叙事；如保留流量，改用 DEVICE STATISTIC 的真实 rx/tx/total（见 §3.5） |
+| E-4 | **Monitoring · Memory 探针**（liveMemoryFor 进程列表） | 实时进程 + 每进程 MB | DEVICE INFO.MEMORY INFO 只有 total/used | 删除进程列表；保留 total/used 内存占用 |
+| E-5 | Monitoring · runtime | CPU 占用 % | 无 | 删除 CPU 指标 |
+| E-6 | Monitoring · Settings | `inputMethod`（输入法包名） | SYSTEM SETTING 只有 screen/media/time | 删除 |
+| E-7 | **Apps & Firmware · Push history / Push app** | 设备指令下发历史（app-install/firmware push…） | 模型无"设备指令/下发"表；安装意图由 REQUEST APPS 表达，结果由 DEVICE EVENT 表达 | 🟠 重构：用 REQUEST APPS（目标）+ DIFF APPS（差异）+ DEVICE EVENT（结果）替代自造的 push 历史（见 §4.3） |
+| E-8 | Apps & Firmware | 自造的"fleet 模板必装应用" `REQUIRED_APPS_DEFAULT` + `appDeltaFor` | REQUEST APPS / DIFF APPS 已是模型化的"应配应用 / 差异" | 🟠 改用模型字段（`DevicesTab` 已是此形态，可对齐） |
+| E-9 | **Pre-warning Tab 整体**（traffic / geofence / disk 策略 + 事件） | 阈值策略与告警 | **本设备模型不含**；预警/地理围栏属契约 entitlement（GeoLocation / GeoFencing / Pre-warning） | 🟠 待定（见 §6 开放项 Q3）：本模型下无依据，是否保留/迁移到契约驱动？ |
+
+---
+
+## 3. 🟢 模型有、UI 缺，且明显归属本栏目的字段（建议补充）
+
+模型对设备的刻画远比现状丰富。以下都属于"设备本身"的事实，建议在不改布局风格的前提下补进对应卡片/Tab：
+
+### 3.1 DEVICE 表 · 身份与安全（缺）
+- **CERT CN**（设备预装支付证书 CN，用于识别真实归属）→ Basic·Device 或 Hardware
+- **CLIENT CERT**（CN / 公钥 / SHA1 / 过期日 / 颁发者）→ Hardware posture 新增"设备证书"行/小卡
+- **CLIENT CERT CHANGE TIMES**（证书变更次数）
+- **PCI VERSION**（PCI6 / PCI7）→ System 卡
+- **RUN MODE**（UNATTENDED / ATTENDED）→ Basic（Monitoring 里已有 unattendedMode，可上提）
+- **CREATION TYPE**（IMPORT / OA SYNC）+ **CREATION USER ID** → Basic·Device 的"来源/录入"
+- TRANSFER KEY：偏内部密钥管理，**建议不在 UI 展示**（待确认）
+
+### 3.2 DEVICE INFO 表 · 终端寿命计数器 & 物理状态（缺）
+当前完全未展示，建议在 Monitoring 增一张"Usage counters / 终端使用统计"卡（沿用现有 StatTile 网格风格）：
+- 刷卡/插卡/挥卡次数（CONTACT / CONTACTLESS / MAG STRIPE CARD READ COUNT）
+- POWER CYCLE COUNT、POWER BUTTON PRESS COUNT、USB PLUG COUNT
+- FRONT / REAR CAMERA OPEN COUNT、FLASH COUNT
+- TOTAL PRINT LENGTH、TOTAL UP TIME（累计开机时长）
+- **PRINTER STATUS**（正常/缺纸/过热…）→ Hardware / Modules
+- **MEMORY INFO**（total/used）→ 替代 E-4 的进程列表
+- **STORAGE INFO**（每存储芯片：厂家 / FW 版本 / 寿命）→ Hardware 子表（可选）
+
+### 3.3 DEVICE INFO 表 · SIM 卡槽（现状单值，模型为双卡槽富字段）
+- SIM SLOTS[]：SLOT INDEX、SLOT STATUS（EMPTY/ACTIVE/…）、ICCID、IMEI、IMSI、RSSI、IP ADDRESS
+- 建议：Monitoring·Network 的 Cellular 区扩成"双卡槽"展示；IMEI 归到卡槽下（与 §4.2 一致）
+
+### 3.4 DEVICE EXTEND 表 · 版本/电池保护/系统开关（缺）
+- **VERSION INFO**（FIRMWARE ID / USER VERSION / FINANCE APP / FINANCE FIRMWARE / FINANCE BOOT / SIGNATURE LIBRARY / BSP / PAYMENT MODULE / BASEBAND）→ Apps & Firmware 或 System 增"版本明细"
+- **BATTERY PROTECTION INFO**（充电保护开关 + 上下限）→ Monitoring（与电池相邻）
+- SYSTEM STATUS 里缺的：USB HOST SWITCH、HOTSPOT MENU SWITCH（现仅有 statusBarPulldown）
+- SYSTEM CONFIGURATION / SYSTEM PARAMETERS（服务端下发参数）→ State 卡已有 sysParams，可对齐字段名
+
+### 3.5 BATTERY INFO / DEVICE STATISTIC / DEVICE APPLICATION STATISTIC（大块缺失，归属待确认）
+模型里有三张"重"表，现状几乎未用：
+- **BATTERY INFO**：循环次数、健康度%、温度、内阻、生产日期、充电方式、是否正品、安全等级、充电保护…（现仅 level + 粗粒度 health）
+- **DEVICE STATISTIC**：按日的刷卡数 / 打印长度 / 开机时长 / 各网卡 rx-tx-total 流量 / 前台时长 / 定位成功失败
+- **DEVICE APPLICATION STATISTIC**：每应用的流量 + 前台使用时长
+- 这三者**信息量大**，可能更适合放到独立的 *Battery Health* / *Device Health* 菜单（参考 `_refsrc` 里 Support 下确有 Device Health / Battery Health）。
+- 决策点见 §6 开放项 **Q1/Q2**：哪些进 Devices→Devices 详情，哪些归兄弟菜单？
+
+---
+
+## 4. 🟠 语义 / 命名需要对齐的点
+
+### 4.1 设备 STATUS 编码错位（重要）
+- 模型 DEVICE.STATUS = **1 正常 / 0 锁定 / 9 待激活**。
+- 现状 `state` = **active / inactive / pending**，其中 `inactive` 实为"离线/久未签到"，模型里**离线不是一种 STATUS**（在线/离线应由 last-seen 派生）。
+- 模型的"锁定(Locked)"目前只埋在 Monitoring 的 `terminalLocked`，列表/详情头部没有体现。
+- 建议：把"**状态**"拆成两个维度——
+  - **STATUS**（Normal / Locked / Pending activation）来自 DEVICE.STATUS + DEVICE EXTEND.LOCK STATUS；
+  - **在线度**（Online / Offline）由 last-seen 派生，仅作展示，不作 STATUS。
+- 影响：列表 Status 列、详情头部 pill、搜索筛选项。**仅改语义与取值来源，不改 pill 视觉**。
+
+### 4.2 IMEI 归属
+- 模型 IMEI 在 SIM SLOTS 下、每卡槽一个；现状是设备级单值 `imei`。
+- 建议：保留列表/Basic 的"主 IMEI"展示（取 ACTIVE 卡槽），Monitoring 展开双卡槽明细。
+
+### 4.3 已安装应用 / 应配应用字段（决策：以 REQUEST 为中心、不用 DIFF）
+- INSTALLED APPS 模型字段：pkgName、appName、versionCode、versionName、installationTimestamp、isUninstallable、isAutoStartOnBoot、isKioskMode、isAppLaunchDisabled、isLauncherIconHidden。现状只用了 name/version/installedAt + 自造 `system`。
+  - 补 pkgName（包名，模型主用键）、versionCode + 标志位。
+- **REQUEST APPS（应配）为中心**；**DIFF APPS 不使用**（每行状态由 REQUEST vs INSTALLED + 最近 EVENT 现场派生）。INSTALLED = REQUEST 中应用的最终结果。详见 §9.4。
+
+### 4.4 DEVICE EVENT 事件类型
+- 模型 EVENT TYPE 枚举：应用开始下载/下载成功/下载失败/安装失败/安装成功/用户取消升级/用户确定升级/卸载成功/应用不存在无法删除（+ OTA 固件）。
+- `devices-tab.jsx` 的 `_EVENT_META` 已基本对应；fleet Monitoring 的 `eventsFor`（boot/install/network 自造）需对齐到模型枚举 + target1/2/3 字段。
+
+---
+
+## 5. 🟡 终端 ↔ 商户 / 门店 关系（按指示只保留关系，不展开）
+
+- 模型：DEVICE.**PARTNER ID** = 设备真实所有者主体；门店绑定经"激活"建立；划拨改变所有者、委托改变运营方但不改所有者。STORE.**MERCHANT PARTNER ID** = 门店所属商户。
+- 现状：设备直接挂 `merchantId` + `storeId`，详情/列表展示"Bound to {merchant} · {store}"。
+- 处理：
+  - **保留**现有 `merchantId`/`storeId` 作为"绑定门店及其商户"的关系展示，**不新增**所有者/划拨/委托相关字段与流程（关系定义未定且会变）。
+  - 仅做一处澄清：明确"PARTNER ID（所有者）"与"门店所属商户"在模型中是两个概念，本期 UI 暂以门店绑定为准、不渲染所有者维度。
+  - STORE 表其余字段（country/timezone/phone/operators…）不属于 Devices→Devices，本栏目不引入。
+
+---
+
+## 6. 开放项（需业务方拍板后我再动手）
+
+- **Q1（归属切分）**：BATTERY INFO 的完整电池明细 —— 进 Devices→Devices 的详情，还是归 *Battery Health* 菜单？本栏目电池只保留 level + 健康概览？
+- **Q2（归属切分）**：DEVICE STATISTIC / DEVICE APPLICATION STATISTIC（按日/按应用的流量与使用统计）—— 进本详情的 Monitoring，还是归 *Device Health*？
+- **Q3（Pre-warning）**：本设备模型不含预警/地理围栏定义（属契约 entitlement）。Pre-warning Tab 如何处置：① 暂时保留现状并标注"由契约驱动"；② 下线本 Tab；③ 改为只读展示契约下发的策略？
+- **Q4（删除确认）**：§2 的超模型项（macAddress / buildNumber / SIM 套餐叙事 / 进程列表 / CPU / inputMethod / 自造 push 历史）是否全部按建议删除？有无业务上仍需保留的？
+- **Q5（证书展示）**：CLIENT CERT / TRANSFER KEY 是否在 UI 展示？展示到什么粒度（CN/有效期 vs 公钥/SHA1）？
+- **Q6（STATUS 改造）**：是否接受 §4.1 把"状态(Normal/Locked/Pending)"与"在线度(Online/Offline)"拆成两维？
+
+---
+
+## 7. 拟改造清单（待 Q1–Q6 确认后执行）
+
+| 等级 | 项 | 动作 |
+|---|---|---|
+| 🔴 删 | macAddress / buildNumber / SIM 套餐叙事 / 进程列表 / CPU / inputMethod | 从 seed + UI 移除（§2） |
+| 🔴 改 | Apps & Firmware 改用 REQUEST/INSTALLED/DIFF APPS + DEVICE EVENT | 替换自造模板与 push 历史（§2 E-7/E-8、§4.3） |
+| 🟠 改 | STATUS 语义拆分（状态 vs 在线度） | seed 加 DEVICE.STATUS + LOCK STATUS，UI 取值改源（§4.1） |
+| 🟠 增 | DEVICE 身份/安全字段（CERT CN、PCI、RUN MODE、CREATION TYPE…） | Basic/Hardware 卡内补行（§3.1） |
+| 🟠 增 | DEVICE INFO 寿命计数器 + PRINTER STATUS + MEMORY INFO | Monitoring 新卡（§3.2） |
+| 🟡 增 | SIM 双卡槽明细（ICCID/IMSI/RSSI/IP） | Monitoring·Network 扩展（§3.3、§4.2） |
+| 🟡 增 | VERSION INFO 版本明细、BATTERY PROTECTION、USB/Hotspot 开关 | System/Monitoring 补行（§3.4） |
+| 🟡 增 | INSTALLED APPS 标志位 + pkgName/versionCode | 安装应用表补列（§4.3） |
+| ⏳ 待定 | BATTERY INFO / DEVICE STATISTIC / DEVICE APP STATISTIC / Pre-warning | 取决于 Q1–Q3 |
+
+> 本文 §0–§7 为第一轮差异梳理。§8 为业务方决策，§9 为据此细化的落地清单（仍待最终放行）。
+
+---
+
+## 8. 业务方决策（2026-06-06）
+
+| # | 议题 | 决策 |
+|---|---|---|
+| 0 | DEVICE.PARTNER 的含义 | **PARTNER = ISO**（设备所有者是 ISO）。门店/商户是"部署位置"，与所有者 ISO 是两个维度。本期仍以现有 `merchantId/storeId`（部署绑定）展示，不展开所有者/划拨/委托。 |
+| 1 | 电池 | **只保留电池健康度 + 电量**（BATTERY HEALTH + BATTERY AVAILABLE）。BATTERY INFO 其余字段、BATTERY PROTECTION INFO 本期不做。 |
+| 2 | DEVICE STATISTIC / DEVICE APP STATISTIC | **本期不做历史统计表**，只显示"当日数据"（当前快照值）。→ 删除 30 天曲线 / 多日对比；位置成功失败只留"今天"。 |
+| 3 | Pre-warning Tab | **整体去掉**（连同 `prewarningFor` / `prewarningEventsFor` / `PREWARNING_POLICIES` / `DevicePrewarningTab` 及详情头部的 critical 角标）。 |
+| 4 | Push history | **改为迁移 Monitoring 的 Event log**：用模型 DEVICE EVENT 替换自造的 `pushHistoryFor`；Monitoring 不再有 Event log。 |
+| 5 | CLIENT CERT | **在 Basic information 新增 "Client cert" 栏**展示设备证书；**TRANSFER KEY 不展示**。 |
+| 6 | STATUS | **拆成两维**：STATUS(Normal / Locked / Pending activation) + 在线度(Online / Offline，由 last-seen 派生)。 |
+
+---
+
+## 9. 落地清单（据 §8）
+
+### 9.1 Seed（`DEVICES_SEED`）调整
+- **删**：`buildNumber`、`macAddress`。
+- **改**：`battery` → `{ level, health }`，其中 `health` 由枚举改为**健康度百分比**（BATTERY HEALTH，0–100）。
+- **改**：`state` 拆为 `status`(`normal`|`locked`|`pending`) + 派生 `online`(由 `lastSeenAt`)。`pending` = 待激活(9)；`locked` = 锁定(0)；其余 = 正常(1)。
+- **增**（DEVICE 身份/安全）：`certCn`、`clientCert{cn, sha1, expiredDate, issuerCn, publicKey?}`、`clientCertChangeTimes`、`pciVersion`(PCI6|PCI7)、`runMode`(UNATTENDED|ATTENDED)、`creationType`(IMPORT|OA_SYNC)、`creationUserId`。
+- **增**（DEVICE INFO 当日/当前快照）：寿命计数器（刷/插/挥卡、开关机、电源键、USB、前后相机、刷机、打印长度、累计开机）、`printerStatus`、`memory{total,used}`、`simSlots[]{slotIndex,slotStatus,iccid,imei,imsi,rssi,ip}`。
+- **增**（DEVICE EXTEND）：`versionInfo{firmwareId,userVersion,financeApp,financeFirmware,financeBoot,signatureLib,bsp,paymentModule,baseband}`、`systemStatus` 补 `usbHostSwitch`/`hotspotMenuSwitch`。
+- IMEI：保留设备级"主 IMEI"（取 ACTIVE 卡槽），`simSlots` 提供双卡明细。
+
+### 9.2 Basic information Tab
+- Device 卡：删 build/MAC 相关；**删 IMEI 行**（决策：IMEI 归 Monitoring 的双卡槽，Basic 不展示）；补 CERT CN、PCI version、Run mode、Creation type/user。
+- **新增 "Client cert" 卡/栏**：CN、SHA1、有效期、颁发者 CN（+ 变更次数）。TRANSFER KEY 不展示。
+- **新增 "Version info" 卡**（决策：VERSION INFO 版本明细放 Basic）：FIRMWARE ID / USER VERSION / FINANCE APP / FINANCE FIRMWARE / FINANCE BOOT / SIGNATURE LIBRARY / BSP / PAYMENT MODULE / BASEBAND。
+- System 卡：保留 OS/Firmware/Timezone/Language/Auto*；版本明细已移至 Version info 卡。
+- Hardware posture：删 MAC address 行；Root/Dev/Tamper 保留。
+- Last seen 取 DEVICE EXTEND.UPDATE TIMESTAMP。
+
+### 9.3 设备首页列表 —— 展示与分类分析（决策 #4）
+
+**现状机制（保留，不改样式/布局）**：列表恒定 `SN`(锁左) + 预设列 + `Status`(锁右)，配 5 个**列预设**（Overview / Network / Security / Hardware / Apps）做"分类切换"，外加"Manage columns"自定义抽屉 + Saved views。本质上**预设 = 分类**，无需新造机制——本次只把"列目录"按新模型重新策展。
+
+**分类原则**：模型字段虽多，但**适合列表（可扫读的身份/状态信号）的是少数**；计数器、证书、版本明细、SIM 卡槽明细、系统设置等**详情级字段一律不进列表**，留在详情 Tab。
+
+**列目录（按类重排，对照模型）**
+
+| 类别 | 列 | 模型来源 | 变化 |
+|---|---|---|---|
+| Identity | `sn`(锁左) | DEVICE.DEVICE SN | — |
+| Identity | `model` | DEVICE.MODEL CODE | — |
+| Identity | `osFirmware` | OS VERSION / FIRMWARE VERSION | — |
+| Identity | `imei` | SIM SLOTS[ACTIVE].IMEI | 🔴 由 "IMEI/MAC" 改为**仅 IMEI**（删 MAC，取主卡槽） |
+| Identity | `pciVersion` | DEVICE.PCI VERSION | 🟢 新增（可选列，默认不在预设里） |
+| Deployment | `merchantStore` | 关系（部署门店及其商户） | — |
+| Status | `status` (锁右) | DEVICE.STATUS + LOCK STATUS | 🟠 三态 Normal/Locked/Pending（§4.1） |
+| Status | `online` | 派生自 UPDATE TIMESTAMP | 🟢 新增（在线度，独立于 status） |
+| Status | `lastSeen` | DEVICE EXTEND.UPDATE TIMESTAMP | 🟠 数据源改为 UPDATE TIMESTAMP |
+| Status | `posture` | SYSTEM SECURITY（root/dev/tamper） | — |
+| Status | `warnings` | TAMPER STATUS.REASON 数 | — |
+| Status | `runMode` | DEVICE.RUN MODE | 🟢 新增（可选列） |
+| Network | `networkType` | EXTEND.NETWORK.CURRENT CHANNEL | — |
+| Network | `carrier` | SIM 派生 | — |
+| Network | `ssid` | EXTEND.NETWORK.WIFI.SSID | — |
+| Network | `ip` | 当前网卡 IP | — |
+| Network | `signal` | SIM RSSI / WIFI 信号 | — |
+| Hardware | `battery` | BATTERY AVAILABLE（电量%） | — |
+| Hardware | `batteryHealth` | BATTERY HEALTH（健康度%） | 🟠 枚举→**百分比** |
+| Hardware | `storage` | STORAGE Capacity used% | — |
+| Hardware | `printerStatus` | DEVICE INFO.PRINTER STATUS | 🟢 新增（可选列） |
+| Apps | `configuredApps` | REQUEST APPS 数 | 🟠 由 appsCount(已装数) 改为**配置数(REQUEST)** |
+| Apps | `appsNeedsAction` | REQUEST vs INSTALLED 派生 | 🟢 新增（待装/待升/失败 计数） |
+| Apps | ~~`topApp`~~ | — | 🔴 删（request-中心下意义不大） |
+
+**删除的列**：`imei` 的 MAC 部分、`batteryHealth` 旧枚举、`topApp`。
+
+**5 个预设重排建议**（仍是 `SN … Status`，中间为各预设列）：
+- **Overview**：Model · OS/Firmware · Merchant·Store · Last seen · Online · Posture
+- **Network**：Model · Network · Carrier · SSID · IP · Signal · Last seen
+- **Security**：Model · OS/Firmware · Merchant·Store · Posture · Warnings · Last seen（排序：风险优先）
+- **Hardware**：Model · OS/Firmware · Battery · Health% · Storage · Printer · IMEI · Last seen
+- **Apps**：Model · Merchant·Store · Configured · Needs action · Last seen
+
+**KPI strip**：`Total · Online · Pending activation(待激活) · Locked(锁定)`（替代旧的 Total/Active/Pending，与 §4.1 两维一致）。
+
+**搜索/筛选（Advanced sheet）同步**：Status 改三态、加 Online/Offline；Battery health 改 % 区间；删 MAC、IMEI 仍可作为粘贴匹配（按主卡槽 IMEI）。仍遵守 CLAUDE.md 列表搜索三约束（点 Search 才出结果 / Enter=Search / Active filters）。
+
+**不进列表（详情级）**：CERT CN / CLIENT CERT、VERSION INFO、寿命计数器、SIM 卡槽明细（ICCID/IMSI/RSSI）、系统设置、memory、creation type/user。
+
+### 9.4 Apps & Firmware Tab
+- **以 REQUEST APPS 为中心**（决策补充 2026-06-06）：
+  - **不使用 DIFF APPS 字段**；**不再做** `REQUIRED_APPS_DEFAULT` / `appDeltaFor` 自造模板，也不做 Missing/Outdated/Installed 三表拆分。
+  - 列表数据 = 该设备的 **REQUEST APPS**（ISO 为本机配置的应用）。每行展示该应用的"最终结果" = INSTALLED 中对应包名的实际版本（`installed 是 request 中应用的最终结果`）。
+  - 每行状态由 REQUEST(目标版本) vs INSTALLED(实际版本) + 最近 DEVICE EVENT 派生（installed / needs upgrade / not installed / downloading / failed），即复用 `deriveAppStatus` 形态（与 `devices-tab.jsx` 的 Configured-apps 一致）。
+  - 每行可展开/点出 STRATEGY（upgradeStrategy / networkRequest / upgradeTime / cellularCap / installWindows）。
+  - INSTALLED APPS 字段保留 pkgName / versionCode / versionName / installationTimestamp + 标志位（isUninstallable / isKioskMode / isAutoStartOnBoot / isAppLaunchDisabled / isLauncherIconHidden），但仅作为"REQUEST 行的实际结果"来源，不再单列完整安装清单表。
+- **Push history → Event log**：用 DEVICE EVENT（model eventType 枚举 + target1/2/3 + eventDuration）。**删** `pushHistoryFor`。事件类型对齐模型（应用下载/安装/卸载/用户动作/OTA），**丢弃** boot/net-change（不在模型枚举内）。
+- Firmware 卡：保留（当前/目标版本），可并入 VERSION INFO 明细。
+
+### 9.5 Monitoring Tab
+- **删**：SIM data usage 卡（套餐/账单/曲线，§2 E-3）、Memory 进程列表（保留 total/used，§2 E-4）、CPU（E-5）、inputMethod（E-6）、Event log（迁至 §9.4）。
+- 位置统计：只保留"今天"（删昨天对比）。
+- **增**：DEVICE INFO 寿命计数器卡（当日/当前值，沿用 StatTile 网格）、PRINTER STATUS、双卡槽 SIM 明细、内存 total/used。
+- 保留：Security（tamper/attack count/root）、Uptime（boot/累计开机）、Network（wifi/cellular/ethernet/bluetooth/APN）、Settings（screen/media/time）、Modules（mag/ic/rf/print 开关）、State（lock/statusbar/unattended/devUnit/sysParams）。
+
+### 9.6 Pre-warning Tab
+- **整体删除**：`DevicePrewarningTab`、tabs 列表里的 `prewarning` 项、详情头部 `criticalAlerts` 角标、`prewarningFor`/`prewarningEventsFor`/`PREWARNING_POLICIES`。
+
+### 9.7 关系（不展开）
+- 维持 `merchantId/storeId`（部署绑定）。明确注释 PARTNER(ISO，所有者) 与门店所属商户是两个维度，本期不渲染所有者维度、不做划拨/委托。
+
+> 实施前请确认 §9 清单。确认后我按"不改样式风格与栏目布局、仅增删字段与对齐数据源"的原则落地。
+
+---
+
+## 10. 实施记录（2026-06-06，已落地）
+
+按 §8 决策 + §9 清单完成改造（`devices-fleet.jsx` + `devices-list-search.jsx`）：
+- **Seed 归一化**：去 `buildNumber`/`macAddress`；`battery.health`→健康度%；新增 `status`(normal/locked/pending) + `lockStatus`；`deviceIsOnline()` 由 last-seen 派生在线度；一台演示机置 `locked`。
+- **Basic**：去 IMEI 行；Device 卡补 PCI/Run mode/Cert CN/Created via；新增 **Client cert** 卡 + **Version info** 卡；去 MAC 行。
+- **Apps & Firmware**：改为 **Configured apps（REQUEST 为中心）** 表 + 状态派生 + Strategy 弹窗；**Event log（DEVICE EVENT 模型枚举）从 Monitoring 迁入**；删 Push history / Missing-Outdated-Installed 三表 / KPI。
+- **Monitoring**：删 SIM data usage / 进程列表（保留 RAM 概览）/ CPU / inputMethod / Event log；新增 **Usage counters**（DEVICE INFO 计数器 + 打印机状态）+ **SIM slots**（双卡槽）；位置只留"今天"；改为唯一 canonical 布局。
+- **Pre-warning**：整 Tab + helper + 头部 critical 角标全删。
+- **列表**：列目录按模型重排（IMEI 去 MAC、Battery **Health%**、新增 **Online**/Run mode/PCI/Printer 列、**Configured/Needs action** 取代 Apps/Top app）；Status 列改模型三态、Online 独立列；Advanced 的 Status→Connectivity、Battery health 改 % 区间。
+- **头部**：Status 拆为 **Status pill(Normal/Locked/Pending)** + **Online/Offline pill**。
+
+> 关系（PARTNER=ISO 所有者 vs 门店所属商户）按指示未展开，沿用 `merchantId/storeId`。

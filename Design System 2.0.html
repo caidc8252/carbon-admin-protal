@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TOMS Design System 2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    /* doc chrome — light, paper-like reference spec */
+    --bg:#fbfbfa; --card:#fff; --ink:#1b1b1d; --ink2:#56565c; --ink3:#8a8a90;
+    --line:#ededee; --line2:#e2e2e4; --accent:oklch(40% 0.14 262);
+    --mono:"Geist Mono",ui-monospace,monospace;
+    --sans:"Geist",system-ui,sans-serif;
+    /* live tokens (light) — mirrored so swatches render true */
+    --p50:oklch(97% 0.012 262);--p100:oklch(94% 0.025 262);--p200:oklch(86% 0.06 262);--p300:oklch(72% 0.10 262);--p400:oklch(55% 0.14 262);--p500:oklch(40% 0.14 262);--p600:oklch(32% 0.10 262);--p700:oklch(24% 0.06 262);--p800:oklch(18% 0.04 262);--p900:oklch(12% 0.025 262);
+    --su50:oklch(96% 0.03 152);--su500:oklch(58% 0.14 152);--su700:oklch(46% 0.13 152);
+    --wa50:oklch(96.5% 0.04 80);--wa500:oklch(70% 0.16 70);--wa700:oklch(56% 0.15 60);
+    --er50:oklch(96% 0.04 25);--er500:oklch(58% 0.20 25);--er700:oklch(46% 0.19 25);
+    --in50:oklch(96% 0.03 230);--in500:oklch(60% 0.14 230);--in700:oklch(48% 0.13 230);
+    --bg1:oklch(99% 0.003 90);--bg2:oklch(100% 0 0);--bg3:oklch(97.2% 0.004 90);
+    --t1:oklch(18% 0.01 270);--t2:oklch(42% 0.008 270);--t3:oklch(58% 0.006 270);
+    --bd-sub:oklch(93% 0.005 90);--bd-def:oklch(89% 0.005 90);--bd-str:oklch(80% 0.006 90);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;}
+
+  /* layout: sticky TOC + content */
+  .shell{display:grid;grid-template-columns:236px minmax(0,1fr);gap:0;max-width:1180px;margin:0 auto;}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:40px 20px;border-right:1px solid var(--line2);}
+  nav.toc .brand{font:600 15px var(--sans);letter-spacing:-0.01em;margin-bottom:2px;}
+  nav.toc .ver{font:600 11px var(--mono);color:var(--accent);letter-spacing:0.06em;margin-bottom:24px;}
+  nav.toc a{display:block;font-size:13px;color:var(--ink2);text-decoration:none;padding:5px 0;border-radius:8px;}
+  nav.toc a:hover{color:var(--ink);}
+  nav.toc a.sec{font-weight:600;color:var(--ink);margin-top:16px;}
+  nav.toc a .n{font:600 11px var(--mono);color:var(--ink3);margin-right:8px;}
+  main{padding:48px 44px 140px;min-width:0;}
+
+  h1.title{font-size:34px;font-weight:600;letter-spacing:-0.02em;margin:0 0 8px;}
+  .lede{font-size:15px;color:var(--ink2);max-width:70ch;margin:0 0 4px;text-wrap:pretty;}
+  .src{font:500 12px var(--mono);color:var(--ink3);margin-top:10px;}
+
+  section{padding-top:40px;margin-top:36px;border-top:1px solid var(--line2);}
+  section:first-of-type{border-top:0;}
+  .kicker{font:600 12px var(--mono);letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;}
+  h2{font-size:24px;font-weight:600;letter-spacing:-0.015em;margin:6px 0 6px;}
+  h3{font-size:15px;font-weight:600;margin:30px 0 10px;display:flex;align-items:center;gap:8px;}
+  h3 .pin{font:600 10px var(--mono);background:var(--p50);color:var(--p700);padding:2px 7px;border-radius:999px;letter-spacing:0.04em;}
+  p.note{font-size:14px;color:var(--ink2);max-width:74ch;margin:6px 0;}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0 6px;font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  th{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:0.03em;color:var(--ink3);background:#f6f6f5;}
+  tr:last-child td{border-bottom:0;}
+  td code,.m{font-family:var(--mono);font-size:12px;}
+  td code{background:#f1f1f0;padding:1px 6px;border-radius:4px;}
+
+  /* swatches */
+  .sw-row{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:10px 0;}
+  .sw{flex:1 1 0;min-width:70px;height:64px;display:flex;align-items:flex-end;padding:6px 7px;font:600 10px var(--mono);}
+  .sw small{font:500 9px var(--mono);opacity:.7;display:block;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;}
+  .chip{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;padding:8px 12px 8px 8px;background:var(--card);font-size:12px;}
+  .dot{width:34px;height:34px;border-radius:9px;flex:none;border:1px solid rgba(0,0,0,.06);}
+  .chip b{font-weight:600;display:block;}
+  .chip span{font:500 11px var(--mono);color:var(--ink3);}
+
+  /* type specimens */
+  .spec{display:flex;align-items:baseline;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .spec:last-child{border-bottom:0;}
+  .spec .lbl{flex:none;width:128px;font:500 12px var(--mono);color:var(--ink3);}
+  .spec .ex{color:var(--ink);min-width:0;}
+
+  /* radius / spacing demos */
+  .demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px;margin:12px 0;}
+  .demo{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--card);text-align:center;}
+  .demo .box{height:48px;background:var(--p100);border:1.5px solid var(--p300);margin:0 auto 10px;width:78px;}
+  .demo .sb{height:48px;background:var(--p500);margin:0 auto 10px;}
+  .demo b{font:600 13px var(--mono);}
+  .demo span{display:block;font-size:11px;color:var(--ink3);margin-top:2px;}
+
+  .principles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:14px 0;}
+  .pcard{border:1px solid var(--line);border-radius:16px;padding:18px 20px;background:var(--card);}
+  .pcard .pn{font:600 12px var(--mono);color:var(--accent);}
+  .pcard h4{font-size:15px;font-weight:600;margin:6px 0 6px;}
+  .pcard p{font-size:13px;color:var(--ink2);margin:0;line-height:1.55;}
+
+  pre{background:#1c1c1e;color:#e8e8ea;border-radius:16px;padding:18px 20px;overflow:auto;font:500 12px/1.7 var(--mono);margin:12px 0;}
+  pre .c{color:#7a7a82;}
+  pre .v{color:#9fd3ff;}
+  pre .k{color:#e0a8ff;}
+
+  .badge{display:inline-block;font:600 11px var(--mono);padding:2px 8px;border-radius:999px;}
+  .b-ok{background:var(--su50);color:var(--su700);}
+  .b-rm{background:var(--er50);color:var(--er700);}
+  ul.clean{margin:8px 0;padding-left:18px;}
+  ul.clean li{font-size:13.5px;color:var(--ink2);margin:5px 0;}
+  ul.clean li b{color:var(--ink);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media(max-width:900px){.shell{grid-template-columns:1fr;}nav.toc{display:none;}.principles,.two{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc">
+    <div class="brand">TOMS Carbon</div>
+    <div class="ver">DESIGN SYSTEM 2.0</div>
+    <a class="sec" href="#principles"><span class="n">01</span>Design Principles</a>
+    <a class="sec" href="#foundations"><span class="n">02</span>Foundations</a>
+    <a href="#color">Color</a>
+    <a href="#type">Typography</a>
+    <a href="#spacing">Spacing</a>
+    <a href="#radius">Radius</a>
+    <a href="#elevation">Elevation</a>
+    <a href="#icons">Icons</a>
+    <a class="sec" href="#components"><span class="n">03</span>Components</a>
+    <a href="#inventory">Inventory &amp; variants</a>
+    <a href="#forms">Forms</a>
+    <a href="#cards">Cards</a>
+    <a href="#tables">Tables</a>
+    <a class="sec" href="#patterns"><span class="n">04</span>Patterns</a>
+    <a class="sec" href="#tokens"><span class="n">05</span>Design Tokens</a>
+    <a class="sec" href="#changelog"><span class="n">06</span>Changelog</a>
+  </nav>
+
+  <main>
+    <p class="kicker">Reference Specification</p>
+    <h1 class="title">TOMS Carbon — Design System 2.0</h1>
+    <p class="lede">The single source of truth for the Carbon Admin Portal. Every value here is extracted from the project's current final state — <code>assets/tokens.css</code>, <code>components.css</code>, and the locked <code>CLAUDE.md</code> conventions. Nothing is invented or carried over from a prior system.</p>
+    <p class="src">Source of truth · OKLCH color space · Light + Dark · Geist / Geist Mono</p>
+
+    <!-- ══════════ 01 PRINCIPLES ══════════ -->
+    <section id="principles">
+      <p class="kicker">01 — Design Principles</p>
+      <h2>Principles</h2>
+      <p class="note">Five rules that govern every screen. When a decision is ambiguous, these win.</p>
+      <div class="principles">
+        <div class="pcard"><div class="pn">01</div><h4>Reduce variables, not pixels</h4><p>Same function → same component, spacing, radius, and icon container. We add a token before we add a one-off value. Fewer choices = a calmer, more trustworthy product.</p></div>
+        <div class="pcard"><div class="pn">02</div><h4>Quiet by default</h4><p>One filled primary CTA per screen. Color is reserved for status and meaning — never decoration. No gradients, no background images, no accent-on-everything.</p></div>
+        <div class="pcard"><div class="pn">03</div><h4>Token-driven, theme-aware</h4><p>Components never hardcode color, radius, or spacing. Everything reads a token so light/dark and future retunes cascade from one place.</p></div>
+        <div class="pcard"><div class="pn">04</div><h4>Density with air</h4><p>Operator tooling is information-dense, but rhythm is fixed: 24px between sections, 20px inside cards, 16px from search to table. Content scales by paging/sectioning — never by squeezing spacing.</p></div>
+        <div class="pcard"><div class="pn">05</div><h4>Data is monospaced</h4><p>IDs, serials, timestamps, money, %, versions use Geist Mono + tabular-nums so columns align and numbers are scannable.</p></div>
+        <div class="pcard"><div class="pn">06</div><h4>Hierarchy through layering</h4><p>Control radius (10) &lt; inner/icon (12) &lt; card (16) &lt; modal (20) is an intentional elevation language, not inconsistency.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ 02 FOUNDATIONS ══════════ -->
+    <section id="foundations">
+      <p class="kicker">02 — Foundations</p>
+      <h2>Foundations</h2>
+
+      <h3 id="color">Color system</h3>
+      <p class="note">OKLCH throughout. Each ramp is theme-aware — the dark values below the swatches are the actual <code>[data-theme="dark"]</code> tokens. Primary is a midnight-indigo CTA in light, and a soft near-white CTA in dark (Linear style).</p>
+
+      <p class="note" style="margin-top:14px"><b>Primary</b> — CTA / selected / focus</p>
+      <div class="sw-row">
+        <div class="sw" style="background:var(--p50);color:var(--p700)">50</div>
+        <div class="sw" style="background:var(--p100);color:var(--p700)">100</div>
+        <div class="sw" style="background:var(--p200);color:var(--p800)">200</div>
+        <div class="sw" style="background:var(--p300);color:#fff">300</div>
+        <div class="sw" style="background:var(--p400);color:#fff">400</div>
+        <div class="sw" style="background:var(--p500);color:#fff">500</div>
+        <div class="sw" style="background:var(--p600);color:#fff">600</div>
+        <div class="sw" style="background:var(--p700);color:#fff">700<small>CTA</small></div>
+        <div class="sw" style="background:var(--p800);color:#fff">800</div>
+        <div class="sw" style="background:var(--p900);color:#fff">900</div>
+      </div>
+
+      <p class="note" style="margin-top:14px"><b>Semantic</b> — status only (pills, inline hints, never decoration)</p>
+      <div class="chips">
+        <div class="chip"><span class="dot" style="background:var(--su500)"></span><div><b>Success</b><span>500 oklch(58% .14 152)</span></div></div>
+        <div class="chip"><span class="dot" style="background:var(--wa500)"></span><div><b>Warning</b><span>500 oklch(70% .16 70)</span></div></div>
+        <div class="chip"><span class="dot" style="background:var(--er500)"></span><div><b>Error</b><span>500 oklch(58% .20 25)</span></div></div>
+        <div class="chip"><span class="dot" style="background:var(--in500)"></span><div><b>Info</b><span>500 oklch(60% .14 230)</span></div></div>
+      </div>
+
+      <table>
+        <tr><th>Role</th><th>Token</th><th>Light</th><th>Dark</th></tr>
+        <tr><td>Primary / CTA</td><td><code>--color-primary-700</code></td><td>oklch(24% .06 262)</td><td>oklch(88% .004 260)</td></tr>
+        <tr><td>Success</td><td><code>--color-success-500</code> / <code>-50</code> / <code>-700</code></td><td>58% .14 152</td><td>68% .13 152</td></tr>
+        <tr><td>Warning</td><td><code>--color-warning-500</code> / <code>-50</code> / <code>-700</code></td><td>70% .16 70</td><td>76% .13 70</td></tr>
+        <tr><td>Error</td><td><code>--color-error-500</code> / <code>-50</code> / <code>-700</code></td><td>58% .20 25</td><td>68% .16 25</td></tr>
+        <tr><td>Info</td><td><code>--color-info-500</code> / <code>-50</code> / <code>-700</code></td><td>60% .14 230</td><td>70% .12 235</td></tr>
+        <tr><td>Surface · app</td><td><code>--color-bg-1</code></td><td>oklch(99% .003 90)</td><td>oklch(14% .003 260)</td></tr>
+        <tr><td>Surface · card</td><td><code>--color-bg-2</code></td><td>oklch(100% 0 0)</td><td>oklch(17% .004 260)</td></tr>
+        <tr><td>Surface · sunken/sidebar</td><td><code>--color-bg-3</code></td><td>oklch(97.2% .004 90)</td><td>oklch(11% .003 260)</td></tr>
+        <tr><td>Text · primary</td><td><code>--color-text-primary</code></td><td>oklch(18% .01 270)</td><td>oklch(94% .003 260)</td></tr>
+        <tr><td>Text · secondary</td><td><code>--color-text-secondary</code></td><td>oklch(42% .008 270)</td><td>oklch(66% .005 260)</td></tr>
+        <tr><td>Text · tertiary</td><td><code>--color-text-tertiary</code></td><td>oklch(58% .006 270)</td><td>oklch(50% .005 260)</td></tr>
+        <tr><td>Border · subtle / default / strong</td><td><code>--color-border-*</code></td><td>93% / 89% / 80%</td><td>20% / 24% / 32%</td></tr>
+      </table>
+
+      <h3 id="type">Typography <span class="pin">Geist + Geist Mono</span></h3>
+      <p class="note">One sans (Geist) for prose/UI, one mono (Geist Mono) for data. Even-number size scale; weights 400/500/600 (700 for rare emphasis). No 11/13/13.5.</p>
+      <div style="border:1px solid var(--line);border-radius:16px;padding:8px 18px;background:var(--card);margin:12px 0;">
+        <div class="spec"><span class="lbl">H1 · page title<br/>24 / 600</span><span class="ex" style="font-size:24px;font-weight:600;letter-spacing:-0.02em;">Customers &amp; contracts</span></div>
+        <div class="spec"><span class="lbl">H2 · section<br/>18 / 600</span><span class="ex" style="font-size:18px;font-weight:600;">Latest version</span></div>
+        <div class="spec"><span class="lbl">H3 · card title<br/>14 / 600</span><span class="ex" style="font-size:14px;font-weight:600;">Device snapshot</span></div>
+        <div class="spec"><span class="lbl">H4 · overline<br/>12 / 600 caps</span><span class="ex" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--t3)">Runtime</span></div>
+        <div class="spec"><span class="lbl">Body / table<br/>14 / 400</span><span class="ex" style="font-size:14px;">Pinegate Apparel — onboarding in progress.</span></div>
+        <div class="spec"><span class="lbl">Caption / label<br/>12 / 500</span><span class="ex" style="font-size:12px;font-weight:500;color:var(--t2)">Registered May 23, 2026</span></div>
+        <div class="spec"><span class="lbl">Data · mono<br/>14 / tabular</span><span class="ex m" style="font-size:14px;">IMEI 354782110007101 · $23,800.00</span></div>
+      </div>
+      <table>
+        <tr><th>Step</th><th>Token</th><th>Size</th><th>Use</th></tr>
+        <tr><td>4xl</td><td><code>--font-size-4xl</code></td><td>36px</td><td>marketing / splash only</td></tr>
+        <tr><td>3xl</td><td><code>--font-size-3xl</code></td><td>28px</td><td>rare hero figure</td></tr>
+        <tr><td>2xl</td><td><code>--font-size-2xl</code></td><td>22px</td><td>large stat value</td></tr>
+        <tr><td>xl</td><td><code>--font-size-xl</code></td><td>18px</td><td>H2 section title</td></tr>
+        <tr><td>lg</td><td><code>--font-size-lg</code></td><td>16px</td><td>lede / emphasis</td></tr>
+        <tr><td>md / sm</td><td><code>--font-size-md</code></td><td>14px</td><td>body, table cell, H3, form value</td></tr>
+        <tr><td>xs</td><td><code>--font-size-xs</code></td><td>12px</td><td>caption, label, overline</td></tr>
+        <tr><td>—</td><td>page / detail title</td><td>24px / 600</td><td>H1 (<code>.page__title</code>)</td></tr>
+      </table>
+
+      <h3 id="spacing">Spacing <span class="pin">4px grid</span></h3>
+      <p class="note">All spacing is a multiple of 4. Layout rhythm is fixed across pages — see usage column.</p>
+      <table>
+        <tr><th>Token</th><th>Value</th><th>Primary use</th></tr>
+        <tr><td><code>--space-1</code></td><td>4px</td><td>icon↔label, chip inner</td></tr>
+        <tr><td><code>--space-2</code></td><td>8px</td><td>tight control gaps, badge padding</td></tr>
+        <tr><td><code>--space-3</code></td><td>12px</td><td>stat-grid gap, compact stacks</td></tr>
+        <tr><td><code>--space-4</code></td><td>16px</td><td>search→table gap, page-head vertical pad</td></tr>
+        <tr><td><code>--space-5</code></td><td>20px</td><td>card inner padding</td></tr>
+        <tr><td><code>--space-6</code></td><td>24px</td><td><b>base gutter</b> · section gap · detail card gap</td></tr>
+        <tr><td><code>--space-8</code></td><td>32px</td><td>major block separation</td></tr>
+        <tr><td><code>--space-10 / 12</code></td><td>40 / 48px</td><td>empty states, page top/bottom</td></tr>
+        <tr><td><code>--space-16 / 20</code></td><td>64 / 80px</td><td>marketing rhythm</td></tr>
+      </table>
+
+      <h3 id="radius">Radius <span class="pin">DS 2.0 · locked</span></h3>
+      <p class="note">One ladder, assigned by component tier. The control(10) &lt; inner(12) &lt; card(16) &lt; modal(20) gradient is intentional. No stray 5/6/7/8/9/11/13/14/15/18.</p>
+      <div class="demo-grid">
+        <div class="demo"><div class="box" style="border-radius:4px"></div><b>4 · sm</b><span>Tag · kbd · checkbox</span></div>
+        <div class="demo"><div class="sb" style="border-radius:10px;width:78px"></div><b>10 · md</b><span>Button · Input · Select · Search</span></div>
+        <div class="demo"><div class="box" style="border-radius:12px"></div><b>12 · lg</b><span>Icon container · KPI tile</span></div>
+        <div class="demo"><div class="box" style="border-radius:16px"></div><b>16 · xl</b><span>Card · table · list</span></div>
+        <div class="demo"><div class="box" style="border-radius:20px"></div><b>20 · 2xl</b><span>Modal · Drawer</span></div>
+        <div class="demo"><div class="box" style="border-radius:999px"></div><b>full</b><span>Pill · status dot · badge</span></div>
+      </div>
+      <table>
+        <tr><th>Token</th><th>Value</th><th>Button</th><th>Input</th><th>Card</th><th>Modal</th></tr>
+        <tr><td><code>--radius-md</code></td><td>10px</td><td>✓</td><td>✓</td><td></td><td></td></tr>
+        <tr><td><code>--radius-lg</code></td><td>12px</td><td colspan="4">icon container (40×40) · KPI / stat tile · segmented · nested card</td></tr>
+        <tr><td><code>--radius-xl</code></td><td>16px</td><td></td><td></td><td>✓</td><td></td></tr>
+        <tr><td><code>--radius-2xl</code></td><td>20px</td><td></td><td></td><td></td><td>✓ (+ Drawer)</td></tr>
+      </table>
+
+      <h3 id="elevation">Elevation &amp; shadows</h3>
+      <p class="note">Five elevations. In dark mode shadows are minimal — borders + the bg-2 surface step do the lifting.</p>
+      <table>
+        <tr><th>Token</th><th>Use</th></tr>
+        <tr><td><code>--shadow-1</code></td><td>cards, table containers (hairline lift)</td></tr>
+        <tr><td><code>--shadow-2</code></td><td>menus, popovers</td></tr>
+        <tr><td><code>--shadow-3 / 4</code></td><td>drawers, floating panels</td></tr>
+        <tr><td><code>--shadow-5</code></td><td>modals</td></tr>
+        <tr><td><code>--shadow-cta</code></td><td>primary button inset highlight</td></tr>
+        <tr><td><code>--shadow-focus</code></td><td>3px focus ring (primary @ 25%)</td></tr>
+      </table>
+
+      <h3 id="icons">Icon system</h3>
+      <p class="note">Two distinct families — do not mix.</p>
+      <div class="two">
+        <div>
+          <p class="note"><b>Functional UI icons</b> — stroke (<code>&lt;Icon&gt;</code>)</p>
+          <ul class="clean">
+            <li>Line/outline, 1.5–2 stroke, <code>currentColor</code></li>
+            <li>13–16px inline; 28px <code>.iconbtn</code> hit target</li>
+            <li>Used for actions, nav, affordances</li>
+          </ul>
+        </div>
+        <div>
+          <p class="note"><b>Object / entity tiles</b> — filled (<code>&lt;ObjectTile&gt;</code> / avatar)</p>
+          <ul class="clean">
+            <li>Container <b>40×40</b>, radius <b>12</b>, glyph <b>~20</b></li>
+            <li>Light tinted same-hue surface + soft border</li>
+            <li>Avatars: neutral <code>--avatar-bg/fg</code> tile, 2-letter initials</li>
+            <li>Forbidden: outline/stroke-only object glyphs, gradient avatars, mixed styles</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 03 COMPONENTS ══════════ -->
+    <section id="components">
+      <p class="kicker">03 — Components</p>
+      <h2>Components</h2>
+
+      <h3 id="inventory">Inventory &amp; variants</h3>
+      <table>
+        <tr><th>Component</th><th>Sizes</th><th>Variants</th><th>Radius</th></tr>
+        <tr><td>Button</td><td>sm 28 · md 36 · lg 44</td><td>primary · secondary · ghost · danger · link (5)</td><td>10</td></tr>
+        <tr><td>Input / Search</td><td>md 36 (sm 28 · lg 44)</td><td>default · invalid · disabled · prefix/suffix (4)</td><td>10</td></tr>
+        <tr><td>Select</td><td>36</td><td>single (<code>dsSelect</code>) · multi-chip (2)</td><td>10</td></tr>
+        <tr><td>Table</td><td>header 41 · row auto</td><td>list · sticky head · density (comfortable/compact)</td><td>container 16</td></tr>
+        <tr><td>Card</td><td>—</td><td>data · stat (<code>StatCard</code>) · form · info (4)</td><td>16</td></tr>
+        <tr><td>Modal</td><td>sm/md/lg width</td><td>center · drawer (2)</td><td>20</td></tr>
+        <tr><td>Drawer</td><td>≤560 / full</td><td>right-side (1)</td><td>20</td></tr>
+        <tr><td>Tabs</td><td>42 high</td><td>underline (1)</td><td>—</td></tr>
+        <tr><td>Badge / Pill</td><td>—</td><td>neutral · success · warning · error · info · pilot (6)</td><td>full</td></tr>
+        <tr><td>Toggle</td><td>track ~20</td><td>off · on · disabled (3)</td><td>full</td></tr>
+        <tr><td>StatCard</td><td>min-h 92</td><td>default · success · warning · error · selected (5)</td><td>16</td></tr>
+        <tr><td>Pagination</td><td>controls 36</td><td>numbered · compact · load-more · infinite (4)</td><td>10/6</td></tr>
+      </table>
+
+      <h3>Buttons</h3>
+      <p class="note">One filled <b>primary</b> per screen (Create / Save / Submit). Everything else — Search, Reset, Filter, Export — is <b>secondary</b>. All 36px tall, radius 10, 14/600.</p>
+      <table>
+        <tr><th>Variant</th><th>Light</th><th>Dark</th><th>Use</th></tr>
+        <tr><td>Primary</td><td>indigo-700 + white</td><td>near-white + dark text</td><td>the one CTA</td></tr>
+        <tr><td>Secondary</td><td>bg-2 + 1px border</td><td>bg-2 + 1px border</td><td>Search / Reset / Export</td></tr>
+        <tr><td>Ghost</td><td>transparent → hover bg</td><td>same</td><td>tertiary, toolbar</td></tr>
+        <tr><td>Danger</td><td>error-500 + white</td><td>same</td><td>destructive confirm</td></tr>
+        <tr><td>Link</td><td>primary text, underline hover</td><td>same</td><td>inline action</td></tr>
+      </table>
+
+      <h3 id="forms">Form system</h3>
+      <p class="note"><b>Vertical fields only</b> — label above, value below (<code>.kv2</code>). No inline <code>label:value</code>. Responsive multi-column grid by container width.</p>
+      <table>
+        <tr><th>Element</th><th>Rule</th></tr>
+        <tr><td>Label</td><td>12 / 500 tertiary, above field; sentence case or ALL-CAPS overline</td></tr>
+        <tr><td>Input</td><td>36 high · radius 10 · 1px border · focus ring (primary @25%)</td></tr>
+        <tr><td>Select</td><td><code>dsSelect</code> — 36 high, custom chevron, matches input</td></tr>
+        <tr><td>Date picker</td><td>input shell + calendar popover (shadow-3, radius 16)</td></tr>
+        <tr><td>Search</td><td>36 high · radius 10 · click-Search / Enter-to-search · Active-filters chips below</td></tr>
+        <tr><td>Long fields</td><td><code>.kv2__row--full</code> spans full width (Address, Notes)</td></tr>
+      </table>
+      <p class="note"><b>Responsive grid:</b> card ≥920 → <b>4 col</b> · ≥660 → <b>3 col</b> · ≥400 → <b>2 col</b> · narrower → 1 col. Labels always stay on top.</p>
+
+      <h3 id="cards">Card system</h3>
+      <table>
+        <tr><th>Type</th><th>Spec</th></tr>
+        <tr><td>Data / detail card</td><td>radius 16 · padding 20 · head 14·20 · 1px border + shadow-1</td></tr>
+        <tr><td>Stat / KPI (<code>StatCard</code>)</td><td>radius 16 · padding 14·16 · min-h 92 · label 12/500 · value 24/600 tabular · trend + icon slots</td></tr>
+        <tr><td>Form card</td><td>radius 16 · padding 20 · holds <code>.kv2</code> grid</td></tr>
+        <tr><td>Info / advisory</td><td>radius 12 · tinted semantic bg-50 · 1px same-hue border · icon + text</td></tr>
+        <tr><td>List card</td><td>radius 16 · <code>overflow:clip</code> · sticky head + thead · standard Pagination footer</td></tr>
+      </table>
+
+      <h3 id="tables">Table system</h3>
+      <table>
+        <tr><th>Region</th><th>Spec</th></tr>
+        <tr><td>Header (thead th)</td><td>padding 12·16 · 12px / 500 uppercase · tertiary · bg-3 · sticky</td></tr>
+        <tr><td>Row (td)</td><td>14px body · density-aware vertical padding · 1px subtle bottom border</td></tr>
+        <tr><td>Container</td><td>radius 16 · 1px border + shadow-1 · <code>overflow:clip</code> for rounded sticky corners</td></tr>
+        <tr><td>Filter area</td><td>sticky toolbar (search + Active-filters chips) in <code>.list-toolbar-wrap</code>, 16px above/below</td></tr>
+        <tr><td>Pagination</td><td>standard <code>&lt;Pagination&gt;</code> — Rows-per-page · "Showing 1–25 of N" · numbered pager · Go-to. Controls 36 / radius 6, mono tabular.</td></tr>
+      </table>
+    </section>
+
+    <!-- ══════════ 04 PATTERNS ══════════ -->
+    <section id="patterns">
+      <p class="kicker">04 — Patterns</p>
+      <h2>Page patterns</h2>
+      <h3>List page</h3>
+      <ul class="clean">
+        <li><b>Page head</b> — full-bleed bg-2 band, 16·24 padding, 1px bottom line, title left + primary CTA right.</li>
+        <li><b>Toolbar</b> — sticky <code>.list-toolbar-wrap</code> (16px above/below): SearchBar (click-Search / Enter) + Active-filters chips with Clear-all pill.</li>
+        <li><b>List card</b> — sticky "N unit" head + sticky thead; standard Pagination footer (<code>unit</code> + divider).</li>
+        <li><b>Rhythm</b> — 24 between blocks · 16 search→table · 20 card inner.</li>
+      </ul>
+      <h3>Detail page</h3>
+      <ul class="clean">
+        <li><b>Header band</b> — <code>.det-band</code> 16·24; 24/600 title; status/meta chips; Tabs (42 high) flush to band's lower edge.</li>
+        <li><b>Body</b> — two columns (main + 320 sidebar), <b>24px</b> column gap and card-stack gap.</li>
+        <li><b>Fields</b> — <code>.kv2</code> vertical grid; numbers mono + tabular.</li>
+      </ul>
+      <h3>Drawer / Modal / Advanced filter</h3>
+      <ul class="clean">
+        <li><b>Panel header (standard)</b> — title + description + close (<code>.iconbtn</code> 28×28, borderless), 1px bottom divider, flat bg-2.</li>
+        <li><b>Advanced filter</b> — right-side Drawer (≤560), footer Reset (secondary, left) + Apply &amp; Search (primary, right).</li>
+        <li>Modal radius 20 · Drawer radius 20 · dimmed <code>--color-bg-overlay</code> scrim.</li>
+      </ul>
+    </section>
+
+    <!-- ══════════ 05 TOKENS ══════════ -->
+    <section id="tokens">
+      <p class="kicker">05 — Design Tokens</p>
+      <h2>Developer handoff</h2>
+      <p class="note">Tokens are the contract. Components read these — never hardcode. CSS variables ship today in <code>assets/tokens.css</code>; the Tailwind preset below maps the same names.</p>
+
+      <h3>CSS variables (excerpt)</h3>
+      <pre><span class="c">/* radius — DS 2.0 */</span>
+<span class="k">--radius-sm</span>: <span class="v">4px</span>;   <span class="c">/* tag, kbd, checkbox */</span>
+<span class="k">--radius-md</span>: <span class="v">10px</span>;  <span class="c">/* button, input, select, search */</span>
+<span class="k">--radius-lg</span>: <span class="v">12px</span>;  <span class="c">/* icon container 40×40, KPI tile */</span>
+<span class="k">--radius-xl</span>: <span class="v">16px</span>;  <span class="c">/* card, table, list */</span>
+<span class="k">--radius-2xl</span>: <span class="v">20px</span>; <span class="c">/* modal, drawer */</span>
+
+<span class="c">/* spacing — 4px grid */</span>
+<span class="k">--space-4</span>: <span class="v">16px</span>; <span class="k">--space-5</span>: <span class="v">20px</span>; <span class="k">--space-6</span>: <span class="v">24px</span>;
+
+<span class="c">/* primary CTA (theme-aware) */</span>
+<span class="k">--color-primary-700</span>: <span class="v">oklch(24% .06 262)</span>;   <span class="c">/* light */</span>
+[data-theme=dark] <span class="k">--color-primary-700</span>: <span class="v">oklch(88% .004 260)</span>;
+
+<span class="c">/* control sizing */</span>
+<span class="k">--control-height-md</span>: <span class="v">36px</span>;</pre>
+
+      <h3>Tailwind preset (maps to the same vars)</h3>
+      <pre><span class="k">theme</span>: { <span class="k">extend</span>: {
+  <span class="k">borderRadius</span>: { sm:<span class="v">'4px'</span>, md:<span class="v">'10px'</span>, lg:<span class="v">'12px'</span>, xl:<span class="v">'16px'</span>, '2xl':<span class="v">'20px'</span> },
+  <span class="k">spacing</span>: { 1:<span class="v">'4px'</span>,2:<span class="v">'8px'</span>,3:<span class="v">'12px'</span>,4:<span class="v">'16px'</span>,5:<span class="v">'20px'</span>,6:<span class="v">'24px'</span>,8:<span class="v">'32px'</span> },
+  <span class="k">colors</span>: {
+    primary: { 700:<span class="v">'var(--color-primary-700)'</span>, 50:<span class="v">'var(--color-primary-50)'</span> },
+    success: <span class="v">'var(--color-success-500)'</span>, warning:<span class="v">'var(--color-warning-500)'</span>,
+    error: <span class="v">'var(--color-error-500)'</span>, info:<span class="v">'var(--color-info-500)'</span>,
+    bg: { 1:<span class="v">'var(--color-bg-1)'</span>,2:<span class="v">'var(--color-bg-2)'</span>,3:<span class="v">'var(--color-bg-3)'</span> },
+  },
+  <span class="k">fontFamily</span>: { sans:<span class="v">'var(--font-family-sans)'</span>, mono:<span class="v">'var(--font-family-mono)'</span> },
+}}
+<span class="c">// dark mode: ['class','[data-theme="dark"]'] — all colors are vars, so it's automatic.</span></pre>
+
+      <h3>Component spec contract</h3>
+      <ul class="clean">
+        <li>Button → height <code>--control-height-md</code>, radius <code>--radius-md</code>, one primary/screen.</li>
+        <li>Card → radius <code>--radius-xl</code>, padding <code>--space-5</code>, border + <code>--shadow-1</code>.</li>
+        <li>Modal/Drawer → radius <code>--radius-2xl</code>, scrim <code>--color-bg-overlay</code>.</li>
+        <li>Icon container → 40×40, radius <code>--radius-lg</code>, glyph 20.</li>
+        <li>Field → <code>.kv2</code> vertical, label 12/500 above.</li>
+      </ul>
+    </section>
+
+    <!-- ══════════ 06 CHANGELOG ══════════ -->
+    <section id="changelog">
+      <p class="kicker">06 — Changelog</p>
+      <h2>1.0 → 2.0</h2>
+      <table>
+        <tr><th>Area</th><th>1.0</th><th>2.0</th></tr>
+        <tr><td>Radius · control</td><td><span class="badge b-rm">6</span></td><td><span class="badge b-ok">10</span></td></tr>
+        <tr><td>Radius · icon/inner</td><td><span class="badge b-rm">8</span></td><td><span class="badge b-ok">12</span></td></tr>
+        <tr><td>Radius · card</td><td><span class="badge b-rm">12</span></td><td><span class="badge b-ok">16</span></td></tr>
+        <tr><td>Radius · modal/drawer</td><td><span class="badge b-rm">12</span></td><td><span class="badge b-ok">20</span></td></tr>
+        <tr><td>Icon container</td><td>mixed (stroke / letter / thumb / gradient)</td><td>one 40×40 / 12 / filled-glyph tile</td></tr>
+        <tr><td>Avatars</td><td>gradient circles</td><td>neutral initials tile (40×40 / 12)</td></tr>
+        <tr><td>CTA</td><td>multiple primaries</td><td>one primary/screen; Search/Reset/Export → secondary</td></tr>
+        <tr><td>Forms</td><td>inline label:value / kvgrid / custom</td><td>vertical <code>.kv2</code>, responsive 1–4 col</td></tr>
+        <tr><td>Detail spacing</td><td>16 / 18 / 20 mixed</td><td>24 section &amp; card gap</td></tr>
+        <tr><td>Dark mode</td><td>hardcoded light fills, glaring</td><td>theme tokens throughout; <code>--bg-surface</code> alias fixed</td></tr>
+        <tr><td>Primary (dark)</td><td>navy + white (unreadable)</td><td>near-white + dark text (Linear)</td></tr>
+      </table>
+      <p class="note" style="margin-top:14px"><b>Retired:</b> radius md=6 / lg=8 / xl=12 / 2xl=16 · gradient avatars · inline <code>label:value</code> · <code>.kvgrid</code> · per-page bespoke headers · hardcoded <code>#fff/#e2e8f0/#0f172a</code> in shell.</p>
+      <p class="note"><b>Rule going forward:</b> all new pages must use DS 2.0. No new color, radius, spacing, button, card, or icon style — update the system first, then use it.</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TOMS · PanelHeader Pattern — Drawer / Modal / Panel / Advanced Filters</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<link rel="stylesheet" href="assets/components.css"/>
+<link rel="stylesheet" href="assets/ds-extensions.css"/>
+<link rel="stylesheet" href="assets/devices-aliases.css"/>
+<link rel="stylesheet" href="app-publish/tds/colors_and_type.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-family-sans); color: var(--color-text-primary); background: var(--color-bg-1); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 32px 120px; }
+
+  .top { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+  .eyebrow { font: 600 12px var(--font-family-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-primary-700); margin: 0 0 10px; }
+  h1 { font: 600 28px/1.1 var(--font-family-sans); letter-spacing: -0.02em; margin: 0 0 10px; }
+  .lede { font-size: 14px; color: var(--color-text-secondary); max-width: 74ch; margin: 0; text-wrap: pretty; line-height: 1.6; }
+  .lede b { color: var(--color-text-primary); }
+
+  .theme-toggle { margin-left: auto; flex: none; display: inline-flex; border: 1px solid var(--color-border-default); border-radius: 999px; overflow: hidden; }
+  .theme-toggle button { height: 32px; padding: 0 14px; border: 0; background: transparent; color: var(--color-text-secondary); font: 500 13px var(--font-family-sans); cursor: pointer; }
+  .theme-toggle button[aria-pressed="true"] { background: var(--color-primary-700); color: var(--color-text-on-primary, #fff); }
+
+  /* spec callout */
+  .spec { margin: 26px 0 34px; border: 1px solid var(--color-border-subtle); border-radius: 12px; background: var(--color-bg-2); padding: 18px 20px; box-shadow: var(--shadow-1); }
+  .spec h2 { font: 600 13px var(--font-family-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-tertiary); margin: 0 0 14px; }
+  .spec ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 22px; }
+  .spec li { font-size: 13px; color: var(--color-text-secondary); display: flex; gap: 8px; }
+  .spec li b { color: var(--color-text-primary); font-weight: 600; }
+  .spec code { font: 500 12px var(--font-family-mono); color: var(--color-primary-700); background: var(--color-primary-50); padding: 1px 6px; border-radius: 4px; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .cell__label { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .cell__kicker { font: 600 12px var(--font-family-mono); color: var(--color-text-tertiary); }
+  .cell__name { font: 600 15px var(--font-family-sans); }
+  .cell__note { font-size: 12px; color: var(--color-text-tertiary); margin-left: auto; }
+
+  /* the framed specimen surface */
+  .frame { position: relative; border-radius: 12px; border: 1px solid var(--color-border-default); background: var(--color-bg-2); box-shadow: var(--shadow-3); overflow: hidden; }
+  .frame--drawer::before { content: "Slides from right edge"; position: absolute; top: 8px; left: 12px; font: 500 10px var(--font-family-mono); color: var(--color-text-tertiary); opacity: 0.6; z-index: 0; }
+
+  /* ─── the system-standard PanelHeader (mirrors .panel-header in index.html) ─── */
+  .panel-header { display: flex; align-items: flex-start; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--color-border-subtle); }
+  .panel-header__icon { flex: none; margin-top: 1px; display: grid; place-items: center; color: var(--color-primary-700); }
+  .panel-header__text { flex: 1; min-width: 0; }
+  .panel-header__title { font-size: 14px; font-weight: 600; color: var(--color-text-primary); line-height: 1.3; }
+  .panel-header__desc { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; line-height: 1.5; text-wrap: pretty; }
+  .iconbtn { width: 28px; height: 28px; border-radius: 6px; display: inline-grid; place-items: center; border: 1px solid transparent; background: transparent; color: var(--color-text-tertiary); cursor: pointer; }
+  .iconbtn:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+  .panel-header__close { flex: none; margin: -2px -6px 0 0; }
+
+  .pbody { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .pfoot { display: flex; align-items: center; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--color-border-subtle); background: var(--color-bg-2); }
+  .pfoot .spacer { flex: 1; }
+
+  .fld label { display: block; font: 500 12px var(--font-family-sans); color: var(--color-text-tertiary); margin-bottom: 6px; }
+  .fld input, .fld select { width: 100%; height: 36px; border: 1px solid var(--color-border-default); border-radius: 6px; background: var(--color-bg-1); padding: 0 12px; font: 400 14px var(--font-family-sans); color: var(--color-text-primary); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font: 500 12px var(--font-family-sans); padding: 5px 11px; border-radius: 999px; border: 1px solid var(--color-border-default); background: var(--color-bg-1); color: var(--color-text-secondary); cursor: pointer; }
+  .chip.on { background: var(--color-primary-50); border-color: var(--color-primary-500); color: var(--color-primary-700); }
+  .seg { display: inline-flex; border: 1px solid var(--color-border-default); border-radius: 8px; overflow: hidden; }
+  .seg button { height: 30px; padding: 0 12px; border: 0; background: var(--color-bg-1); color: var(--color-text-secondary); font: 500 12px var(--font-family-sans); cursor: pointer; border-left: 1px solid var(--color-border-default); }
+  .seg button:first-child { border-left: 0; }
+  .seg button.on { background: var(--color-primary-50); color: var(--color-primary-700); }
+
+  .btn { height: 36px; border-radius: 6px; padding: 0 14px; font: 600 14px var(--font-family-sans); display: inline-flex; align-items: center; gap: 7px; cursor: pointer; border: 1px solid transparent; }
+  .btn--secondary { background: var(--color-bg-2); color: var(--color-text-secondary); border-color: var(--color-border-default); }
+  .btn--primary { background: var(--color-primary-700); color: var(--color-text-on-primary, #fff); }
+  .muted { font-size: 12px; color: var(--color-text-tertiary); }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--color-border-subtle); }
+  .toggle-row:first-of-type { border-top: 0; }
+  .toggle-row .lbl { font-size: 13px; color: var(--color-text-primary); }
+  .toggle-row .sub { font-size: 12px; color: var(--color-text-tertiary); margin-top: 1px; }
+  .sw { width: 38px; height: 22px; border-radius: 999px; background: var(--color-primary-700); position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+  .sw.off { background: var(--color-bg-3); }
+  .sw.off::after { left: 2px; right: auto; }
+
+  .icn { width: 16px; height: 16px; display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <p class="eyebrow">TOMS · Overlay System</p>
+      <h1>PanelHeader — one header for every overlay</h1>
+      <p class="lede">The same three-part header (<b>icon · title · description · close</b>) rendered across all four overlay surfaces. Identical height, padding, title size, description style, close-button position and bottom divider — no surface designs its own header. Toggle light / dark to check both.</p>
+    </div>
+    <div class="theme-toggle" id="tt">
+      <button data-t="light">Light</button>
+      <button data-t="dark" aria-pressed="true">Dark</button>
+    </div>
+  </div>
+
+  <div class="spec">
+    <h2>Locked header spec</h2>
+    <ul>
+      <li><b>Padding</b><code>16 · 24</code></li>
+      <li><b>Title</b><code>14 / 600</code></li>
+      <li><b>Description</b><code>12 · tertiary</code></li>
+      <li><b>Close</b><code>.iconbtn 28 · top-right</code></li>
+      <li><b>Divider</b><code>1px bottom hairline</code></li>
+      <li><b>Icon</b><code>16 · primary-700 · optional</code></li>
+    </ul>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1 · MODAL -->
+    <div class="cell">
+      <div class="cell__label"><span class="cell__kicker">01</span><span class="cell__name">Modal</span><span class="cell__note">centered · 480px</span></div>
+      <div class="frame">
+        <div class="panel-header">
+          <span class="panel-header__icon">__ICON_user__</span>
+          <div class="panel-header__text">
+            <div class="panel-header__title">New role</div>
+            <div class="panel-header__desc">Create a custom permission set. You can refine scopes after it’s created.</div>
+          </div>
+          <button class="iconbtn panel-header__close" title="Close">__ICON_x__</button>
+        </div>
+        <div class="pbody">
+          <div class="fld"><label>Role name</label><input value="Regional auditor" /></div>
+          <div class="fld"><label>Start from</label>
+            <select><option>Blank role</option><option>Clone: Operator</option></select>
+          </div>
+        </div>
+        <div class="pfoot">
+          <span class="spacer"></span>
+          <button class="btn btn--secondary">Cancel</button>
+          <button class="btn btn--primary">Create role</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 · DRAWER -->
+    <div class="cell">
+      <div class="cell__label"><span class="cell__kicker">02</span><span class="cell__name">Drawer</span><span class="cell__note">right-side · full height</span></div>
+      <div class="frame frame--drawer">
+        <div class="panel-header">
+          <span class="panel-header__icon">__ICON_share__</span>
+          <div class="panel-header__text">
+            <div class="panel-header__title">Push firmware</div>
+            <div class="panel-header__desc">Stage an OTA rollout to the selected fleet · review before you confirm.</div>
+          </div>
+          <button class="iconbtn panel-header__close" title="Close (Esc)">__ICON_x__</button>
+        </div>
+        <div class="pbody">
+          <div class="fld"><label>Target version</label>
+            <select><option>V2.3.1 · Android · A12</option><option>V2.3.0 · Android · A12</option></select>
+          </div>
+          <div class="fld"><label>Rollout window</label>
+            <div class="seg"><button class="on">Immediate</button><button>Scheduled</button><button>Phased</button></div>
+          </div>
+          <div class="fld"><label>Notes</label><input placeholder="Optional change note…" /></div>
+        </div>
+        <div class="pfoot">
+          <button class="btn btn--secondary">↺ Reset</button>
+          <span class="spacer"></span>
+          <button class="btn btn--primary">__ICON_up__ Push to 412</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 · CONFIG PANEL -->
+    <div class="cell">
+      <div class="cell__label"><span class="cell__kicker">03</span><span class="cell__name">Config Panel</span><span class="cell__note">inline · settings</span></div>
+      <div class="frame">
+        <div class="panel-header">
+          <span class="panel-header__icon">__ICON_settings__</span>
+          <div class="panel-header__text">
+            <div class="panel-header__title">Workspace settings</div>
+            <div class="panel-header__desc">Defaults applied to every operator in this workspace.</div>
+          </div>
+          <button class="iconbtn panel-header__close" title="Close">__ICON_x__</button>
+        </div>
+        <div class="pbody" style="gap:0;">
+          <div class="toggle-row"><div><div class="lbl">Require 2FA</div><div class="sub">Enforce on all operator sign-ins</div></div><span class="sw"></span></div>
+          <div class="toggle-row"><div><div class="lbl">Mask sensitive fields</div><div class="sub">Hide PAN / IMEI until revealed</div></div><span class="sw"></span></div>
+          <div class="toggle-row"><div><div class="lbl">Weekly fleet digest</div><div class="sub">Email summary every Monday 08:00</div></div><span class="sw off"></span></div>
+        </div>
+        <div class="pfoot">
+          <span class="muted">Saved automatically</span>
+          <span class="spacer"></span>
+          <button class="btn btn--secondary">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 · ADVANCED FILTERS -->
+    <div class="cell">
+      <div class="cell__label"><span class="cell__kicker">04</span><span class="cell__name">Advanced Filters</span><span class="cell__note">drawer · Devices / Tickets</span></div>
+      <div class="frame frame--drawer">
+        <div class="panel-header">
+          <span class="panel-header__icon">__ICON_filter__</span>
+          <div class="panel-header__text">
+            <div class="panel-header__title">Advanced filters</div>
+            <div class="panel-header__desc">Side drawer · all filters AND · click Apply &amp; Search to apply · closing keeps the draft</div>
+          </div>
+          <button class="iconbtn panel-header__close" title="Close (Esc)">__ICON_x__</button>
+        </div>
+        <div class="pbody">
+          <div class="fld"><label>Model · multi-select</label>
+            <div class="chips"><span class="chip on">N950</span><span class="chip">N750</span><span class="chip on">S60</span><span class="chip">X800</span></div>
+          </div>
+          <div class="row2">
+            <div class="fld"><label>OS</label><select><option>Any OS</option><option>Android 14</option></select></div>
+            <div class="fld"><label>Status</label><select><option>Any</option><option>Online</option></select></div>
+          </div>
+        </div>
+        <div class="pfoot">
+          <button class="btn btn--secondary">↺ Reset</button>
+          <span class="spacer"></span>
+          <span class="muted" style="margin-right:4px;">~92 devices</span>
+          <button class="btn btn--primary">__ICON_search__ Apply &amp; Search</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Hand-paths matching the TOMS icon set (24×24, 1.5px stroke, round, currentColor).
+  const S = 'width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
+  const ICONS = {
+    user:   `<svg ${S}><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>`,
+    share:  `<svg ${S}><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>`,
+    settings: `<svg ${S}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
+    filter: `<svg ${S}><path d="M3 5h18l-7 9v6l-4-2v-4z"/></svg>`,
+    x:      `<svg ${S}><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+    up:     `<svg ${S}><path d="M12 19V5M5 12l7-7 7 7"/></svg>`,
+    search: `<svg ${S}><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>`,
+  };
+  document.body.innerHTML = document.body.innerHTML.replace(/__ICON_(\w+)__/g, (_, n) => ICONS[n] || '');
+
+  // theme toggle
+  const tt = document.getElementById('tt');
+  tt.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.documentElement.setAttribute('data-theme', b.dataset.t);
+    [...tt.children].forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
+</script>
+</body>
+</html>

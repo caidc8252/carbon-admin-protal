@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Devices List — Scroll Behavior proposal</title>
+<style>
+  :root {
+    --bg1: oklch(99% 0.003 90);
+    --bg2: oklch(100% 0 0);
+    --bg3: oklch(96% 0.004 90);
+    --bg-hover: oklch(96.5% 0.005 90);
+    --fg1: oklch(22% 0.01 260);
+    --fg2: oklch(40% 0.01 260);
+    --fg3: oklch(58% 0.01 260);
+    --fg4: oklch(70% 0.008 260);
+    --border-1: oklch(92% 0.005 260);
+    --border-2: oklch(88% 0.006 260);
+    --primary-700: oklch(38% 0.13 268);
+    --primary-600: oklch(46% 0.15 268);
+    --primary-500: oklch(54% 0.16 268);
+    --primary-50: oklch(96% 0.025 268);
+    --accent-600: oklch(52% 0.24 272);
+    --success: oklch(46% 0.12 150);
+    --success-bg: oklch(95% 0.05 150);
+    --warning: oklch(50% 0.12 75);
+    --warning-bg: oklch(95% 0.07 75);
+    --danger: oklch(50% 0.18 27);
+    --danger-bg: oklch(96% 0.04 27);
+    --neutral-bg: oklch(95% 0.004 260);
+    --font-sans: "Geist", "Inter", system-ui, -apple-system, sans-serif;
+    --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+    --shadow-1: 0 1px 2px oklch(20% 0.01 260 / 0.05);
+    --shadow-2: 0 1px 2px 0 oklch(20% 0.01 260 / 0.04), 0 1px 3px 0 oklch(20% 0.01 260 / 0.06);
+    --shadow-4: 0 8px 16px -4px oklch(20% 0.01 260 / 0.10), 0 12px 24px -8px oklch(20% 0.01 260 / 0.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg1); color: var(--fg1);
+    font-family: var(--font-sans); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .doc { max-width: 1180px; margin: 0 auto; padding: 44px 32px 96px; }
+
+  /* ── Header ── */
+  .doc__head { padding-bottom: 26px; border-bottom: 1px solid var(--border-1); margin-bottom: 8px; }
+  .doc__eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg3); font-weight: 500; }
+  .doc__title { font-size: 29px; font-weight: 600; letter-spacing: -0.02em; margin: 8px 0 10px; }
+  .doc__sub { color: var(--fg2); font-size: 14.5px; max-width: 860px; margin: 0; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--bg3); padding: 1px 5px; border-radius: 4px; color: var(--fg1); }
+
+  /* ── Sections ── */
+  .section { margin-top: 52px; }
+  .section__kicker { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-600); font-weight: 600; margin-bottom: 6px; }
+  .section__title { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 8px; }
+  .section__sub { font-size: 13.5px; color: var(--fg2); margin: 0 0 22px; max-width: 880px; }
+
+  /* ── Constraint callout ── */
+  .constraint {
+    border: 1px solid var(--border-2); border-radius: 14px; background: var(--bg2);
+    box-shadow: var(--shadow-2); overflow: hidden;
+  }
+  .constraint__head { padding: 16px 22px; border-bottom: 1px solid var(--border-1); display: flex; align-items: center; gap: 10px; }
+  .constraint__head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .constraint__head .tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; background: var(--warning-bg); color: var(--warning); }
+  .triad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+  .triad__cell { padding: 20px 22px; border-right: 1px solid var(--border-1); }
+  .triad__cell:last-child { border-right: 0; }
+  .triad__n { font-family: var(--font-mono); font-size: 11px; color: var(--fg3); }
+  .triad__t { font-size: 14px; font-weight: 600; margin: 6px 0 6px; }
+  .triad__d { font-size: 12.5px; color: var(--fg2); line-height: 1.55; }
+  .constraint__foot {
+    padding: 16px 22px; background: var(--bg3); border-top: 1px solid var(--border-1);
+    font-size: 13px; color: var(--fg2); line-height: 1.6;
+  }
+  .constraint__foot strong { color: var(--fg1); }
+
+  /* ── Option cards ── */
+  .opt { margin-top: 26px; border: 1px solid var(--border-2); border-radius: 14px; background: var(--bg2); box-shadow: var(--shadow-2); overflow: hidden; }
+  .opt__head { padding: 18px 22px; border-bottom: 1px solid var(--border-1); display: flex; align-items: flex-start; gap: 14px; }
+  .opt__badge { flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: 15px; }
+  .opt__badge--a { background: var(--neutral-bg); color: var(--fg2); }
+  .opt__badge--b { background: var(--primary-50); color: var(--primary-700); }
+  .opt__badge--c { background: var(--success-bg); color: var(--success); }
+  .opt__hgroup { flex: 1; min-width: 0; }
+  .opt__name { font-size: 16px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .opt__name .pill { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
+  .pill--current { background: var(--neutral-bg); color: var(--fg2); }
+  .pill--asked { background: var(--primary-50); color: var(--primary-700); }
+  .pill--spec { background: var(--success-bg); color: var(--success); }
+  .opt__desc { font-size: 13px; color: var(--fg2); margin: 6px 0 0; line-height: 1.55; }
+  .opt__body { padding: 22px; }
+
+  /* ── Behavior chips ── */
+  .behav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 5px 11px 5px 9px; border-radius: 999px; border: 1px solid var(--border-2); background: var(--bg2); }
+  .chip__dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .chip--good .chip__dot { background: var(--success); }
+  .chip--bad .chip__dot { background: var(--danger); }
+  .chip--meh .chip__dot { background: var(--warning); }
+  .chip b { font-weight: 600; }
+
+  /* ── Demo viewport (simulates the app's single .content scroller) ── */
+  .demo-frame { border: 1px solid var(--border-2); border-radius: 12px; overflow: hidden; background: var(--bg2); }
+  .demo-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; background: var(--bg3); border-bottom: 1px solid var(--border-1); font-size: 11.5px; color: var(--fg3); }
+  .demo-label .hint { font-size: 11px; color: var(--fg3); }
+  .demo-label .hint b { color: var(--primary-700); font-weight: 600; }
+
+  /* The .content stand-in: the ONLY page scroller, fixed height so you can feel it */
+  .content {
+    height: 380px; overflow: auto; background: var(--bg1); position: relative;
+  }
+  /* fixed titlebar (does not scroll out — it's outside .content in the real app;
+     here we fake it as sticky so the demo reads true) */
+  .tbar {
+    position: sticky; top: 0; z-index: 40; background: var(--bg2);
+    border-bottom: 1px solid var(--border-1); padding: 12px 20px;
+  }
+  .tbar__title { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .tbar__sub { font-size: 11.5px; color: var(--fg3); margin-top: 1px; }
+  .pg { padding: 16px 20px 40px; }
+
+  /* search/condition area — scrolls away with content (per §7.2) */
+  .sb { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .sb__field { height: 32px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg2); display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: var(--fg3); gap: 6px; }
+  .sb__btn { height: 32px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg2); display: flex; align-items: center; padding: 0 12px; font-size: 12px; font-weight: 600; color: var(--fg1); box-shadow: var(--shadow-1); }
+
+  /* list card */
+  .lc {
+    --toolbar: 0px; --headh: 38px;
+    position: relative; background: var(--bg2); border: 1px solid var(--border-1);
+    border-radius: 12px; box-shadow: var(--shadow-2); overflow: clip;
+  }
+  .lc__head {
+    position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px;
+    padding: 9px 16px; border-bottom: 1px solid var(--border-1); background: var(--bg2);
+    font-size: 12px; color: var(--fg2);
+  }
+  .lc__head strong { font-family: var(--font-mono); color: var(--fg1); }
+  .lc__head .cols { margin-left: auto; font-size: 11.5px; color: var(--primary-700); font-weight: 600; border: 1px solid var(--border-2); border-radius: 7px; padding: 4px 9px; background: var(--bg2); }
+
+  table.t { width: 100%; border-collapse: separate; border-spacing: 0; }
+  table.t thead th {
+    background: var(--bg3); text-align: left; font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg3);
+    padding: 9px 8px; white-space: nowrap; border-bottom: 1px solid var(--border-1);
+  }
+  table.t thead th:first-child, table.t tbody td:first-child { padding-left: 20px; }
+  table.t tbody td { padding: 11px 8px; font-size: 12.5px; border-bottom: 1px solid var(--border-1); white-space: nowrap; vertical-align: middle; }
+  table.t tbody tr:last-child td { border-bottom: 0; }
+  table.t tbody tr:hover td { background: var(--bg-hover); }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .sub { font-size: 10.5px; color: var(--fg3); }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; }
+  .badge .d { width: 6px; height: 6px; border-radius: 50%; }
+  .b-ok { background: var(--success-bg); color: var(--success); } .b-ok .d { background: var(--success); }
+  .b-off { background: var(--neutral-bg); color: var(--fg2); } .b-off .d { background: var(--fg3); }
+  .b-lock { background: var(--danger-bg); color: var(--danger); } .b-lock .d { background: var(--danger); }
+  .b-pend { background: var(--warning-bg); color: var(--warning); } .b-pend .d { background: var(--warning); }
+
+  .lc__foot { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--border-1); font-size: 11.5px; color: var(--fg3); background: var(--bg2); }
+
+  /* ── MODE A: baseline — table overflows .content on both axes ── */
+  /* card lets the wide table push past it so the whole page (incl. the
+     sticky title + search) slides sideways on the outer .content scroller */
+  .mode-a .lc { overflow: visible; }
+  .mode-a table.t { width: max-content; min-width: 100%; }
+
+  /* ── MODE B: contained horizontal (scrollX) ── */
+  .mode-b .lc__scroll { overflow-x: auto; overflow-y: visible; }
+  .mode-b .lc__scroll > table.t { width: max-content; min-width: 100%; }
+  /* header sticks to the wrapper top → scrolls away vertically (the tradeoff) */
+  .mode-b .lc__scroll > table.t thead th { position: sticky; top: 0; }
+
+  /* ── MODE C: bounded data grid — wrapper scrolls both axes, header sticky inside ── */
+  .mode-c .content { overflow-x: hidden; } /* outer no longer scrolls X */
+  .mode-c .grid {
+    max-height: 300px; overflow: auto; border: 1px solid var(--border-1);
+    border-radius: 10px; background: var(--bg2);
+  }
+  .mode-c .grid > table.t { width: max-content; min-width: 100%; }
+  .mode-c .grid thead th { position: sticky; top: 0; z-index: 5; }
+  /* freeze first column */
+  .mode-c .grid thead th:first-child, .mode-c .grid tbody td:first-child {
+    position: sticky; left: 0; z-index: 4; background: var(--bg2);
+  }
+  .mode-c .grid thead th:first-child { z-index: 6; background: var(--bg3); }
+  .mode-c .grid tbody tr:hover td:first-child { background: var(--bg-hover); }
+
+  /* ── Decision matrix ── */
+  .matrix { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 8px; border: 1px solid var(--border-2); border-radius: 12px; overflow: hidden; background: var(--bg2); box-shadow: var(--shadow-2); }
+  .matrix th, .matrix td { padding: 13px 16px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--border-1); }
+  .matrix thead th { background: var(--bg3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg3); font-weight: 600; }
+  .matrix tbody tr:last-child td { border-bottom: 0; }
+  .matrix td:first-child, .matrix th:first-child { font-weight: 500; color: var(--fg1); }
+  .yes { color: var(--success); font-weight: 600; }
+  .no { color: var(--danger); font-weight: 600; }
+  .partial { color: var(--warning); font-weight: 600; }
+  .matrix .col-rec { background: oklch(97% 0.02 268 / 0.6); }
+
+  /* ── Recommendation ── */
+  .rec { margin-top: 28px; border: 1px solid var(--primary-500); border-radius: 14px; background: var(--primary-50); padding: 22px 24px; }
+  .rec__k { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary-700); font-weight: 700; }
+  .rec__t { font-size: 16px; font-weight: 600; margin: 8px 0 10px; color: var(--fg1); }
+  .rec p { margin: 0 0 10px; font-size: 13.5px; color: var(--fg2); line-height: 1.6; }
+  .rec ul { margin: 10px 0 0; padding-left: 20px; }
+  .rec li { font-size: 13.5px; color: var(--fg2); line-height: 1.7; }
+  .rec strong { color: var(--fg1); }
+
+  .ask { margin-top: 28px; padding: 20px 24px; border: 1px dashed var(--border-2); border-radius: 14px; background: var(--bg2); }
+  .ask h4 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+  .ask ol { margin: 0; padding-left: 22px; }
+  .ask li { font-size: 13.5px; color: var(--fg2); line-height: 1.8; }
+  .ask code { font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="doc__head">
+    <div class="doc__eyebrow">TOMS · Carbon Admin · 设计方案</div>
+    <h1 class="doc__title">Devices 列表 — 滚动交互方案</h1>
+    <p class="doc__sub">
+      你的诉求：数据多时的<b>竖向滚动</b>放到<b>外层</b>滚动条（参考 Customers），列多时的<b>横向滚动</b>收在<b>列表内部</b>。
+      而现状是横竖两个方向都在外层滚动。下面是分析、迫使我们必须取舍的那一条 CSS 限制，以及三个可以实际滚动体验的实时方案。
+      <b>目前产品代码尚未做任何改动</b> —— 你选定方向后我再动手实现。
+    </p>
+  </div>
+
+  <!-- ───────────────── The constraint ───────────────── -->
+  <div class="section">
+    <div class="section__kicker">核心取舍</div>
+    <h2 class="section__title">下面三件事，最多只能同时满足两件 —— 纯 CSS 做不到三全</h2>
+    <p class="section__sub">
+      这一点项目规范里已经写明（<code>ui-spec/ui-spec.md</code> §3.3）。要把横向滚动<em>收在</em>表格内部，外层容器必须加
+      <code>overflow-x</code> —— 而该容器随即成为 sticky 表头的定位上下文。于是表头只能吸顶到<em>这个容器内部</em>，无法再吸顶到整页。
+    </p>
+    <div class="constraint">
+      <div class="constraint__head">
+        <span class="tag">CSS 限制</span>
+        <h3>相互冲突的三件事</h3>
+      </div>
+      <div class="triad">
+        <div class="triad__cell">
+          <div class="triad__n">诉求 #1</div>
+          <div class="triad__t">竖向滚动放在外层</div>
+          <div class="triad__d">由整页唯一的 <code>.content</code> 滚动条上下滚动行 —— 搜索栏一起滚走，完全和 Customers 一致。</div>
+        </div>
+        <div class="triad__cell">
+          <div class="triad__n">诉求 #2</div>
+          <div class="triad__t">横向滚动收在列表内</div>
+          <div class="triad__d">多出来的列在卡片内部横向滚动；标题栏、搜索栏和整页都不会跟着左右平移。</div>
+        </div>
+        <div class="triad__cell">
+          <div class="triad__n">诉求 #3</div>
+          <div class="triad__t">竖向滚动时表头吸顶</div>
+          <div class="triad__d">长列表往下滚时，列标题（<code>thead</code>）和计数行始终吸顶停留在顶部。</div>
+        </div>
+      </div>
+      <div class="constraint__foot">
+        <strong>好消息：</strong>你明确提出的两条诉求 —— #1（外层竖向）+ #2（内层横向）—— <strong>是可以同时成立的</strong>，
+        也就是方案&nbsp;B。唯一要放弃的是 #3（往<em>下</em>滚时表头保持吸顶）。
+        如果你更看重吸顶表头，方案&nbsp;C 能同时保住 #2&nbsp;+&nbsp;#3，但代价是竖向滚动改到列表内部（放弃 #1）。
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── Option A ───────────────── -->
+  <div class="section">
+    <div class="section__kicker">方案 A</div>
+    <div class="opt">
+      <div class="opt__head">
+        <div class="opt__badge opt__badge--a">A</div>
+        <div class="opt__hgroup">
+          <h3 class="opt__name">基线 — 横竖两个方向都在外层整页滚动 <span class="pill pill--current">现状</span></h3>
+          <p class="opt__desc">Devices 现在的做法。宽表格溢出 <code>.content</code>，于是整页左右滑动 —— 标题栏和搜索行都跟着漂走。竖向滚动时表头能正常吸顶。</p>
+        </div>
+      </div>
+      <div class="opt__body">
+        <div class="behav">
+          <span class="chip chip--good"><span class="chip__dot"></span><b>竖向：</b>&nbsp;外层 ✓</span>
+          <span class="chip chip--bad"><span class="chip__dot"></span><b>横向：</b>&nbsp;外层（整页滑动）✗</span>
+          <span class="chip chip--good"><span class="chip__dot"></span><b>表头吸顶：</b>&nbsp;是 ✓</span>
+        </div>
+        <div class="demo-frame mode-a">
+          <div class="demo-label"><span>模拟 <code>.content</code> 视口 — 拖动滚动条试试</span><span class="hint">往 <b>→</b> 滚，整页（标题 + 搜索）一起滑动</span></div>
+          <div class="content" data-mode="a"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── Option B ───────────────── -->
+  <div class="section">
+    <div class="section__kicker">方案 B · 符合你的诉求</div>
+    <div class="opt">
+      <div class="opt__head">
+        <div class="opt__badge opt__badge--b">B</div>
+        <div class="opt__hgroup">
+          <h3 class="opt__name">把横向滚动收在卡片内 <span class="pill pill--asked">你要的方案</span></h3>
+          <p class="opt__desc">竖向仍在外层整页（同 Customers）；横向被锁在列表卡片内。标题栏和搜索行永远不会左右移动。代价：往下滚时列表头不再吸顶 —— 会跟着行一起滚走。<em>（这就是 <code>ListCard</code> 上现有、但 Devices 尚未启用的 <code>scrollX</code> 模式。）</em></p>
+        </div>
+      </div>
+      <div class="opt__body">
+        <div class="behav">
+          <span class="chip chip--good"><span class="chip__dot"></span><b>竖向：</b>&nbsp;外层 ✓</span>
+          <span class="chip chip--good"><span class="chip__dot"></span><b>横向：</b>&nbsp;列表内 ✓</span>
+          <span class="chip chip--bad"><span class="chip__dot"></span><b>表头吸顶：</b>&nbsp;否 — 会滚走 ✗</span>
+        </div>
+        <div class="demo-frame mode-b">
+          <div class="demo-label"><span>模拟 <code>.content</code> 视口</span><span class="hint">在卡片内往 <b>→</b> 滚 · 整页往 <b>↓</b> 滚（表头会离顶）</span></div>
+          <div class="content" data-mode="b"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── Option C ───────────────── -->
+  <div class="section">
+    <div class="section__kicker">方案 C · 规范明列的例外项</div>
+    <div class="opt">
+      <div class="opt__head">
+        <div class="opt__badge opt__badge--c">C</div>
+        <div class="opt__hgroup">
+          <h3 class="opt__name">有界数据网格 — 横竖滚动都在内部，表头吸顶 <span class="pill pill--spec">§3.3 例外</span></h3>
+          <p class="opt__desc">表格区变成一个固定高度、双向滚动的网格。表头吸顶到<em>该网格</em>的顶部，标识列（SN）可以冻结在左侧便于对照。代价：竖向滚动条变成列表自己的内层滚动条 —— 不再是最外层整页的那根，因此与 Customers 的模式不一致。</p>
+        </div>
+      </div>
+      <div class="opt__body">
+        <div class="behav">
+          <span class="chip chip--meh"><span class="chip__dot"></span><b>竖向：</b>&nbsp;内层（非外层）⚠</span>
+          <span class="chip chip--good"><span class="chip__dot"></span><b>横向：</b>&nbsp;列表内 ✓</span>
+          <span class="chip chip--good"><span class="chip__dot"></span><b>表头吸顶：</b>&nbsp;是（+ 冻结 SN）✓</span>
+        </div>
+        <div class="demo-frame mode-c">
+          <div class="demo-label"><span>模拟 <code>.content</code> 视口</span><span class="hint">内层网格可往 <b>↓</b> 和 <b>→</b> 滚 · SN 列冻结</span></div>
+          <div class="content" data-mode="c"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── Decision matrix ───────────────── -->
+  <div class="section">
+    <div class="section__kicker">并排对比</div>
+    <h2 class="section__title">决策矩阵</h2>
+    <p class="section__sub">还有个方案&nbsp;0 —— 规范明确的<em>首选</em>：根本不上横向滚动。Devices 已有 Columns 菜单；文本用省略号 + tooltip 截断，让用户自行收起列来适配宽度。横向滚动是这一招不够时的兑底。</p>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>行为</th>
+          <th>0 · 适配 + 截断</th>
+          <th>A · 现状</th>
+          <th class="col-rec">B · 收横向</th>
+          <th>C · 数据网格</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>竖向滚动 = 外层整页（同 Customers）</td><td class="yes">是</td><td class="yes">是</td><td class="col-rec yes">是</td><td class="no">否（内层）</td></tr>
+        <tr><td>横向滚动收在列表内</td><td class="partial">不适用 — 不会溢出</td><td class="no">否（整页滑动）</td><td class="col-rec yes">是</td><td class="yes">是</td></tr>
+        <tr><td>竖向滚动时表头吸顶</td><td class="yes">是</td><td class="yes">是</td><td class="col-rec no">否</td><td class="yes">是</td></tr>
+        <tr><td>冻结标识列（SN）</td><td class="partial">不适用</td><td class="no">否</td><td class="col-rec no">否</td><td class="yes">可选</td></tr>
+        <tr><td>符合你的诉求</td><td class="partial">部分</td><td class="no">否</td><td class="col-rec yes">是</td><td class="partial">大部分</td></tr>
+        <tr><td>实现成本</td><td class="yes">低</td><td class="partial">—</td><td class="col-rec yes">低（prop 已存在）</td><td class="partial">中</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ───────────────── Recommendation ───────────────── -->
+  <div class="section">
+    <div class="section__kicker">推荐</div>
+    <div class="rec">
+      <div class="rec__k">我的选择</div>
+      <div class="rec__t">方案 B，叠在方案 0 之上 —— 这正是你要的。</div>
+      <p>先保留规范的默认行为：默认 8 列时表格是能装下的，Columns 菜单 + 省略号（方案&nbsp;0）意味着大多数用户根本不会触发横向滚动条。<strong>一旦</strong>有人加足够多的可选列导致溢出，再启用卡片现有的 <code>scrollX</code> 包裹层（方案&nbsp;B），让溢出部分在卡片内滚动，而不是拖着整页左右滑。竖向滚动保持与 Customers 完全一致。</p>
+      <p>B 的真实代价是竖向滚动时的吸顶表头。但对 Devices 来说这个损失很轻微 —— 行是分页的（默认 25/页），列表很少长到表头会滑出屏外。如果后面发现吸顶表头比外层竖向滚动条更重要，那就是改用<strong>方案&nbsp;C</strong>的信号。</p>
+      <ul>
+        <li><strong>改动最小、最安全：</strong>方案 B 是 <code>ListCard</code> 已内置的一个 prop（<code>scrollX</code>），CSS 也现成 —— 无需新组件。</li>
+        <li><strong>可逆：</strong>可以加个门控 —— 只有当列真的溢出时卡片才横向滚动，默认宽度下保持干净观感。</li>
+      </ul>
+    </div>
+
+    <div class="ask">
+      <h4>选一个，我来实现</h4>
+      <ol>
+        <li><strong>方案 B</strong> — 把横向滚动收在卡片内，接受竖向滚动时表头不再吸顶。<em>（我的推荐，符合你的诉求）</em></li>
+        <li><strong>方案 C</strong> — 有界数据网格：保留吸顶表头 + 冻结 SN，接受竖向滚动移到列表内部。</li>
+        <li><strong>仅方案 0</strong> — 不加横向滚动，靠 Columns 菜单 + 截断来适配。最简单，滚动行为不变。</li>
+        <li><strong>B + 门控</strong> — 采用 B，但只在列溢出时才启用内层横向滚动（默认宽度下保持干净）。</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Build the demo tables ── */
+const STATUS = [
+  ['b-ok','Online','active'], ['b-off','Offline','active'], ['b-lock','Locked','locked'],
+  ['b-pend','Pending','pending'], ['b-ok','Online','active'], ['b-off','Offline','active'],
+];
+function row(i){
+  const sn = 'NL750-' + (['K9F2H7B3','M3X1Q8','P7R4T2','J2N9V6','L5W8Z1','H4C6B0','D8F1G3','R2K7M9'][i%8]) + (i);
+  const st = STATUS[i % STATUS.length];
+  const online = i % 3 === 0 ? ['b-off','Offline'] : ['b-ok','Online'];
+  return `
+    <tr>
+      <td><span class="mono" style="font-weight:500">${sn}</span></td>
+      <td><span class="mono" style="color:var(--fg2)">${['N950','N750','X990','ME60','N850'][i%5]}</span></td>
+      <td>${['Acme Payments LLC','Northwind ISO','Globex ISV','Initech Capital','Umbrella Pay'][i%5]}</td>
+      <td><div>${['MTL Store #4','Downtown #12','Airport Kiosk','Mall Unit 7','Warehouse A'][i%5]}</div><div class="sub">${['Acme Coffee','Northwind Retail','Globex Foods','Initech Cafe','Umbrella Mart'][i%5]}</div></td>
+      <td><div>Android 13</div><div class="sub mono">v${4+i%3}.${i%9}.${i%5}-rel</div></td>
+      <td><div class="mono" style="font-size:11.5px;color:var(--fg2)">05-${(10+i%18)} ${(8+i%12)}:${(10+i%49)}</div><div class="sub">${i%4+1} 分钟前</div></td>
+      <td><span class="badge ${online[0]}"><span class="d"></span>${online[1]}</span></td>
+      <td><span class="badge ${st[0]}"><span class="d"></span>${st[1]}</span></td>
+      <td><span class="mono" style="color:var(--fg3)">35${i}409${i}06${i}1182</span></td>
+      <td><span class="mono" style="color:var(--fg2)">${60+i%40}% · 5.${i%9}/8 GB</span></td>
+      <td><span class="mono" style="color:var(--fg2)">${88+i%12}%</span></td>
+      <td><span class="mono" style="color:var(--fg2)">2026-0${i%9+1}-1${i%9}</span></td>
+      <td><span class="mono" style="color:var(--fg2)">PCI 6.${i%4}</span></td>
+    </tr>`;
+}
+const HEADS = ['序列号','型号','所属方','商户 · 门店','OS / 固件','最后上线','连接状态','状态','IMEI','存储','电池','激活时间','PCI 版本'];
+const thead = '<thead><tr>' + HEADS.map(h=>`<th>${h}</th>`).join('') + '</tr></thead>';
+
+function rows(n){ let s=''; for(let i=0;i<n;i++) s+=row(i); return s; }
+
+const sb = `<div class="sb">
+  <div class="sb__field">按序列号搜索</div>
+  <div class="sb__field">任意状态</div>
+  <div class="sb__field">任意型号</div>
+  <div class="sb__field">任意所属方</div>
+  <div class="sb__btn">搜索</div>
+</div>`;
+
+const tbar = `<div class="tbar"><div class="tbar__title">Devices</div><div class="tbar__sub">生产设备队列 — 当前显示 13 列</div></div>`;
+
+function lcHead(){ return `<div class="lc__head"><span><strong>1,284</strong> 台设备</span><span class="cols">◷ 列 · 13</span></div>`; }
+function foot(){ return `<div class="lc__foot"><span>1–18 共 1,284</span><span>25 / 页</span></div>`; }
+
+document.querySelectorAll('.content').forEach(c => {
+  const mode = c.dataset.mode;
+  let card;
+  if (mode === 'a') {
+    // baseline: table direct child, no inner scroll → overflows .content both ways
+    card = `<div class="lc">${lcHead()}<table class="t">${thead}<tbody>${rows(18)}</tbody></table>${foot()}</div>`;
+  } else if (mode === 'b') {
+    // contained horizontal: table wrapped in overflow-x viewport
+    card = `<div class="lc">${lcHead()}<div class="lc__scroll"><table class="t">${thead}<tbody>${rows(18)}</tbody></table></div>${foot()}</div>`;
+  } else {
+    // bounded data grid: fixed-height region scrolls both ways
+    card = `<div class="lc">${lcHead()}<div class="grid"><table class="t">${thead}<tbody>${rows(24)}</tbody></table></div>${foot()}</div>`;
+  }
+  c.innerHTML = tbar + `<div class="pg">${sb}${card}</div>`;
+});
+</script>
+</body>
+</html>

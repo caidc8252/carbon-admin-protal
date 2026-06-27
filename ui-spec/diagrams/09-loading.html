@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§9 Loading 加载态 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .skel{background:var(--bg3);border-radius:6px;height:12px;position:relative;overflow:hidden;}
+  .skel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);transform:translateX(-100%);animation:sh 1.2s infinite;}
+  @keyframes sh{100%{transform:translateX(100%);}}
+  @media (prefers-reduced-motion:reduce){.skel::after{animation:none;}.spin{animation:none;}}
+  .skel--card{height:auto;background:transparent;padding:0;}
+  .spin{width:24px;height:24px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--primary-700);animation:rot .8s linear infinite;}
+  .spin--sm{width:14px;height:14px;border-width:2px;}
+  @keyframes rot{100%{transform:rotate(360deg);}}
+  .tbl-pick td{padding:9px 14px;font-size:12.5px;}
+  .tbl-pick td:first-child{color:var(--fg1);font-weight:500;width:34%;}
+  .tbl-pick td:nth-child(2){color:var(--primary-700);font-weight:600;width:24%;}
+  .tbl-pick td:last-child{color:var(--fg3);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §9</div>
+  <h1>Loading 加载态</h1>
+  <p class="lede">
+    加载提示统一为「按区域选型 + 单一组件」：单一 <code>&lt;Spinner size&gt;</code> 与 <code>&lt;Skeleton variant&gt;</code>（<code>text/card/table-rows/avatar</code>），删除各文件自写的 Spinner / SkeletonRows。
+    <b>延迟出现</b>：&lt;300ms 不显示任何 loading（避免闪烁）。<b>占位即布局</b>：骨架尺寸/列数与真实内容一致，加载完成不发生跳动（CLS=0）。
+  </p>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>按加载范围选型</h2></div>
+    <div class="card" style="overflow:hidden;max-width:720px;">
+      <table class="tbl tbl-pick"><tbody>
+        <tr><td>整页首次加载</td><td>骨架屏</td><td>路由切换 / 详情首开 · 同构灰块占位，不整页大转圈</td></tr>
+        <tr><td>区块 / 卡片内加载</td><td>骨架 / 局部 Spinner</td><td>区块小用居中 Spinner（≤24）；区块大且结构固定用骨架</td></tr>
+        <tr><td>行内 / 按钮内加载</td><td>小 Spinner（12–16）</td><td>放输入框 suffix / 按钮内；按钮 loading 时禁用并保留宽度</td></tr>
+        <tr><td>后台静默刷新</td><td>顶部细进度条 / 无可见态</td><td>不打断操作；最多 topbar 下方一条 2px 进度条</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>骨架屏（占位即布局）</h2></div>
+    <p class="sec-desc">骨架块 <code>--color-bg-3</code>，微光 shimmer 用 <code>--color-bg-2</code>、动画 1.2s。reduced-motion 关闭 shimmer 改静态占位。容器 <code>aria-busy="true"</code>。</p>
+    <div class="card card--pad" style="max-width:560px;">
+      <div class="skel" style="width:40%;height:16px;margin-bottom:14px;"></div>
+      <div class="skel" style="width:100%;margin-bottom:9px;"></div>
+      <div class="skel" style="width:92%;margin-bottom:9px;"></div>
+      <div class="skel" style="width:96%;margin-bottom:9px;"></div>
+      <div class="skel" style="width:60%;"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>Spinner（区块 / 行内 / 按钮）</h2></div>
+    <p class="sec-desc">Spinner 轨道 <code>--color-border-default</code>、活动段 <code>--color-primary-700</code>；配 <code>aria-label="Loading"</code>。</p>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+      <div class="card card--pad" style="display:grid;place-items:center;width:160px;height:90px;"><div class="spin"></div></div>
+      <div class="ctrl ctrl--md" style="width:240px;"><span style="color:var(--fg3);">Validating code…</span><span class="spin spin--sm" style="margin-left:auto;"></span></div>
+      <button class="btn btn--primary" disabled style="opacity:.85;"><span class="spin spin--sm" style="border-top-color:#fff;border-color:rgba(255,255,255,.4);border-top-color:#fff;"></span> Loading…</button>
+    </div>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Merchant Devices Tab — design proposal</title>
+  <style>
+    /* (subset of TDS tokens, inlined) */
+    :root {
+      --bg1: oklch(99% 0.003 90);
+      --bg2: oklch(100% 0 0);
+      --bg3: oklch(96% 0.004 90);
+      --bg-hover: oklch(96% 0.005 90);
+      --fg1: oklch(20% 0.01 260);
+      --fg2: oklch(38% 0.01 260);
+      --fg3: oklch(58% 0.01 260);
+      --border-1: oklch(91% 0.005 260);
+      --border-2: oklch(86% 0.006 260);
+      --accent-on: oklch(38% 0.16 268);
+      --accent-soft: oklch(94% 0.04 268);
+      --accent-700: oklch(28% 0.10 262);
+      --success: oklch(40% 0.10 150);
+      --success-bg: oklch(96% 0.05 150);
+      --warning: oklch(44% 0.10 75);
+      --warning-bg: oklch(96% 0.06 75);
+      --danger: oklch(46% 0.18 27);
+      --danger-bg: oklch(96% 0.04 27);
+      --info: oklch(42% 0.12 240);
+      --info-bg: oklch(96% 0.04 240);
+      --font-sans: "Geist", "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+      --shadow-2: 0 1px 2px 0 oklch(20% 0.01 260 / 0.04), 0 1px 3px 0 oklch(20% 0.01 260 / 0.06);
+      --shadow-4: 0 8px 16px -4px oklch(20% 0.01 260 / 0.10), 0 12px 24px -8px oklch(20% 0.01 260 / 0.10);
+      --duration-fast: 120ms;
+      --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    }
+    body {
+      margin: 0;
+      background: var(--bg1);
+      color: var(--fg1);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      font-feature-settings: "ss01" on, "cv11" on;
+    }
+    .doc {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+    .doc__head {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border-1);
+      margin-bottom: 28px;
+    }
+    .doc__eyebrow {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg3);
+      font-weight: 500;
+    }
+    .doc__title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .doc__sub {
+      color: var(--fg2);
+      font-size: 14px;
+      max-width: 880px;
+    }
+    .doc__sub code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--bg3);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    .section { margin-top: 44px; }
+    .section + .section { margin-top: 56px; }
+    .section__title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section__title .step {
+      display: inline-grid; place-items: center;
+      width: 22px; height: 22px; border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-on);
+      font-size: 11px; font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .section__sub {
+      font-size: 13px;
+      color: var(--fg2);
+      margin: 0 0 18px 32px;
+      max-width: 880px;
+    }
+
+    .canvas {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 24px;
+      align-items: start;
+    }
+    .annot { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .annot__item {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .annot__num {
+      display: inline-block;
+      background: var(--accent-on); color: var(--bg2);
+      font-family: var(--font-mono);
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 1px 6px; border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .annot__title {
+      font-size: 12.5px; font-weight: 600; margin-bottom: 4px;
+    }
+    .annot__body {
+      font-size: 12px; color: var(--fg2); line-height: 1.55;
+    }
+    .annot__body code {
+      font-family: var(--font-mono); font-size: 11px;
+      background: var(--bg3); padding: 0 4px; border-radius: 3px;
+      color: var(--fg1);
+    }
+
+    /* ── cards ──────────────────────────────────────────────── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 12px;
+      box-shadow: var(--shadow-2);
+      overflow: hidden;
+    }
+
+    /* ── tabs preview ───────────────────────────────────────── */
+    .tabs-preview {
+      display: flex;
+      border-bottom: 1px solid var(--border-1);
+      gap: 0;
+      padding: 0 20px;
+    }
+    .tabs-preview__t {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--fg3);
+      border-bottom: 2px solid transparent;
+      cursor: default;
+    }
+    .tabs-preview__t.active {
+      color: var(--fg1);
+      border-bottom-color: var(--accent-on);
+      font-weight: 500;
+    }
+    .tabs-preview__t.drop {
+      color: oklch(70% 0.04 27);
+      text-decoration: line-through;
+    }
+
+    /* ── KPI strip ─────────────────────────────────────────── */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .kpi__label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .kpi__val {
+      font-family: var(--font-mono);
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .kpi__val--ok { color: var(--success); }
+    .kpi__val--warn { color: var(--warning); }
+    .kpi__val--err { color: var(--danger); }
+    .kpi__sub {
+      font-size: 11px;
+      color: var(--fg3);
+      margin-top: 4px;
+    }
+
+    /* ── store strip ───────────────────────────────────────── */
+    .stores-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+    .store-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px 6px 8px;
+      border-radius: 999px;
+      background: var(--bg3);
+      border: 1px solid transparent;
+      font-size: 12.5px;
+      cursor: default;
+    }
+    .store-chip.active {
+      background: var(--accent-soft);
+      color: var(--accent-on);
+      border-color: oklch(85% 0.08 268);
+      font-weight: 500;
+    }
+    .store-chip__count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg2);
+      padding: 1px 5px;
+      border-radius: 999px;
+      color: var(--fg3);
+    }
+    .store-chip.active .store-chip__count {
+      background: var(--bg2); color: var(--accent-on);
+    }
+
+    /* ── table ──────────────────────────────────────────────── */
+    table.tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.tbl th {
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border-1);
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+    }
+    table.tbl td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border-1);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    table.tbl tbody tr:last-child td { border-bottom: 0; }
+    table.tbl tbody tr.row { cursor: pointer; }
+    table.tbl tbody tr.row:hover { background: var(--bg-hover); }
+    table.tbl tbody tr.row.open { background: var(--bg-hover); }
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* ── pills ──────────────────────────────────────────────── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    .pill .dot { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+    .pill--ok { background: var(--success-bg); color: var(--success); }
+    .pill--info { background: var(--info-bg); color: var(--info); }
+    .pill--warn { background: var(--warning-bg); color: var(--warning); }
+    .pill--danger { background: var(--danger-bg); color: var(--danger); }
+    .pill--neutral { background: var(--bg3); color: var(--fg2); }
+
+    /* device id cell */
+    .dev {
+      display: flex; align-items: center; gap: 10px;
+      min-width: 0;
+    }
+    .dev__icon {
+      width: 32px; height: 32px; flex: none;
+      border-radius: 7px;
+      background: oklch(94% 0.01 260);
+      color: var(--fg2);
+      display: grid; place-items: center;
+    }
+    .dev__sn {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--accent-on);
+      text-decoration: none;
+      border-bottom: 1px dashed currentColor;
+    }
+    .dev__sub {
+      font-size: 11.5px; color: var(--fg3);
+    }
+
+    /* deploy summary inline */
+    .deploy {
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
+    }
+    .deploy .seg {
+      font-family: var(--font-mono);
+      font-size: 12px; font-weight: 500;
+    }
+
+    .chev {
+      display: inline-block; width: 12px; height: 12px;
+      transition: transform var(--duration-fast) var(--easing-standard);
+      color: var(--fg3);
+    }
+    .chev--open { transform: rotate(90deg); color: var(--fg1); }
+
+    /* ── expanded body ─────────────────────────────────────── */
+    .expand {
+      background: var(--bg1);
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .expand--single { grid-template-columns: 1fr; }
+    .expand__card {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .expand__card__head {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-1);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg2);
+    }
+    .expand__card__title {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+    }
+    .expand__card__count {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--fg3);
+    }
+    .expand__card--diff .expand__card__head {
+      background: var(--warning-bg);
+      border-bottom-color: oklch(82% 0.08 75);
+    }
+    .expand__card--diff .expand__card__title { color: var(--warning); }
+
+    table.subtbl {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table.subtbl th {
+      padding: 8px 12px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+      text-align: left;
+      border-bottom: 1px solid var(--border-1);
+    }
+    table.subtbl td {
+      padding: 10px 12px;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border-1);
+      vertical-align: middle;
+    }
+    table.subtbl tbody tr:last-child td { border-bottom: 0; }
+
+    /* flag chips for installed-app behavior bits */
+    .flagcell {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .flag {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .flag--locked { background: oklch(94% 0.01 260); color: var(--fg2); }
+    .flag--kiosk { background: var(--info-bg); color: var(--info); }
+    .flag--auto { background: var(--accent-soft); color: var(--accent-on); }
+    .flag--hidden { background: var(--bg3); color: var(--fg3); }
+    .flag--disabled { background: var(--danger-bg); color: var(--danger); }
+
+    /* strategy fragment */
+    .strat-line {
+      font-size: 12px; color: var(--fg2);
+      display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap;
+    }
+    .strat-line .urgent {
+      color: var(--danger); font-weight: 500;
+    }
+    .strat-line .casual {
+      color: var(--fg2);
+    }
+
+    /* event timeline */
+    .events {
+      padding: 4px 0;
+    }
+    .ev {
+      display: grid;
+      grid-template-columns: 130px 16px 1fr;
+      gap: 10px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border-1);
+      align-items: flex-start;
+    }
+    .ev:last-child { border-bottom: 0; }
+    .ev__time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg3);
+      padding-top: 2px;
+    }
+    .ev__dot {
+      width: 8px; height: 8px; border-radius: 999px;
+      margin-top: 6px; justify-self: center;
+      background: var(--fg3);
+    }
+    .ev__dot--ok { background: var(--success); }
+    .ev__dot--warn { background: var(--warning); }
+    .ev__dot--err { background: var(--danger); }
+    .ev__dot--info { background: var(--info); }
+    .ev__body {
+      font-size: 12.5px; color: var(--fg2);
+      line-height: 1.5;
+    }
+    .ev__body strong { color: var(--fg1); font-weight: 500; }
+    .ev__body .pkg {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg3);
+      margin-left: 4px;
+    }
+
+    /* derivation diagram */
+    .deriv {
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      position: relative;
+    }
+    .deriv__col h4 {
+      margin: 0 0 8px;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg3);
+      font-weight: 500;
+    }
+    .deriv__row {
+      padding: 7px 10px;
+      background: var(--bg1);
+      border: 1px solid var(--border-1);
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 6px;
+      display: flex; justify-content: space-between;
+      font-family: var(--font-mono);
+    }
+    .deriv__row .name { color: var(--fg1); }
+    .deriv__row .ver { color: var(--fg3); }
+    .deriv__row.diff { border-color: var(--warning); background: var(--warning-bg); }
+    .deriv__row.diff .ver { color: var(--warning); font-weight: 600; }
+    .deriv__row.missing { border-color: var(--danger); background: var(--danger-bg); }
+    .deriv__row.missing .ver { color: var(--danger); font-weight: 600; }
+
+    .deriv__arrow {
+      position: absolute;
+      top: 50%;
+      font-size: 22px; color: var(--fg3);
+    }
+
+    /* diff summary list */
+    .diffsum {
+      list-style: none;
+      padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .diffsum li {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      padding: 8px 12px;
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 8px;
+      font-size: 12px;
+      align-items: center;
+    }
+    .diffsum li.warn { border-color: oklch(82% 0.08 75); background: var(--warning-bg); }
+    .diffsum li.danger { border-color: oklch(82% 0.10 27); background: var(--danger-bg); }
+
+    /* generic outline diff box */
+    .summary-box {
+      margin: 16px 0 28px;
+      padding: 16px 18px;
+      background: var(--bg2);
+      border: 1px solid var(--border-1);
+      border-radius: 10px;
+    }
+    .summary-box__t {
+      font-size: 13px; font-weight: 600; margin-bottom: 10px;
+    }
+    .summary-box ul {
+      margin: 0; padding: 0 0 0 20px;
+      font-size: 12.5px; color: var(--fg2);
+      line-height: 1.6;
+    }
+    .summary-box li { margin-bottom: 4px; }
+    .keep { color: var(--success); font-weight: 600; }
+    .drop { color: var(--danger); font-weight: 600; text-decoration: line-through; }
+    .new { color: var(--accent-on); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+
+    <header class="doc__head">
+      <span class="doc__eyebrow">Design proposal · v2 · Devices tab redesign · review before build</span>
+      <h1 class="doc__title">Customer detail · Devices tab (MERCHANT customers)</h1>
+      <p class="doc__sub">
+        Per the corrected model: <code>DEVICE_APPLICATION</code> (per-device installed/requested/diff apps) + <code>DEVICE_EVENT</code> (per-device telemetry) become the new source of truth. Merchants no longer hold an app-level aggregation — apps are deployed by ISO operators on a <strong>per-terminal</strong> basis in the customer portal, and the admin platform only observes.
+      </p>
+    </header>
+
+    <!-- ─── Top-level change summary ─── -->
+    <div class="summary-box">
+      <div class="summary-box__t">What's changing on the customer detail tab strip</div>
+      <ul>
+        <li>Tab <code>Stores &amp; terminals</code> → <span class="new">renamed to <code>Devices</code></span>. The store strip stays (multi-store filtering remains useful), but the heading and content now emphasize terminals + their app deployment status, not stores.</li>
+        <li>Tab <code>Apps</code> → <span class="drop">removed entirely</span>. There is no merchant-level app aggregation anymore — admin observes app state device-by-device via the new tab.</li>
+        <li><span class="keep">Kept</span> — terminal SN remains clickable; opens device detail with Back returning to <code>customerDetail/devices</code>.</li>
+        <li><span class="new">Added</span> — every device row expands to show its <code>INSTALLED_APPS</code>, computed <code>DIFF_APPS</code>, and recent <code>DEVICE_EVENT</code> stream — all read-only.</li>
+      </ul>
+    </div>
+
+    <!-- ─── tab strip diagram ─── -->
+    <div class="card" style="margin-bottom: 36px">
+      <div class="tabs-preview">
+        <div class="tabs-preview__t">Overview</div>
+        <div class="tabs-preview__t">Contracts</div>
+        <div class="tabs-preview__t">Operators &amp; roles</div>
+        <div class="tabs-preview__t active">Devices</div>
+        <div class="tabs-preview__t drop">Apps</div>
+      </div>
+      <div style="padding: 14px 20px; font-size: 12px; color: var(--fg3); display: flex; gap: 12px; align-items: center">
+        <span style="display:inline-block; width: 10px; height: 10px; background: var(--accent-on); border-radius: 999px"></span>
+        new active tab
+        <span style="margin-left: 16px; display:inline-block; width: 10px; height: 10px; background: oklch(85% 0.10 27); border-radius: 999px"></span>
+        removed
+      </div>
+    </div>
+
+    <!-- ─── §1 Devices tab overview ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">1</span>Devices tab — overview</h2>
+      <p class="section__sub">
+        Bluefin Market (c-007) example · 14 terminals across 2 stores · 3 distinct apps deployed per the ISO's per-device config.
+      </p>
+
+      <div class="canvas">
+        <div>
+          <!-- KPI strip -->
+          <div class="kpis">
+            <div class="kpi">
+              <div class="kpi__label">Terminals</div>
+              <div class="kpi__val">14</div>
+              <div class="kpi__sub">12 online · 2 offline</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__label">Apps deployed</div>
+              <div class="kpi__val">3</div>
+              <div class="kpi__sub">distinct pkg names in requests</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__label">Devices with diff</div>
+              <div class="kpi__val kpi__val--warn">4</div>
+              <div class="kpi__sub">requested ≠ installed</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi__label">Install failures · 7d</div>
+              <div class="kpi__val kpi__val--err">2</div>
+              <div class="kpi__sub">across all devices</div>
+            </div>
+          </div>
+
+          <!-- store strip -->
+          <div class="stores-strip">
+            <div class="store-chip active">
+              All stores
+              <span class="store-chip__count">14</span>
+            </div>
+            <div class="store-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9 12 3l9 6v12H3z"/><path d="M9 22V12h6v10"/></svg>
+              Downtown <span style="color: var(--fg3); font-size: 11px">· HQ</span>
+              <span class="store-chip__count">8</span>
+            </div>
+            <div class="store-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9 12 3l9 6v12H3z"/><path d="M9 22V12h6v10"/></svg>
+              Pier 14
+              <span class="store-chip__count">6</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <table class="tbl">
+              <colgroup>
+                <col style="width: 30px"/>
+                <col style="width: 28%"/>
+                <col style="width: 18%"/>
+                <col style="width: 12%"/>
+                <col style="width: 12%"/>
+                <col style="width: 18%"/>
+                <col style="width: 12%"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Terminal</th>
+                  <th>Store</th>
+                  <th>Status</th>
+                  <th>Apps</th>
+                  <th>Deployment</th>
+                  <th>Last sync</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- All-good row -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width: 0">
+                        <a class="dev__sn">NL750-K9F2H7A1</a>
+                        <div class="dev__sub">N750P · TID-90040</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 12.5px">Downtown</span></td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Online</span></td>
+                  <td class="mono" style="font-size: 12.5px; font-weight: 500">3 / 3</td>
+                  <td>
+                    <div class="deploy">
+                      <span class="seg" style="color: var(--success)">All on target</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 11.5px; color: var(--fg3)">2 min ago</span></td>
+                </tr>
+
+                <!-- Diff row -->
+                <tr class="row open">
+                  <td><span class="chev chev--open">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width: 0">
+                        <a class="dev__sn">NL750-K9F2H7B3</a>
+                        <div class="dev__sub">N750P · TID-90041</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 12.5px">Downtown</span></td>
+                  <td><span class="pill pill--ok"><span class="dot"></span>Online</span></td>
+                  <td class="mono" style="font-size: 12.5px; font-weight: 500; color: var(--warning)">2 / 3</td>
+                  <td>
+                    <div class="deploy">
+                      <span class="pill pill--warn">1 pending</span>
+                      <span style="font-size: 11px; color: var(--fg3)">Smart Receipt 1.1.7 → 1.1.8</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 11.5px; color: var(--fg3)">12 min ago</span></td>
+                </tr>
+
+                <!-- EXPANDED BODY -->
+                <tr>
+                  <td colspan="7" style="padding: 0">
+                    <div class="expand">
+
+                      <!-- DIFF card (front-loaded) -->
+                      <div class="expand__card expand__card--diff" style="grid-column: span 2">
+                        <div class="expand__card__head">
+                          <div class="expand__card__title">Diff apps · 1 pending action</div>
+                          <span class="expand__card__count">DEVICE_APPLICATION.diff_apps</span>
+                        </div>
+                        <ul class="diffsum" style="padding: 12px 14px">
+                          <li class="warn">
+                            <div>
+                              <strong>Smart Receipt</strong>
+                              <span style="color: var(--fg3); font-family: var(--font-mono); font-size: 11px"> · com.northwind.smartreceipt</span>
+                            </div>
+                            <div class="mono" style="font-size: 11.5px">
+                              installed <span style="color: var(--fg3)">1.1.7</span>
+                              <span style="color: var(--fg3); margin: 0 4px">→</span>
+                              requested <span style="color: var(--warning); font-weight: 600">1.1.8</span>
+                            </div>
+                            <span class="pill pill--warn">CASUAL</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <!-- Installed apps -->
+                      <div class="expand__card">
+                        <div class="expand__card__head">
+                          <div class="expand__card__title">Installed apps · 3</div>
+                          <span class="expand__card__count">DEVICE_APPLICATION.installed_apps</span>
+                        </div>
+                        <table class="subtbl">
+                          <thead>
+                            <tr>
+                              <th style="width: 40%">Package</th>
+                              <th style="width: 18%">Version</th>
+                              <th>Behavior</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <div><strong>Northwind POS Pro</strong></div>
+                                <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3)">com.northwind.pos.pro</div>
+                              </td>
+                              <td class="mono">4.3.2 <span style="color: var(--fg3); font-size: 10.5px">(1432)</span></td>
+                              <td>
+                                <div class="flagcell">
+                                  <span class="flag flag--kiosk" title="Kiosk mode">KIOSK</span>
+                                  <span class="flag flag--auto" title="Auto-start on boot">BOOT</span>
+                                  <span class="flag flag--locked" title="Cannot be uninstalled by user">LOCKED</span>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div><strong>Smart Receipt</strong></div>
+                                <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3)">com.northwind.smartreceipt</div>
+                              </td>
+                              <td class="mono" style="color: var(--warning); font-weight: 500">1.1.7 <span style="color: var(--fg3); font-size: 10.5px; font-weight: 400">(117)</span></td>
+                              <td><span style="font-size: 11px; color: var(--fg3)">—</span></td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div><strong>Loyalty+</strong></div>
+                                <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3)">com.helios.loyaltyplus</div>
+                              </td>
+                              <td class="mono">1.3.4 <span style="color: var(--fg3); font-size: 10.5px">(134)</span></td>
+                              <td>
+                                <div class="flagcell">
+                                  <span class="flag flag--hidden" title="Hidden from launcher">HIDDEN</span>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Requested apps + strategy -->
+                      <div class="expand__card">
+                        <div class="expand__card__head">
+                          <div class="expand__card__title">Requested apps · 3</div>
+                          <span class="expand__card__count">DEVICE_APPLICATION.request_apps</span>
+                        </div>
+                        <table class="subtbl">
+                          <thead>
+                            <tr>
+                              <th style="width: 40%">Package</th>
+                              <th style="width: 14%">Version</th>
+                              <th>Strategy</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <div><strong>Northwind POS Pro</strong></div>
+                                <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3)">com.northwind.pos.pro</div>
+                              </td>
+                              <td class="mono">4.3.2</td>
+                              <td>
+                                <div class="strat-line">
+                                  <span class="pill pill--neutral">CASUAL</span>
+                                  <span style="color: var(--fg3)">·</span>
+                                  <span>Wi-Fi/Ethernet only</span>
+                                  <span style="color: var(--fg3)">·</span>
+                                  <span>02:00–04:00</span>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div><strong>Smart Receipt</strong></div>
+                                <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3)">com.northwind.smartreceipt</div>
+                              </td>
+                              <td class="mono" style="color: var(--warning); font-weight: 500">1.1.8</td>
+                              <td>
+                                <div class="strat-line">
+                                  <span class="pill pill--neutral">CASUAL</span>
+                                  <span style="color: var(--fg3)">·</span>
+                                  <span>Any network</span>
+                                  <span style="color: var(--fg3)">·</span>
+                                  <span>Next boot</span>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <div><strong>Loyalty+</strong></div>
+                                <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3)">com.helios.loyaltyplus</div>
+                              </td>
+                              <td class="mono">1.3.4</td>
+                              <td>
+                                <div class="strat-line">
+                                  <span class="pill pill--neutral">CASUAL</span>
+                                  <span style="color: var(--fg3)">·</span>
+                                  <span>Wi-Fi/Ethernet only</span>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Recent events -->
+                      <div class="expand__card" style="grid-column: span 2">
+                        <div class="expand__card__head">
+                          <div class="expand__card__title">Recent device events · 6</div>
+                          <span class="expand__card__count">DEVICE_EVENT · last 24 h</span>
+                        </div>
+                        <div class="events">
+                          <div class="ev">
+                            <span class="ev__time">14:22:08</span>
+                            <span class="ev__dot ev__dot--info"></span>
+                            <div class="ev__body">Download started · <strong>Smart Receipt 1.1.8</strong><span class="pkg">com.northwind.smartreceipt</span></div>
+                          </div>
+                          <div class="ev">
+                            <span class="ev__time">11:08:42</span>
+                            <span class="ev__dot ev__dot--ok"></span>
+                            <div class="ev__body">App installed successfully · <strong>Loyalty+ 1.3.4</strong> · duration 41 s<span class="pkg">com.helios.loyaltyplus</span></div>
+                          </div>
+                          <div class="ev">
+                            <span class="ev__time">10:54:09</span>
+                            <span class="ev__dot ev__dot--ok"></span>
+                            <div class="ev__body">Download succeeded · <strong>Loyalty+ 1.3.4</strong> · 12.3 MB in 38 s<span class="pkg">com.helios.loyaltyplus</span></div>
+                          </div>
+                          <div class="ev">
+                            <span class="ev__time">10:52:17</span>
+                            <span class="ev__dot ev__dot--warn"></span>
+                            <div class="ev__body">User postponed upgrade · <strong>Loyalty+ 1.3.4</strong> · operator chose "later"<span class="pkg">com.helios.loyaltyplus</span></div>
+                          </div>
+                          <div class="ev">
+                            <span class="ev__time">04:02:55</span>
+                            <span class="ev__dot ev__dot--ok"></span>
+                            <div class="ev__body">App installed successfully · <strong>Northwind POS Pro 4.3.2</strong> · duration 1m 18s<span class="pkg">com.northwind.pos.pro</span></div>
+                          </div>
+                          <div class="ev">
+                            <span class="ev__time">03:54:11</span>
+                            <span class="ev__dot ev__dot--info"></span>
+                            <div class="ev__body">OTA firmware sync · <strong>OTA</strong><span class="pkg">OTA · n750-base 1.18.2</span></div>
+                          </div>
+                        </div>
+                        <div style="padding: 8px 14px; font-size: 11px; color: var(--fg3); border-top: 1px solid var(--border-1); display: flex; justify-content: space-between">
+                          <span>Showing 6 of 23 events in the last 24 h</span>
+                          <a style="color: var(--accent-on); font-size: 11px; text-decoration: none; border-bottom: 1px dashed currentColor; cursor: pointer">View full event log</a>
+                        </div>
+                      </div>
+
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Failed install row -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width: 0">
+                        <a class="dev__sn">NL750-K7B22DEC</a>
+                        <div class="dev__sub">N750P · TID-90109</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 12.5px">Pier 14</span></td>
+                  <td><span class="pill pill--neutral"><span class="dot"></span>Offline</span></td>
+                  <td class="mono" style="font-size: 12.5px; font-weight: 500; color: var(--danger)">2 / 3</td>
+                  <td>
+                    <div class="deploy">
+                      <span class="pill pill--danger">1 failed</span>
+                      <span style="font-size: 11px; color: var(--fg3)">Smart Receipt 1.1.8 · last attempt 2h ago</span>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 11.5px; color: var(--fg3)">2 h ago</span></td>
+                </tr>
+
+                <!-- Offline / never synced row -->
+                <tr class="row">
+                  <td><span class="chev">▸</span></td>
+                  <td>
+                    <div class="dev">
+                      <div class="dev__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 18h6"/></svg>
+                      </div>
+                      <div style="min-width: 0">
+                        <a class="dev__sn">NL910-A2B4F019</a>
+                        <div class="dev__sub">N910 · TID-91082</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span style="font-size: 12.5px">Pier 14</span></td>
+                  <td><span class="pill pill--neutral"><span class="dot"></span>Offline</span></td>
+                  <td class="mono" style="font-size: 12.5px; font-weight: 500; color: var(--fg3)">— / 3</td>
+                  <td>
+                    <span style="font-size: 11.5px; color: var(--fg3)">No sync yet</span>
+                  </td>
+                  <td><span style="font-size: 11.5px; color: var(--fg3)">never</span></td>
+                </tr>
+
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--fg3); font-size: 11.5px; padding: 12px 14px">…10 more terminals collapsed in this mock</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- annotation rail -->
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">A</div>
+            <div class="annot__title">KPI strip rewritten for the new model</div>
+            <div class="annot__body">All 4 tiles are device-shaped (no app-level rollups). "Devices with diff" rolls up the DIFF_APPS computed metric across the fleet; "Install failures · 7d" reads DEVICE_EVENT for <code>EVENT_TYPE = 应用安装失败</code> in the trailing 7-day window.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">B</div>
+            <div class="annot__title">Apps column shows <code>installed / requested</code></div>
+            <div class="annot__body">Compact device-level rollup: <code>3 / 3</code> means 3 apps requested, 3 installed at the correct version. Color tells the story — green / amber / red.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">C</div>
+            <div class="annot__title">Deployment column tells the operator <em>what</em></div>
+            <div class="annot__body">A single chip + one-liner. "1 pending · Smart Receipt 1.1.7 → 1.1.8" is enough for triage; full detail lives in the expanded body.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">D</div>
+            <div class="annot__title">Diff card surfaces above Installed/Requested</div>
+            <div class="annot__body">Order matters — for any device with diff, the first thing admin sees on expand is "what's wrong". Installed + Requested live below as supporting context. The diff card hides itself when the device has no diff.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">E</div>
+            <div class="annot__title">Behavior flags as small mono chips</div>
+            <div class="annot__body">KIOSK / BOOT / LOCKED / HIDDEN / DISABLED. From <code>IS_KIOSK_MODE</code>, <code>IS_AUTO_START_ON_BOOT</code>, <code>IS_UNINSTALLABLE = false</code>, <code>IS_LAUNCHER_ICON_HIDDEN</code>, <code>IS_APP_LAUNCH_DISABLED</code>. Tooltips spell out the field on hover.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">F</div>
+            <div class="annot__title">Events stream is filtered + truncated</div>
+            <div class="annot__body">Default = last 24 h, capped at ~6 most recent. "View full event log" routes into a dedicated device events screen (or the device-detail page's Events tab). Time stamp + dot color + 1-line description — Linear-style.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── §2 DIFF derivation diagram ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">2</span>How DIFF is computed (data flow)</h2>
+      <p class="section__sub">
+        Per the spec: walk <code>REQUEST_APPS.PKG_NAME</code>; look up each in <code>INSTALLED_APPS.PKG_NAME</code>. If not found, or <code>request.versionCode &gt; installed.versionCode</code>, it lands in DIFF.
+      </p>
+      <div class="canvas">
+        <div>
+          <div class="deriv">
+            <div class="deriv__col">
+              <h4>REQUEST_APPS (ISO config)</h4>
+              <div class="deriv__row"><span class="name">com.northwind.pos.pro</span> <span class="ver">4.3.2 (1432)</span></div>
+              <div class="deriv__row"><span class="name">com.northwind.smartreceipt</span> <span class="ver">1.1.8 (118)</span></div>
+              <div class="deriv__row"><span class="name">com.helios.loyaltyplus</span> <span class="ver">1.3.4 (134)</span></div>
+            </div>
+            <div class="deriv__col">
+              <h4>INSTALLED_APPS (device reported)</h4>
+              <div class="deriv__row"><span class="name">com.northwind.pos.pro</span> <span class="ver">4.3.2 (1432)</span></div>
+              <div class="deriv__row"><span class="name">com.northwind.smartreceipt</span> <span class="ver">1.1.7 (117)</span></div>
+              <div class="deriv__row"><span class="name">com.helios.loyaltyplus</span> <span class="ver">1.3.4 (134)</span></div>
+            </div>
+            <div class="deriv__col">
+              <h4>DIFF_APPS (derived)</h4>
+              <div class="deriv__row diff">
+                <span class="name">com.northwind.smartreceipt</span>
+                <span class="ver">1.1.8 ← 1.1.7</span>
+              </div>
+              <div style="font-size: 11px; color: var(--fg3); padding: 8px 4px">
+                Other pkgs match → DIFF empty for them.
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 18px; padding: 14px 16px; background: var(--bg2); border: 1px solid var(--border-1); border-radius: 10px; font-size: 12.5px; color: var(--fg2); line-height: 1.6">
+            <strong style="color: var(--fg1)">Two cases that land in DIFF:</strong>
+            <ol style="margin: 6px 0 0 18px; padding: 0">
+              <li><strong>Missing install</strong> — REQUEST pkg has no matching INSTALLED row → device hasn't downloaded it yet.</li>
+              <li><strong>Stale version</strong> — INSTALLED exists but <code>versionCode</code> is lower than REQUEST → device has it but needs an upgrade.</li>
+            </ol>
+            <div style="margin-top: 8px; color: var(--fg3); font-size: 11.5px">
+              We do not surface "apps installed by the user that the ISO didn't request" — those are outside the deployment contract and aren't actionable from admin.
+            </div>
+          </div>
+        </div>
+
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">G</div>
+            <div class="annot__title">DIFF is computed client-side from the JSONB</div>
+            <div class="annot__body">No separate <code>DIFF_APPS</code> column is needed in the table API — we compute it from <code>request_apps</code> + <code>installed_apps</code> at render time. (Server can still cache it for KPI queries.)</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">H</div>
+            <div class="annot__title">VERSION_CODE wins over VERSION_NAME</div>
+            <div class="annot__body">Comparison uses the integer <code>VERSION_CODE</code>, never string-compares <code>VERSION_NAME</code> (e.g. "1.10" &gt; "1.9" only works numerically).</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── §3 Strategy display ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">3</span>Strategy display (per-app, per-device)</h2>
+      <p class="section__sub">
+        Per the new model, strategy is stored <em>inside</em> each <code>REQUEST_APPS</code> row — no longer a separate table. Three urgency variants drive the chip color; the rest is one inline string.
+      </p>
+      <div class="canvas">
+        <div>
+          <div class="card" style="padding: 18px 20px">
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg3); margin-bottom: 4px">CASUAL · default</div>
+                <div class="strat-line">
+                  <span class="pill pill--neutral">CASUAL</span>
+                  <span style="color: var(--fg3)">·</span>
+                  <span>Wi-Fi/Ethernet only</span>
+                  <span style="color: var(--fg3)">·</span>
+                  <span>02:00–04:00 window</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--fg3); margin-top: 4px">Quiet upgrade when the device is idle — won't interrupt the merchant.</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg3); margin-bottom: 4px">IMMEDIATE · urgent</div>
+                <div class="strat-line">
+                  <span class="pill pill--danger urgent">IMMEDIATE</span>
+                  <span style="color: var(--fg3)">·</span>
+                  <span>Any network</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--fg3); margin-top: 4px">Force-upgrade as soon as the device next reports in. Reserved for security patches.</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg3); margin-bottom: 4px">CUSTOM · manual</div>
+                <div class="strat-line">
+                  <span class="pill pill--info">CUSTOM</span>
+                  <span style="color: var(--fg3)">·</span>
+                  <span>Wi-Fi/Ethernet + Cellular (cap 200 MB)</span>
+                  <span style="color: var(--fg3)">·</span>
+                  <span>Next boot or 10m idle</span>
+                  <span style="color: var(--fg3)">·</span>
+                  <span>22:00–01:00 window</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--fg3); margin-top: 4px">All knobs set by the ISO. We render every field in order.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="annot">
+          <div class="annot__item">
+            <div class="annot__num">I</div>
+            <div class="annot__title">No modal for strategy</div>
+            <div class="annot__body">It all fits in one line. Adding a modal for the new model felt like ceremony — the previous design used one because we had bulk vs per-terminal duality to explain. That goes away.</div>
+          </div>
+          <div class="annot__item">
+            <div class="annot__num">J</div>
+            <div class="annot__title">INSTALL_WINDOWS = pill-line</div>
+            <div class="annot__body">Each window renders as <code>HH:MM–HH:MM</code>. If multiple windows are configured, they comma-separate. Spec says "不允许跨24点" so we don't have to deal with cross-midnight ranges.</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ─── §4 Open questions ─── -->
+    <div class="section">
+      <h2 class="section__title"><span class="step">?</span>Decisions still on you</h2>
+      <ol style="font-size: 13.5px; color: var(--fg2); line-height: 1.7; padding-left: 28px">
+        <li>
+          <strong style="color: var(--fg1)">Store strip</strong> — keep at the top of Devices tab (filters the device list, as in mock)? Alternative: drop, and add a Store column to the table — fewer chrome elements but slightly less obvious.
+        </li>
+        <li>
+          <strong style="color: var(--fg1)">Empty-state placement</strong> — when a customer has 0 terminals (just signed contract): big illustration-free empty card ("No terminals registered yet"), or hide the tab entirely until first device sync?
+        </li>
+        <li>
+          <strong style="color: var(--fg1)">"View full event log"</strong> — should this route into the existing device-detail page (with an Events tab), or open a dedicated full-screen events table filtered by this device? I'd vote former (less new surface, returns to where admin came from).
+        </li>
+        <li>
+          <strong style="color: var(--fg1)">DIFF computation level</strong> — compute at render time client-side (proposed), or expect the backend to provide a precomputed <code>DIFF_APPS</code> on <code>DEVICE_APPLICATION</code>? The spec already lists it as a JSONB field; my proposal still leans on it for queries (KPI tile) but ignores it in the row UI in favor of fresh derivation. Tell me if backend-provided is canonical.
+        </li>
+        <li>
+          <strong style="color: var(--fg1)">Behavior flags</strong> — the 5 booleans are surfaced as inline chips. Is that the right priority, or should they live under an "info" affordance (hover popover) to keep the row cleaner?
+        </li>
+        <li>
+          <strong style="color: var(--fg1)">Mock data work</strong> — once you approve, I'll seed <code>SEED_DEVICE_APPLICATIONS</code> + <code>SEED_DEVICE_EVENTS</code> over the bridged legacy terminals (replacing the old <code>SEED_MERCHANT_APPLICATIONS</code> / <code>SEED_DEVICE_INSTALLED_APPS</code> / <code>SEED_DEVICE_APP_STRATEGIES</code>). The four App Pool tables (APPLICATIONS / APPLICATION_VERSIONS / PARTNER_APPLICATION / PARTNER_APPLICATION_VERSION) stay — they describe the publisher/ISO catalog, not the merchant deployment.
+        </li>
+      </ol>
+    </div>
+
+  </div>
+</body>
+</html>

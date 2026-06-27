@@ -1,0 +1,152 @@
+/* ─────────────────────────────────────────────────────────────
+   TOMS · colors_and_type.css
+   Single-import surface for color + type. Pulls primitives from
+   tokens/tokens.css and exposes a flat semantic API:
+     fg1 / fg2 / fg3 / bg1 / bg2 / bg3 / accent / success / …
+     h1 / h2 / h3 / body / mono / caption / overline / code
+   Apps that don't need the deep token system can just include this.
+   ───────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+@import url("./tokens/tokens.css");
+
+:root {
+  /* ─── Type families ─────────────────────────────────────── */
+  --font-sans:    "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* TOMS has no display/serif face — keep sans for display, mono for data. */
+  --font-display: var(--font-sans);
+
+  /* ─── Foreground (alias) ────────────────────────────────── */
+  --fg1: var(--color-text-primary);     /* primary text, headings */
+  --fg2: var(--color-text-secondary);   /* body, sub-titles */
+  --fg3: var(--color-text-tertiary);    /* hints, metadata */
+  --fg4: oklch(70% 0.005 270);          /* chrome / quaternary (dividers, kbd) */
+  --fg-on-accent: var(--color-text-on-primary);
+
+  /* ─── Background (alias) ────────────────────────────────── */
+  --bg1: var(--color-bg-1);             /* app canvas */
+  --bg2: var(--color-bg-2);             /* card / surface */
+  --bg3: var(--color-bg-3);             /* sunken / sidebar */
+  --bg-hover:  var(--color-bg-hover);
+  --bg-active: var(--color-bg-active);
+
+  /* ─── Border (alias) ────────────────────────────────────── */
+  --border-1: var(--color-border-subtle);
+  --border-2: var(--color-border-default);
+  --border-3: var(--color-border-strong);
+
+  /* ─── Accent — midnight indigo CTA (mono-graphite) ──────── */
+  --accent:        var(--color-primary-700);
+  --accent-hover:  var(--color-primary-600);
+  --accent-active: var(--color-primary-800);
+  --accent-soft:   var(--color-primary-50);
+  --accent-on:     var(--color-text-on-primary);
+
+  /* ─── Accent aliases — single muted indigo, no vivid trio ─ */
+  --accent-vivid:      var(--color-accent-600);
+  --accent-vivid-soft: var(--color-accent-100);
+
+  /* ─── Semantic ──────────────────────────────────────────── */
+  --success:    var(--color-success-500); --success-bg: var(--color-success-50);
+  --warning:    var(--color-warning-500); --warning-bg: var(--color-warning-50);
+  --error:      var(--color-error-500);   --error-bg:   var(--color-error-50);
+  --info:       var(--color-info-500);    --info-bg:    var(--color-info-50);
+}
+
+/* ─── Semantic type classes ───────────────────────────────── */
+/* Use as class names on real tags, eg. <h1 class="h1">… */
+
+.h1 {
+  font-family: var(--font-display);
+  font-size:    var(--font-size-3xl);   /* 28px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--fg1);
+}
+.h2 {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-2xl);   /* 22px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--fg1);
+}
+.h3 {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-xl);    /* 18px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-snug);
+  color: var(--fg1);
+}
+.h4 {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-lg);    /* 16px */
+  font-weight:  var(--font-weight-semibold);
+  line-height:  var(--line-height-snug);
+  color: var(--fg1);
+}
+/* Hero numbers / KPIs — always mono */
+.hero-num {
+  font-family: var(--font-mono);
+  font-size:    var(--font-size-4xl);   /* 36px */
+  font-weight:  var(--font-weight-medium);
+  line-height:  1.05;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--fg1);
+}
+.body, p {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-md);    /* 14px */
+  font-weight:  var(--font-weight-regular);
+  line-height:  var(--line-height-normal);
+  color: var(--fg1);
+}
+.body-sm {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-sm);    /* 13px */
+  line-height:  var(--line-height-normal);
+  color: var(--fg2);
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size:    var(--font-size-xs);    /* 12px */
+  line-height:  var(--line-height-normal);
+  color: var(--fg3);
+}
+.overline {
+  font-family: var(--font-sans);
+  font-size:    11px;
+  font-weight:  var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+.mono, code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size:    var(--font-size-sm);
+  font-feature-settings: "zero", "ss01";
+  letter-spacing: 0;
+}
+code {
+  background: var(--bg3);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-1);
+  color: var(--fg1);
+}
+kbd {
+  background: var(--bg2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  font-size: 11px;
+  color: var(--fg3);
+  box-shadow: var(--shadow-1);
+}
+
+/* Numerals — always tabular for tables / KPIs */
+.num, table, .tabular {
+  font-variant-numeric: tabular-nums;
+}

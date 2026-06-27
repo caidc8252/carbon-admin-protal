@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§7.0–7.2 框架/Shell · 侧栏三态 · 滚动唯一性 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .shell{display:grid;grid-template-columns:200px 1fr;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-1);background:var(--bg2);min-height:300px;}
+  .shell--collapsed{grid-template-columns:64px 1fr;}
+  .side{background:#f6f4ee;border-right:1px solid var(--border);padding:14px 10px;}
+  .side__logo{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:16px;}
+  .side__logo .mark{width:24px;height:24px;border-radius:6px;background:var(--primary-700);}
+  .side__item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;font-size:12.5px;color:var(--fg2);}
+  .side__item .ic{width:16px;height:16px;border-radius:4px;background:var(--border-strong);flex:none;}
+  .side__item.is-active{background:var(--primary-100);color:var(--primary-700);font-weight:600;}
+  .side--collapsed .side__item span{display:none;}
+  .side--collapsed .side__logo span{display:none;}
+  .right{display:flex;flex-direction:column;}
+  .topnav{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);font-size:12px;color:var(--fg3);}
+  .topnav .toggle{width:26px;height:26px;border:1px solid var(--border);border-radius:6px;display:grid;place-items:center;color:var(--fg2);}
+  .topnav .grow{flex:1;}
+  .titlebar{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;}
+  .titlebar .t{font-size:16px;font-weight:600;}
+  .content{padding:16px;background:var(--bg1);font-size:12px;color:var(--fg3);position:relative;}
+  .content .scroll-tag{position:absolute;top:8px;right:10px;font:600 10px/1 var(--mono);color:var(--primary-600);background:var(--primary-50);border:1px solid var(--primary-200);border-radius:5px;padding:3px 6px;}
+  .sticky-tag{display:inline-block;font:600 10px/1 var(--mono);color:var(--info-700);background:var(--info-bg);border:1px solid var(--info-border);border-radius:5px;padding:3px 6px;margin:3px 0;}
+  .anno{font-size:11px;color:var(--fg3);text-align:center;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §7.0 · §7.1 · §7.2</div>
+  <h1>框架 / Shell · 三区结构 · 侧栏三态 · 滚动唯一性</h1>
+  <p class="lede">
+    全站骨架 = 左侧菜单 + 右侧上下两段。右侧从上到下：<b>① 顶部导航栏 TopNav</b>（面包屑/全局搜索/通知/账户，<b>不放页面标题或页面操作</b>）·
+    <b>② 标题栏 TitleBar</b>（页面标题或详情头 + 页面级操作，固定不滚）· <b>③ 内容区 Content</b>（<b>唯一</b> overflow:auto）。
+  </p>
+
+  <!-- 三区结构 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>Shell 三区</h2></div>
+    <p class="sec-desc">导航栏给「在哪」（路径/全局），标题栏给「这是什么页」，二者标题不重复。标题栏纯白底、非卡片、底部 1px 横线。</p>
+    <div class="shell">
+      <div class="side">
+        <div class="side__logo"><span class="mark"></span><span>TOMS · Admin</span></div>
+        <div class="side__item is-active"><span class="ic"></span><span>Customers</span></div>
+        <div class="side__item"><span class="ic"></span><span>Orders</span></div>
+        <div class="side__item"><span class="ic"></span><span>Devices</span></div>
+        <div class="side__item"><span class="ic"></span><span>Tickets</span></div>
+      </div>
+      <div class="right">
+        <div class="topnav"><span class="toggle">≡</span><span>Customers / Pinegate Apparel</span><span class="grow"></span><span>⌘K</span><span>🔔</span><span>JD</span></div>
+        <div class="titlebar"><span class="t">Customers</span><button class="btn btn--primary btn--sm">New customer</button></div>
+        <div class="content" style="min-height:120px;">
+          <span class="scroll-tag">③ overflow:auto ↕</span>
+          列表卡 / 表单 / 详情主体在此滚动
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 侧栏三态 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>侧栏三态（响应式可收起）</h2></div>
+    <p class="sec-desc">宽屏 ≥1024 展开 <code>248</code> ↔ 收成图标条 <code>64</code>；中屏 768–1024 默认图标条、有子项 hover 出 flyout；小屏 &lt;768 完全收起、汉堡点开 overlay 抽屉。状态存 localStorage，过渡 200ms。</p>
+    <div class="duo">
+      <div>
+        <div class="shell" style="min-height:auto;">
+          <div class="side"><div class="side__logo"><span class="mark"></span><span>TOMS</span></div><div class="side__item is-active"><span class="ic"></span><span>Customers</span></div><div class="side__item"><span class="ic"></span><span>Orders</span></div></div>
+          <div class="right"><div class="topnav"><span class="toggle">≡</span><span>展开 248</span></div><div class="content" style="min-height:60px;"></div></div>
+        </div>
+        <div class="anno">宽屏 · 展开</div>
+      </div>
+      <div>
+        <div class="shell shell--collapsed" style="min-height:auto;">
+          <div class="side side--collapsed"><div class="side__logo"><span class="mark"></span><span>TOMS</span></div><div class="side__item is-active"><span class="ic"></span><span>Customers</span></div><div class="side__item"><span class="ic"></span><span>Orders</span></div></div>
+          <div class="right"><div class="topnav"><span class="toggle">≡</span><span>图标条 64</span></div><div class="content" style="min-height:60px;"></div></div>
+        </div>
+        <div class="anno">中屏 · 收起（hover 出 flyout）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 滚动唯一性 -->
+  <section>
+    <div class="sec-h"><span class="tag tag--fix">FIX</span><h2>滚动唯一性（标题栏以下）</h2></div>
+    <p class="sec-desc">
+      <code>.content</code> 是<b>唯一</b>的 overflow:auto 容器。<b>搜索/条件区不吸顶</b>（随内容滚走）；只有 <b>list-head 计数行 + thead 表头吸顶</b>，pin 到 .content 顶部（紧贴标题栏下沿）。<b>禁止</b> .content 之下再出现第二个 overflow:auto 祖先（双滚动条 / 标题跟着滚）。
+    </p>
+    <div class="card card--pad" style="font-size:12.5px;color:var(--fg2);line-height:2;">
+      <div><code>.main</code> &nbsp;100vh · flex column · 不滚</div>
+      <div style="padding-left:16px;">├─ <code>.topbar</code> ① 固定 · 不滚</div>
+      <div style="padding-left:16px;">├─ <code>.titlebar</code> ② 固定 · 不滚</div>
+      <div style="padding-left:16px;">└─ <code>.content</code> ③ <span class="scroll-tag" style="position:static;">唯一 overflow:auto ↕</span></div>
+      <div style="padding-left:42px;">├─ search / conditions &nbsp;<span style="color:var(--fg4);">随内容滚走（不 sticky）</span></div>
+      <div style="padding-left:42px;">├─ list-head &nbsp;<span class="sticky-tag">sticky → pin 到 .content 顶</span></div>
+      <div style="padding-left:42px;">└─ thead &nbsp;<span class="sticky-tag">sticky → pin 在 list-head 之下</span></div>
+    </div>
+    <div class="contrast"><span class="ok">✓</span> 豁免：沉浸式全屏页（workbench / onboard / invite-email）无 topbar，但内部仍须单一滚动容器。</div>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§4.6 高级搜索 AdvancedSheet · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .sheet{border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-2);background:var(--bg2);overflow:hidden;max-width:600px;}
+  .sheet__head{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;}
+  .sheet__head .x{margin-left:auto;color:var(--fg3);}
+  .sheet__applies{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg1);}
+  .sheet__over{font:600 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg3);}
+  .ctx-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--bg3);color:var(--fg2);border:1px solid var(--border);}
+  .ctx-chip b{font-family:var(--mono);color:var(--fg1);font-weight:600;}
+  .sheet__body{padding:16px;}
+  .grp{margin-bottom:16px;}
+  .grp__h{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;margin-bottom:8px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  @media (max-width:680px){.grid3{grid-template-columns:1fr 1fr;}}
+  .sheet__foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border);}
+  .sel{height:36px;border:1px solid var(--border);border-radius:7px;background:var(--bg2);display:inline-flex;align-items:center;gap:8px;padding:0 10px;font-size:12.5px;color:var(--fg2);box-shadow:var(--shadow-1);white-space:nowrap;}
+  .sel .chev{margin-left:auto;color:var(--fg3);font-size:11px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §4.6</div>
+  <h1>高级搜索 · 单一 AdvancedSheet</h1>
+  <p class="lede">
+    收敛现状 3 套手写实现为单一组件（收进 <code>search-bar.jsx</code>）。容器是<b>内联下拉 Sheet</b>（不用居中 Modal），从 <b>Advanced 按钮正下方</b>展开。
+    字段一律用 §4.4 标准控件（高 36），<b>禁止原生 input/select</b>。行为遵循 R-01：抽屉内只改 draft，点 Search 才生效；关闭保留 draft。
+  </p>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--fix">FIX</span><h2>触发顺序 · Advanced 在 Search 左侧</h2></div>
+    <p class="sec-desc">Advanced 归入「输入条件」簇、置于 <b>Search 左侧</b>，挂「已生效进阶条件数」badge；Search 恒为末位提交。</p>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:4px 0;">
+      <span class="sel" style="width:170px;"><span>All statuses</span><span class="chev">⌄</span></span>
+      <button class="btn btn--secondary"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg> Advanced <span class="pill" style="height:18px;padding:0 6px;font-size:10px;background:var(--primary-100);color:var(--primary-700);border-color:var(--primary-200);">3</span></button>
+      <button class="btn btn--secondary"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg> Search</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>结构</h2><span class="desc">右缘与 Advanced 齐平 · APPLIES WITH 回显 · 无 match 数</span></div>
+    <p class="sec-desc">Header = filter 图标 + 标题 + <code>×</code>。<b>抽屉默认右边缘与 Advanced 按钮右缘齐平</b>，空间不足时向右收拢不越界。Header 下加 <b>APPLIES WITH</b> 只读条回显常驻条件（表明与进阶项叠加）。布局 3 列网格、按语义分组。底栏：<b>Search（主）+ Reset advanced</b>，<b>移除实时 match 数</b>，Reset 仅清进阶字段。</p>
+    <div class="sheet">
+      <div class="sheet__head">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+        Advanced filters <span class="x">×</span>
+      </div>
+      <div class="sheet__applies">
+        <span class="sheet__over">Applies with</span>
+        <span class="ctx-chip">SN <b>N950</b></span>
+        <span class="ctx-chip">Status <b>Active</b></span>
+      </div>
+      <div class="sheet__body">
+        <div class="grp">
+          <div class="grp__h">Connectivity &amp; posture</div>
+          <div class="grid3">
+            <div class="sel" style="width:100%;"><span>Any connectivity</span><span class="chev">⌄</span></div>
+            <div class="sel" style="width:100%;"><span>Any posture</span><span class="chev">⌄</span></div>
+            <div class="sel" style="width:100%;"><span>Any network</span><span class="chev">⌄</span></div>
+          </div>
+        </div>
+        <div class="grp" style="margin-bottom:0;">
+          <div class="grp__h">Software &amp; binding</div>
+          <div class="grid3">
+            <div class="sel" style="width:100%;"><span>All OS versions</span><span class="chev">⌄</span></div>
+            <div class="sel" style="width:100%;grid-column:span 2;"><span>All merchants</span><span class="chev">⌄</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sheet__foot" style="justify-content:flex-end;">
+        <button class="btn btn--secondary btn--sm">Reset advanced</button>
+        <button class="btn btn--primary btn--sm">Search</button>
+      </div>
+    </div>
+    <div class="contrast"><span class="ok">✓</span> 与旧做法的区别：Advanced 在 Search 左、抽屉右缘与按钮齐平、新增 APPLIES WITH 回显、底栏去 match 数、Reset→「Reset advanced」（仅清进阶项；常驻项由 §4.5 芯片 × 撤销）。</div>
+  </section>
+</div>
+</body>
+</html>

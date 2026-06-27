@@ -1,0 +1,136 @@
+/* ─────────────────────────────────────────────────────────────
+   ⚠ ARCHIVED FOR DESIGN — System C (shadcn Delivery layer)
+   Frozen by the Single Design Language charter (spec/design-language.html).
+   Canonical design system is System A: tokens/tokens.css.
+   This file is a DELIVERY/handoff layer only — its --background / --primary
+   names mirror System A's values for Tailwind/shadcn host apps. Do NOT
+   author design artifacts or spec pages against these names. On any value
+   conflict, System A (tokens.css) wins; this file mirrors it.
+   ─────────────────────────────────────────────────────────────
+   TOMS Design System — theme.css
+   Semantic CSS variables that shadcn/ui consumes directly.
+   Pair with tailwind.config.js in this folder.
+
+   Values are bare OKLCH triples (no `oklch()` wrapper) so the
+   Tailwind preset can compose them with `<alpha-value>`.
+   ───────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root, [data-theme="light"] {
+    --background:           99% 0.003 90;
+    --foreground:           18% 0.01 270;
+
+    --card:                 100% 0 0;
+    --card-foreground:      18% 0.01 270;
+    --popover:              100% 0 0;
+    --popover-foreground:   18% 0.01 270;
+
+    --muted:                97.2% 0.004 90;
+    --muted-foreground:     42% 0.008 270;
+
+    --primary:              24% 0.06 262;
+    --primary-foreground:   99% 0 0;
+    --secondary:            97% 0.005 250;
+    --secondary-foreground: 18% 0.01 270;
+    --accent:               58% 0.22 270;
+    --accent-foreground:    99% 0 0;
+    --destructive:          58% 0.20 25;
+    --destructive-foreground: 99% 0 0;
+
+    --success: 58% 0.14 152;
+    --warning: 70% 0.16 70;
+    --info:    60% 0.14 230;
+
+    --border: 89% 0.005 90;
+    --input:  89% 0.005 90;
+    --ring:   40% 0.14 262;
+
+    --sidebar:                    97.2% 0.004 90;
+    --sidebar-foreground:         42% 0.008 270;
+    --sidebar-accent:             93.5% 0.006 90;
+    --sidebar-accent-foreground:  18% 0.01 270;
+    --sidebar-border:             93% 0.005 90;
+    --sidebar-ring:               40% 0.14 262;
+
+    /* Chart palette — mirrors tokens/tokens.css --color-chart-* (canonical).
+       Bare OKLCH triples so Tailwind composes them with <alpha-value>. */
+    --chart-1: 52% 0.24 272;
+    --chart-2: 58% 0.14 152;
+    --chart-3: 60% 0.14 230;
+    --chart-4: 70% 0.16 70;
+    --chart-5: 60% 0.18 320;
+    --chart-6: 58% 0.20 25;
+    --chart-7: 50% 0.08 200;
+    --chart-8: 60% 0.10 290;
+
+    --radius: 8px;
+
+    --shadow-1: 0 1px 0 rgb(0 0 0 / 0.04);
+    --shadow-2: 0 1px 2px rgb(0 0 0 / 0.05);
+    --shadow-3: 0 4px 12px rgb(0 0 0 / 0.06);
+    --shadow-4: 0 12px 24px rgb(0 0 0 / 0.08);
+    --shadow-5: 0 24px 48px rgb(0 0 0 / 0.12);
+    --shadow-focus: 0 0 0 3px oklch(var(--ring) / 0.25);
+  }
+
+  .dark, [data-theme="dark"] {
+    --background:           14% 0.003 260;
+    --foreground:           94% 0.003 260;
+
+    --card:                 17% 0.004 260;
+    --card-foreground:      94% 0.003 260;
+    --popover:              17% 0.004 260;
+    --popover-foreground:   94% 0.003 260;
+
+    --muted:                11% 0.003 260;
+    --muted-foreground:     66% 0.005 260;
+
+    --primary:              88% 0.004 260;
+    --primary-foreground:   14% 0.003 260;
+    --secondary:            22% 0.008 250;
+    --secondary-foreground: 94% 0.003 260;
+    --accent:               70% 0.13 264;
+    --accent-foreground:    14% 0.003 260;
+    --destructive:          68% 0.16 25;
+    --destructive-foreground: 14% 0.003 260;
+
+    --success: 68% 0.13 152;
+    --warning: 76% 0.13 70;
+    --info:    70% 0.12 235;
+
+    --border: 24% 0.005 260;
+    --input:  24% 0.005 260;
+    --ring:   70% 0.13 264;
+
+    --sidebar:                    11% 0.003 260;
+    --sidebar-foreground:         66% 0.005 260;
+    --sidebar-accent:             26% 0.006 260;
+    --sidebar-accent-foreground:  94% 0.003 260;
+    --sidebar-border:             20% 0.004 260;
+    --sidebar-ring:               70% 0.13 264;
+
+    /* Chart palette · dark — mirrors tokens.css [data-theme=dark] --color-chart-* */
+    --chart-1: 66% 0.20 272;
+    --chart-2: 70% 0.13 152;
+    --chart-3: 70% 0.13 230;
+    --chart-4: 78% 0.14 70;
+    --chart-5: 70% 0.16 320;
+    --chart-6: 68% 0.17 25;
+    --chart-7: 64% 0.08 200;
+    --chart-8: 70% 0.11 290;
+
+    --shadow-1: 0 0 0 1px rgb(0 0 0 / 0.5);
+    --shadow-2: 0 1px 2px rgb(0 0 0 / 0.6);
+    --shadow-3: 0 4px 10px rgb(0 0 0 / 0.6);
+    --shadow-4: 0 8px 18px rgb(0 0 0 / 0.7);
+    --shadow-5: 0 24px 48px rgb(0 0 0 / 0.75);
+    --shadow-focus: 0 0 0 3px oklch(var(--ring) / 0.40);
+  }
+
+  /* shadcn base */
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  }
+}

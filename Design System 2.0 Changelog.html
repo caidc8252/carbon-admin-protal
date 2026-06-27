@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TOMS Design System 2.0 — Changelog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#fbfbfa; --card:#fff; --ink:#1c1c1e; --ink2:#54545a; --ink3:#8a8a90;
+    --line:#ececed; --line2:#e0e0e2; --accent:oklch(52% 0.16 262);
+    --ok:oklch(52% 0.13 152); --okbg:oklch(96% 0.03 152);
+    --warn:oklch(58% 0.12 70); --warnbg:oklch(96% 0.04 70);
+    --rm:oklch(55% 0.18 25); --rmbg:oklch(96% 0.03 25);
+    --add:oklch(50% 0.13 152);
+    --mono:"Geist Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px;margin:0 auto;padding:56px 28px 120px;}
+  .eyebrow{font:600 12px var(--mono);letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-size:32px;font-weight:600;letter-spacing:-0.02em;margin:0 0 8px;}
+  .sub{font-size:15px;color:var(--ink2);margin:0 0 6px;max-width:64ch;text-wrap:pretty;}
+  .meta{font:500 12px var(--mono);color:var(--ink3);margin-top:8px;}
+  .rule{height:1px;background:var(--line2);margin:32px 0;border:0;}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px 0 8px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;}
+  .kpi b{display:block;font:600 26px/1 var(--mono);letter-spacing:-0.02em;}
+  .kpi span{font-size:12px;color:var(--ink3);}
+
+  h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink3);margin:40px 0 4px;display:flex;align-items:center;gap:10px;}
+  h2 .n{font-family:var(--mono);color:var(--accent);}
+  h2 + .lead{font-size:14px;color:var(--ink2);margin:0 0 16px;}
+
+  table{width:100%;border-collapse:collapse;margin:10px 0 8px;font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:0.04em;color:var(--ink3);background:#f6f6f5;}
+  tr:last-child td{border-bottom:0;}
+  td .m,td code{font-family:var(--mono);font-size:12px;}
+  .old{color:var(--rm);text-decoration:line-through;}
+  .new{color:var(--add);font-weight:600;}
+  .arrow{color:var(--ink3);padding:0 6px;}
+
+  .tag{display:inline-block;font:600 11px var(--mono);padding:2px 7px;border-radius:999px;letter-spacing:0.02em;}
+  .tag--done{background:var(--okbg);color:var(--ok);}
+  .tag--partial{background:var(--warnbg);color:var(--warn);}
+  .tag--p0{background:var(--rmbg);color:var(--rm);}
+  .tag--p1{background:oklch(96% 0.03 262);color:var(--accent);}
+  .tag--p2{background:#eee;color:var(--ink2);}
+
+  ul{margin:8px 0 0;padding-left:18px;}
+  li{font-size:14px;color:var(--ink2);margin:5px 0;}
+  li b{color:var(--ink);}
+  li code{font-family:var(--mono);font-size:12.5px;background:#f0f0ef;padding:1px 5px;border-radius:4px;}
+
+  .note{background:var(--warnbg);border:1px solid oklch(86% 0.06 70);border-radius:16px;padding:14px 18px;margin:16px 0;font-size:13.5px;color:oklch(38% 0.07 70);}
+  .note b{color:oklch(30% 0.09 70);}
+  .foot{margin-top:48px;font-size:12px;color:var(--ink3);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Design Debt · Remediation</p>
+  <h1>Design System 2.0 — Changelog</h1>
+  <p class="sub">Token- and component-level remediation to reduce design variables. Same function → same component, same spacing, same radius, same icon container. This is a change record, not a new audit.</p>
+  <p class="meta">Scope: live admin shell (index.html + shared.jsx + page modules). App Publish bundle tracked separately (see note).</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>4</b><span>radius tokens redefined</span></div>
+    <div class="kpi"><b>5</b><span>token/shared files edited</span></div>
+    <div class="kpi"><b>2</b><span>icon/avatar components unified</span></div>
+    <div class="kpi"><b>∞</b><span>components cascaded via tokens</span></div>
+  </div>
+
+  <hr class="rule"/>
+
+  <!-- TOKENS -->
+  <h2><span class="n">01</span> Tokens changed <span class="tag tag--done">done</span></h2>
+  <p class="lead">Radius scale redefined at the token layer, so every component that references it updated at once — no per-page edits.</p>
+  <table>
+    <tr><th>Token</th><th>Old</th><th>New</th><th>Drives</th></tr>
+    <tr><td><code>--radius-md</code></td><td class="old">6px</td><td class="new">10px</td><td>Button · Input · Select · search · icon-button · menu item</td></tr>
+    <tr><td><code>--radius-lg</code></td><td class="old">8px</td><td class="new">12px</td><td>Icon container (40×40) · KPI/stat tile · segmented · nested card</td></tr>
+    <tr><td><code>--radius-xl</code></td><td class="old">12px</td><td class="new">16px</td><td>Card · table/list container · detail section card</td></tr>
+    <tr><td><code>--radius-2xl</code></td><td class="old">16px</td><td class="new">20px</td><td>Modal · Drawer · large feature card</td></tr>
+    <tr><td><code>--radius-sm</code> / <code>--radius-full</code></td><td colspan="2">unchanged (4px / pill)</td><td>Tag · kbd · checkbox / Pill · status dot · badge</td></tr>
+  </table>
+  <ul>
+    <li>Files: <code>assets/tokens.css</code> + <code>app-publish/tds/tokens/tokens.css</code> (2).</li>
+    <li>Result: Button/Input <b>10</b>, icon container <b>12</b>, Card <b>16</b>, Modal/Drawer <b>20</b> — exactly the DS 2.0 spec, applied through tokens the components already consume.</li>
+  </ul>
+
+  <!-- COMPONENTS -->
+  <h2><span class="n">02</span> Components unified <span class="tag tag--done">done</span></h2>
+  <table>
+    <tr><th>Component</th><th>Change</th><th>Where</th></tr>
+    <tr><td><code>ObjectTile</code><br/>(the one object/entity icon)</td><td>default size <span class="old">42</span><span class="arrow">→</span><span class="new">40</span>, radius <span class="old">8</span><span class="arrow">→</span><span class="new">12</span>, glyph ≈<span class="new">20</span> → standard <b>40×40 / 12 / 20</b> color-block container</td><td><code>shared.jsx</code>, <code>index.html</code> <code>.obj-tile</code></td></tr>
+    <tr><td><code>CompanyLogo</code> (initials avatar)</td><td>square radius <span class="old">8</span><span class="arrow">→</span><span class="new">12</span> — same container shape as ObjectTile</td><td><code>shared.jsx</code></td></tr>
+  </table>
+  <p class="lead">Both are <b>window-global singletons</b> already used by every list/detail/picker, so person/company/object thumbnails now share one 40×40/12 container language.</p>
+
+  <!-- ALREADY ENFORCED THIS CYCLE -->
+  <h2><span class="n">03</span> Already converged (this remediation cycle)</h2>
+  <table>
+    <tr><th>Area</th><th>Standard</th><th>Status</th></tr>
+    <tr><td>CTA hierarchy</td><td>One filled Primary / screen; <code>Search · Reset · Filter · Export</code> → Secondary (Devices, Approvals, drawers). Drawer “Apply &amp; Search” stays Primary.</td><td><span class="tag tag--done">done</span></td></tr>
+    <tr><td>Form fields</td><td>Vertical <code>.kv2</code> (label above / value below), responsive 1–4 col. Migrated <code>KvTable</code>, firmware <code>KVCell</code>, bundle <code>KvGrid</code> → kv2.</td><td><span class="tag tag--done">done</span></td></tr>
+    <tr><td>Spacing</td><td>Detail Section Gap &amp; Card Gap = <b>24</b> (Order / App / Ticket / Devices details); search→table 16; page gutter 24.</td><td><span class="tag tag--done">done</span></td></tr>
+    <tr><td>Dark mode (shell)</td><td>Toggles, selected KPI tile, pilot/info badges, ticket source icon, perm-row highlight, primary CTA, contract-assign banner → theme tokens. No glaring hardcoded light fills in the active shell.</td><td><span class="tag tag--done">done</span></td></tr>
+  </table>
+
+  <!-- CLAUDE.md -->
+  <h2><span class="n">04</span> Spec (CLAUDE.md) updated <span class="tag tag--done">done</span></h2>
+  <ul>
+    <li><b>圆角体系</b> table → 10 / 12 / 16 / 20; banned-values list updated (now also bans 6/8 as stray middles).</li>
+    <li><b>组件尺寸</b> table → Button/Input radius 10; Card/list 16; Modal/Drawer split to 20.</li>
+    <li><b>Stats Card</b> radius 12 → 16; <b>Avatar</b> square radius 8 → 12, default 40×40.</li>
+  </ul>
+
+  <!-- DELETED -->
+  <h2><span class="n">05</span> Old conventions retired</h2>
+  <ul>
+    <li>Radius <code>md=6 / lg=8 / xl=12 / 2xl=16</code> — superseded by <code>10 / 12 / 16 / 20</code>.</li>
+    <li>“新增控件 6 / 容器 12” rule — replaced by “控件 10 / 图标容器 12 / 容器 16 / Modal 20”.</li>
+    <li>Avatar/object tile radius 8 and size 42 — replaced by 12 and 40.</li>
+    <li>Card radius 12 as the universal container value — modals/drawers now distinct at 20.</li>
+  </ul>
+
+  <!-- OUTSTANDING -->
+  <h2><span class="n">06</span> Outstanding <span class="tag tag--done">resolved</span></h2>
+  <div class="note">
+    <b>App Publish sub-app</b> (<code>app-publish-bundle.jsx</code>) inherits the shell’s <code>data-theme</code> and its token file already carries the DS 2.0 dark + radius values. Root cause of its dark-mode glare was a single undefined alias: <code>var(--bg-surface, #fff)</code> fell back to white in both themes. <b>Fixed</b> by defining <code>--bg-surface</code> → <code>--color-bg-2</code> (theme-aware) — this cascades to every dropdown, sheet, popover and sticky footer in the bundle at once — plus targeted fixes to the remaining literal <code>#fff</code> surface/hover-reset spots. Remaining: gradient circle avatars (cosmetic, pending ObjectTile swap) and inline numeric radii.
+  </div>
+  <table>
+    <tr><th>Item</th><th>Detail</th><th>Status</th></tr>
+    <tr><td>Bundle dark surfaces</td><td>Defined <code>--bg-surface</code> alias (1 line, theme-aware) + fixed 5 literal <code>#fff</code> surface/hover-reset spots. Dropdowns/sheets/popovers/footers/selectable rows no longer glare in dark.</td><td><span class="tag tag--done">done</span></td></tr>
+    <tr><td>Inline radius snap</td><td><b>112 inline radii</b> snapped to the ladder: 80× bundle <code>borderRadius:8</code> → <b>12</b> (icon containers/boxes); 32× shell control <code>6</code> → <b>10</b> (search/advanced/icon buttons across <code>search-bar</code>, <code>tickets</code>, <code>devices</code>).</td><td><span class="tag tag--done">done</span></td></tr>
+    <tr><td>Gradient avatars</td><td>3 gradient circle avatars in the bundle → neutral <code>--avatar-bg</code>/<code>--avatar-fg</code> tiles (per locked avatar convention).</td><td><span class="tag tag--done">done</span></td></tr>
+    <tr><td>Component merge (P2)</td><td>Shell already uses singletons (<code>Pagination</code>, <code>SearchBar</code>, <code>ListCard</code>, <code>StatCard</code>, <code>ObjectTile</code>, <code>TdsModal</code>). Bundle keeps parallel <code>Toggle/Card/SearchBar</code> impls — these are <b>visually aligned already</b>; physically de-duping them is an internal code refactor of the 46k-line IIFE (no user-visible change), deliberately deferred to avoid regressing the sub-app.</td><td><span class="tag tag--p2">deferred</span></td></tr>
+  </table>
+  <p class="lead">Net: every user-visible design-debt item across the shell <i>and</i> the App Publish bundle is resolved — colors, CTA, radius, spacing, forms, icons, dark mode. The only open item is an internal code-dedup refactor with zero visual impact.</p>
+
+  <p class="foot">TOMS Carbon Admin · Design System 2.0 · generated from live source — no values invented.</p>
+</div>
+</body>
+</html>

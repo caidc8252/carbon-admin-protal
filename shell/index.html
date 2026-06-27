@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TOMS · Shell</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="assets/tokens.css" />
+  <link rel="stylesheet" href="assets/components.css" />
+  <link rel="stylesheet" href="assets/ds-extensions.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: var(--font-family-sans);
+      color: var(--color-text-primary);
+      background: var(--color-bg-1);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    #root { height: 100%; }
+    button { font-family: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 248px 1fr;
+      height: 100vh;
+    }
+
+    .side {
+      background: var(--color-bg-3);
+      border-right: 1px solid var(--color-border-default);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .side__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 18px 14px;
+    }
+
+    .side__logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+
+    .side__logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .side__name {
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .side__name small {
+      display: block;
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .side__scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-border-default) transparent;
+    }
+
+    .side__sectionlabel {
+      padding: 14px 18px 6px;
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .side__nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 0 10px;
+    }
+
+    .side__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .side__item:hover {
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+
+    .side__item.is-active {
+      background: var(--color-bg-2);
+      color: var(--color-text-primary);
+      box-shadow: var(--shadow-1);
+    }
+
+    .side__item svg {
+      color: var(--color-text-tertiary);
+      flex: none;
+    }
+
+    .side__item.is-active svg {
+      color: var(--color-primary-700);
+    }
+
+    .side__item.is-parent.is-open {
+      color: var(--color-text-primary);
+    }
+
+    .side__chev {
+      display: grid;
+      place-items: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      color: var(--color-text-tertiary);
+      transition: transform 0.15s ease;
+    }
+
+    .side__chev.is-open {
+      transform: rotate(90deg);
+    }
+
+    .side__sublist {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      padding: 2px 10px 4px;
+      position: relative;
+    }
+
+    .side__sublist[hidden] {
+      display: none;
+    }
+
+    .side__sublist::before {
+      content: '';
+      position: absolute;
+      left: 26px;
+      top: 4px;
+      bottom: 6px;
+      width: 1px;
+      background: var(--color-border-subtle);
+    }
+
+    .side__sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 6px 10px 6px 32px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--color-text-tertiary);
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .side__sub:hover {
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+
+    .side__sub.is-active {
+      background: var(--color-bg-2);
+      color: var(--color-text-primary);
+      box-shadow: var(--shadow-1);
+    }
+
+    .side__sub.is-active::before {
+      content: '';
+      position: absolute;
+      left: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--color-primary-500);
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 56px;
+      background: var(--color-bg-2);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      flex: none;
+    }
+
+    .topbar__spacer {
+      flex: 1;
+    }
+
+    .topbar__search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-bg-3);
+      border-radius: 6px;
+      padding: 0 10px;
+      height: 32px;
+      flex: 0 1 280px;
+      min-width: 0;
+      font-size: 14px;
+      color: var(--color-text-tertiary);
+      cursor: default;
+      font-family: inherit;
+    }
+
+    .topbar__search > svg {
+      flex: none;
+    }
+
+    .topbar__search > span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .iconbtn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--color-text-tertiary);
+      cursor: default;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .page {
+      height: 100%;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    .empty {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--color-text-tertiary);
+      font-size: 14px;
+    }
+
+    .empty__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    .shell-dashboard .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      min-height: 220px;
+      justify-content: center;
+    }
+
+    .screen-frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      border: 0;
+      border-radius: 0;
+      background: var(--color-bg-2);
+      box-shadow: var(--shadow-1);
+    }
+
+    .screen-frame[hidden],
+    .shell-dashboard[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        grid-template-columns: 172px minmax(0, 1fr);
+      }
+
+      .side__brand {
+        padding: 14px 12px 12px;
+      }
+
+      .side__nav {
+        padding: 0 8px;
+      }
+
+      .topbar {
+        padding: 0 12px;
+        gap: 8px;
+      }
+
+      .topbar__search {
+        flex: 1 1 120px;
+        min-width: 112px;
+      }
+
+      .page {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="side__brand">
+        <div class="side__logo"><img src="assets/logo.png" alt="TOMS" /></div>
+        <div class="side__name">TOMS<small>Carbon Admin</small></div>
+      </div>
+
+      <div class="side__scroll">
+        <div id="sideMenu"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar__spacer"></div>
+        <div class="topbar__search" aria-label="Search placeholder">
+          <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="m20 20-4.3-4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>Search...</span>
+        </div>
+        <button class="iconbtn" type="button" aria-label="Notifications placeholder" aria-disabled="true" tabindex="-1">
+          <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M10 21a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </header>
+
+      <div class="content">
+        <section class="page">
+          <div class="tds-card shell-dashboard" id="emptyState">
+            <div class="tds-card__body">
+              <div class="empty">
+                <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="empty__title">Choose a screen</div>
+              </div>
+            </div>
+          </div>
+
+          <iframe class="screen-frame" id="screenFrame" name="screenFrame" title="Selected screen" hidden></iframe>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="menu-data.js"></script>
+  <script>
+    const fallbackMenu = [
+      {
+        section: 'ADM-02',
+        items: [
+          { label: 'CUSTOMER', href: 'ADM-02/ADM-02-CUSTOMER-CUSTOMER.html' },
+        ],
+      },
+      {
+        section: 'ADM-03',
+        items: [
+          { label: 'CATALOG', href: 'ADM-03/ADM-03-SALES-CATALOG.html' },
+          { label: 'PRODUCTS', href: 'ADM-03/ADM-03-SALES-PRODUCTS.html' },
+        ],
+      },
+      {
+        section: 'ADM-04',
+        items: [
+          { label: 'AUDIT LOGS', href: 'ADM-04/ADM-04-SYSTEM-AUDIT-LOGS.html' },
+        ],
+      },
+      {
+        section: 'ADM-10',
+        items: [
+          { label: 'DEVICE MODELS', href: 'ADM-10/ADM-10-DEVICES-DEVICE-MODELS.html' },
+        ],
+      },
+      {
+        section: 'ADM-11',
+        items: [
+          { label: 'FACTORY IMAGES', href: 'ADM-11/adm-11-devices-factory-images.html' },
+        ],
+      },
+    ];
+
+    const sideMenu = document.getElementById('sideMenu');
+    const emptyState = document.getElementById('emptyState');
+    const screenFrame = document.getElementById('screenFrame');
+
+    const itemIcon = `
+      <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    `;
+
+    function renderMenu(menu) {
+      sideMenu.innerHTML = menu.map((group) => `
+        <div class="side__sectionlabel">${group.section}</div>
+        <nav class="side__nav" aria-label="${group.section}">
+          ${group.items.map((item) => `
+            <a class="side__item" href="${item.href}" data-menu-item data-title="${item.label}" data-section="${group.section}">
+              ${itemIcon}
+              <span>${item.label}</span>
+            </a>
+          `).join('')}
+        </nav>
+      `).join('');
+    }
+
+    function normalizeRouteKey(value) {
+      try {
+        value = decodeURIComponent(value || '');
+      } catch (_) {
+        value = value || '';
+      }
+      return String(value)
+        .trim()
+        .replace(/^#/, '')
+        .replace(/\\/g, '/')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .toUpperCase();
+    }
+
+    function routeKeysForItem(item) {
+      const title = item.dataset.title || item.textContent.trim();
+      const section = item.dataset.section || '';
+      const href = item.getAttribute('href') || '';
+      const fileName = href.split('/').pop() || '';
+      const fileBase = fileName.replace(/\.[^.]+$/, '');
+      return [
+        title,
+        `${section}/${title}`,
+        `${section} ${title}`,
+        href,
+        fileBase,
+      ].map(normalizeRouteKey);
+    }
+
+    function findItemFromHash() {
+      const key = normalizeRouteKey(window.location.hash);
+      if (!key) return null;
+      return Array.from(sideMenu.querySelectorAll('[data-menu-item]'))
+        .find((item) => routeKeysForItem(item).includes(key)) || null;
+    }
+
+    function activateItem(item, syncHash = true) {
+      document.querySelectorAll('[data-menu-item]').forEach((el) => el.classList.remove('is-active'));
+      item.classList.add('is-active');
+      emptyState.hidden = true;
+      screenFrame.hidden = false;
+      screenFrame.src = item.getAttribute('href');
+      if (syncHash) {
+        const nextHash = encodeURIComponent(item.dataset.title || item.textContent.trim());
+        if (window.location.hash.slice(1) !== nextHash) {
+          window.history.replaceState(null, '', `#${nextHash}`);
+        }
+      }
+    }
+
+    function activateCurrentRoute() {
+      const hashTarget = findItemFromHash();
+      const target = hashTarget || sideMenu.querySelector('[data-menu-item]');
+      if (target) activateItem(target, !hashTarget);
+    }
+
+    sideMenu.addEventListener('click', (event) => {
+      const item = event.target.closest('[data-menu-item]');
+      if (!item) return;
+      event.preventDefault();
+      activateItem(item);
+    });
+
+    const dynamicMenuRequested = new URLSearchParams(window.location.search).has('dynamic');
+    const generatedMenuAvailable = Array.isArray(window.SHELL_MENU) && window.SHELL_MENU.length > 0;
+
+    renderMenu(generatedMenuAvailable ? window.SHELL_MENU : fallbackMenu);
+    activateCurrentRoute();
+    window.setTimeout(activateCurrentRoute, 0);
+
+    if (window.location.protocol !== 'file:' && (dynamicMenuRequested || !generatedMenuAvailable)) {
+      fetch('/api/menu')
+        .then((response) => response.ok ? response.json() : Promise.reject())
+        .then((menu) => {
+          if (Array.isArray(menu) && menu.length > 0) renderMenu(menu);
+          activateCurrentRoute();
+        })
+        .catch(() => {
+          activateCurrentRoute();
+        });
+    } else {
+      activateCurrentRoute();
+    }
+
+    window.addEventListener('hashchange', () => {
+      const target = findItemFromHash();
+      if (target) activateItem(target, false);
+    });
+  </script>
+</body>
+</html>

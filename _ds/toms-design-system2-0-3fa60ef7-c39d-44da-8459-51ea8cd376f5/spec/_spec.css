@@ -1,0 +1,222 @@
+/* Shared chrome for TOMS DS 2.0 spec pages — does NOT modify the design system.
+   Pulls colors/type from the project root colors_and_type.css. */
+@import url("../colors_and_type.css");
+@import url("../styles/components.css");
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg1); color: var(--fg1); font-family: var(--font-sans); }
+body {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+}
+a { color: inherit; }
+
+/* ─── Page shell ──────────────────────────────────────────── */
+.spec {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+}
+.spec__nav {
+  position: sticky; top: 0; align-self: start;
+  height: 100vh; overflow: auto;
+  border-right: 1px solid var(--border-1);
+  background: var(--bg3);
+  padding: 24px 0;
+  font-size: 13px;
+}
+.spec__nav-brand {
+  padding: 0 24px 16px;
+  border-bottom: 1px solid var(--border-1);
+  margin-bottom: 12px;
+}
+.spec__nav-brand b { display: block; font-size: 13px; font-weight: 600; color: var(--fg1); letter-spacing: -0.005em; }
+.spec__nav-brand span { display: block; font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3); margin-top: 4px; letter-spacing: 0.02em; }
+.spec__nav-group {
+  padding: 4px 24px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 14px 0 4px;
+}
+.spec__nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 24px;
+  text-decoration: none;
+  color: var(--fg2);
+  border-left: 2px solid transparent;
+}
+.spec__nav-link:hover { color: var(--fg1); background: var(--bg-hover); }
+.spec__nav-link.is-current {
+  color: var(--fg1);
+  background: var(--bg-hover);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+.spec__nav-link .num { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg3); width: 22px; }
+
+.spec__main { min-width: 0; padding: 56px 64px 96px; max-width: 1180px; }
+@media (max-width: 900px) {
+  .spec { grid-template-columns: 1fr; }
+  .spec__nav { position: relative; height: auto; }
+  .spec__main { padding: 32px 24px 64px; }
+}
+
+/* ─── Headings inside spec pages ──────────────────────────── */
+.spec h1, .spec h2, .spec h3, .spec h4 { color: var(--fg1); letter-spacing: -0.02em; }
+.spec h1 { font-size: 36px; font-weight: 600; margin: 0 0 8px; }
+.spec h2 { font-size: 22px; font-weight: 600; margin: 56px 0 8px; padding-top: 12px; border-top: 1px solid var(--border-1); }
+.spec h2:first-of-type { border-top: 0; padding-top: 0; }
+.spec h3 { font-size: 16px; font-weight: 600; margin: 28px 0 8px; letter-spacing: -0.01em; }
+.spec h4 { font-size: 13px; font-weight: 600; margin: 16px 0 6px; letter-spacing: 0; }
+.spec p { color: var(--fg2); margin: 0 0 12px; max-width: 70ch; }
+.spec p.lead { color: var(--fg1); font-size: 15px; max-width: 72ch; }
+.spec .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin-bottom: 12px;
+}
+
+/* ─── Spec callouts ───────────────────────────────────────── */
+.spec-note {
+  margin: 16px 0 24px;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border-1);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+.spec-note b { color: var(--fg1); font-weight: 600; }
+.spec-note--warn { border-left-color: var(--warning); background: oklch(99% 0.01 80); }
+.spec-note--ok   { border-left-color: var(--success); background: oklch(99% 0.01 152); }
+
+/* ─── Matrix table — variant × state, etc ─────────────────── */
+.matrix {
+  width: 100%;
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg2);
+  margin: 16px 0 8px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.matrix th, .matrix td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-1);
+  text-align: left;
+}
+.matrix tr:last-child th, .matrix tr:last-child td { border-bottom: 0; }
+.matrix thead th {
+  background: var(--bg3);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  white-space: nowrap;
+}
+.matrix tbody th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg2);
+  background: var(--bg2);
+  width: 1%;
+  white-space: nowrap;
+}
+.matrix td .cell {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.matrix .desc { font-size: 12px; color: var(--fg3); }
+.matrix.dense th, .matrix.dense td { padding: 8px 12px; }
+
+/* ─── Spec block ──────────────────────────────────────────── */
+.spec-block {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 280px;
+  gap: 32px;
+  margin: 16px 0 24px;
+  align-items: start;
+}
+.spec-block__demo {
+  background: var(--bg2);
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  padding: 24px;
+  min-height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 12px;
+}
+.spec-block__demo.align-start { justify-content: flex-start; }
+.spec-block__demo.dark {
+  background: oklch(18% 0.01 270);
+  border-color: oklch(28% 0.01 270);
+  color: #fff;
+}
+.spec-block__meta { font-size: 12px; color: var(--fg3); line-height: 1.55; }
+.spec-block__meta dl { margin: 0; display: grid; grid-template-columns: 78px 1fr; gap: 4px 8px; }
+.spec-block__meta dt { color: var(--fg3); font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 2px; }
+.spec-block__meta dd { margin: 0; color: var(--fg1); font-size: 12px; }
+.spec-block__meta dd code { font-size: 11px; padding: 1px 5px; background: var(--bg3); border: 1px solid var(--border-1); border-radius: 4px; }
+@media (max-width: 900px) { .spec-block { grid-template-columns: 1fr; } }
+
+/* ─── Inline code chips ───────────────────────────────────── */
+.spec code, .spec .tag-code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 1px 5px;
+  border: 1px solid var(--border-1);
+  border-radius: 4px;
+  background: var(--bg3);
+  color: var(--fg1);
+}
+.spec .tag-code--accent { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+
+/* ─── State cell visual ──────────────────────────────────── */
+.state-cell {
+  position: relative;
+  padding: 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 76px;
+}
+.state-cell__label {
+  position: absolute; top: 6px; left: 8px;
+  font-family: var(--font-mono); font-size: 9.5px;
+  color: var(--fg3); text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+/* ─── Misc ────────────────────────────────────────────────── */
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+hr.spec-rule { border: 0; border-top: 1px solid var(--border-1); margin: 32px 0; }
+
+/* Tag pill */
+.tag-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 8px; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 10.5px;
+  background: var(--bg3); border: 1px solid var(--border-1);
+  color: var(--fg2);
+  letter-spacing: 0.02em;
+}
+.tag-pill--new   { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.tag-pill--exist { background: transparent; color: var(--fg3); }

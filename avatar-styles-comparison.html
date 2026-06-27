@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Initials-tile styles — comparison</title>
+<style>
+  :root {
+    --bg-1: oklch(99% 0.003 90);
+    --bg-2: oklch(100% 0 0);
+    --bg-3: oklch(96.5% 0.004 90);
+    --border: oklch(90% 0.005 90);
+    --text-1: oklch(24% 0.01 270);
+    --text-2: oklch(48% 0.01 270);
+    --text-3: oklch(62% 0.008 270);
+    --primary-500: oklch(40% 0.14 262);
+    --accent-600: oklch(52% 0.24 272);
+    --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  }
+  .dark {
+    --bg-1: oklch(14% 0.003 260);
+    --bg-2: oklch(17% 0.004 260);
+    --bg-3: oklch(11% 0.003 260);
+    --border: oklch(24% 0.005 260);
+    --text-1: oklch(94% 0.003 260);
+    --text-2: oklch(66% 0.005 260);
+    --text-3: oklch(50% 0.005 260);
+    --primary-500: oklch(78% 0.004 260);
+    --accent-600: oklch(74% 0.12 264);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--bg-1); color: var(--text-1); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .lede { font-size: 14px; color: var(--text-2); margin: 0 0 28px; line-height: 1.5; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 820px) { .modes { grid-template-columns: 1fr; } }
+  .pane { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg-1); }
+  .pane__head { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); background: var(--bg-2); }
+  .pane__body { padding: 4px 18px 8px; }
+  .opt { display: flex; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--border); }
+  .opt:last-child { border-bottom: 0; }
+  .opt__tiles { display: flex; gap: 8px; flex: none; }
+  .opt__meta { min-width: 0; }
+  .opt__tag { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: var(--accent-600); color: #fff; font-size: 12px; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+  .dark .opt__tag { color: oklch(14% 0.003 260); }
+  .opt__name { font-size: 14px; font-weight: 600; display: inline; vertical-align: middle; }
+  .opt__desc { font-size: 12px; color: var(--text-2); margin-top: 5px; line-height: 1.45; }
+  .opt__where { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+  /* tile base */
+  .tile { display: grid; place-items: center; color: #fff; font-weight: 600; font-family: var(--font-sans); letter-spacing: -0.02em; flex: none; }
+  /* ① fixed 6-palette hash gradient */
+  .t1 { width: 40px; height: 40px; border-radius: 8px; font-size: 14px; }
+  /* ② full-spectrum hash gradient */
+  .t2 { width: 40px; height: 40px; border-radius: 9px; font-size: 15px; }
+  /* ③ fixed indigo gradient */
+  .t3 { width: 40px; height: 40px; border-radius: 8px; font-size: 15px; background: linear-gradient(135deg, var(--primary-500), var(--accent-600)); }
+  .dark .t3 { color: oklch(20% 0.01 260); }
+  /* ④ flat neutral */
+  .t4 { width: 40px; height: 40px; border-radius: 8px; font-size: 14px; background: var(--bg-3); color: var(--text-2); border: 1px solid var(--border); }
+  /* ⑤ pastel tint + dark text, full code (device models) */
+  .t5 { width: 40px; height: 40px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+  /* ⑥ flat muted hash fill (no gradient) */
+  .t6 { width: 40px; height: 40px; border-radius: 8px; font-size: 14px; color: #fff; }
+  /* A neutral warm-gray (most on-spec) */
+  .tA { width: 40px; height: 40px; border-radius: 8px; font-size: 14px; background: var(--bg-3); color: var(--text-1); border: 1px solid var(--border); }
+  /* B single indigo family — lightness varies by hash */
+  .tB { width: 40px; height: 40px; border-radius: 8px; font-size: 14px; color: #fff; }
+  .footnote { margin-top: 26px; font-size: 12.5px; color: var(--text-2); line-height: 1.6; padding: 14px 16px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; }
+  .footnote b { color: var(--text-1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Initials-tile 样式对比</h1>
+  <p class="lede">对比 8 种:①–⑤ 现状,⑥ 是②调暗版,A/B 是最符合 TOMS 单色规范的两种(中性灰 / 单一靛蓝家族)。左浅右暗。看完回我编号。</p>
+
+  <div class="modes">
+    <div class="pane" id="pane-light">
+      <div class="pane__head">浅色模式 Light</div>
+      <div class="pane__body" data-opts></div>
+    </div>
+    <div class="pane dark" id="pane-dark">
+      <div class="pane__head">暗黑模式 Dark</div>
+      <div class="pane__body" data-opts></div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    我的建议:<b>选 ②(全色相哈希渐变)</b> —— 每个实体颜色稳定且唯一,辨识度最高,最接近 Linear/Stripe 的彩色头像。<br>
+    ③ 固定靛蓝最克制但所有头像同色、辨识度低;④ 扁平灰最低调无彩色。看完图回我「①/②/③/④」即可,我会把全项目统一成你选的那个(含暗黑适配)。
+  </div>
+</div>
+
+<script>
+  var NAMES = ["Acme Coffee", "Riverside Foods", "Helios Payments", "Wingtech SZ", "MTL Store"];
+  var MODELS = ["N950", "S30", "S60", "S90", "X800"];
+  // 6 fixed palette (style ①)
+  var HUES = [["#7A5BFA","#5A3DC9"],["#13A47A","#0F8060"],["#D17A3A","#A65A22"],["#3A99D1","#1F6FA8"],["#C24E8B","#962F66"]];
+  function hashHex(name){ var h=0; for(var i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0; return HUES[h%HUES.length]; }
+  function hashHue(name){ var h=0; for(var i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))&0x7fffffff; return h%360; }
+  function initials(name){ return name.split(/\s+/).filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("").toUpperCase(); }
+
+  function tiles(kind){
+    if(kind===5){
+      return MODELS.map(function(code){
+        var h=0; for(var i=0;i<code.length;i++) h=(h*31+code.charCodeAt(i))>>>0;
+        var hue=h%360;
+        return '<span class="tile t5" style="background:oklch(96% 0.03 '+hue+');color:oklch(38% 0.08 '+hue+')">'+code+'</span>';
+      }).join("");
+    }
+    return NAMES.map(function(n){
+      var ini = initials(n);
+      if(kind===1){ var p=hashHex(n); return '<span class="tile t1" style="background:linear-gradient(135deg,'+p[0]+','+p[1]+')">'+ini+'</span>'; }
+      if(kind===2){ var hue=hashHue(n); return '<span class="tile t2" style="background:linear-gradient(135deg,oklch(60% 0.13 '+hue+'),oklch(46% 0.16 '+((hue+28)%360)+'))">'+ini+'</span>'; }
+      if(kind===3){ return '<span class="tile t3">'+ini+'</span>'; }
+      if(kind===6){ var h6=[255,200,152,280,95,25,330,220][Math.abs(hashHue(n))%8]; return '<span class="tile t6" style="background:oklch(54% 0.075 '+h6+')">'+ini+'</span>'; }
+      if(kind===7){ return '<span class="tile tA">'+ini+'</span>'; }
+      if(kind===8){ var L=[34,40,46,52,58][Math.abs(hashHue(n))%5]; return '<span class="tile tB" style="background:oklch('+L+'% 0.13 264)">'+ini+'</span>'; }
+      return '<span class="tile t4">'+ini+'</span>';
+    }).join("");
+  }
+
+  var OPTS = [
+    {tag:"①", name:"固定 6 色板 · 哈希渐变", desc:"从写死的 6 组配色里按名字选一组(紫/绿/橙/蓝/品红)。", where:"现用于:客户详情、订单详情", kind:1},
+    {tag:"②", name:"全色相 · 哈希渐变", desc:"色相按名字哈希取任意 0–360°,每个名字一个稳定唯一的颜色。", where:"现用于:商户页、App 图标", kind:2},
+    {tag:"③", name:"固定靛蓝渐变", desc:"所有头像同一个 primary→accent 靛蓝渐变,最克制。", where:"现用于:侧边栏用户、平台用户页", kind:3},
+    {tag:"④", name:"扁平中性灰 · 无渐变", desc:"bg-3 纯灰底 + 文字,完全无彩色,最低调。", where:"现用于:工单指派人、评论头像", kind:4},
+    {tag:"⑤", name:"柔和浅色调 · 深色文字 · 显示型号全称", desc:"按名字哈希取色相,浅色底 oklch(96%) + 同色相深色字,无渐变、无白字,显示的是型号全称而非首字母。", where:"现用于:设备型号、下单向导、商品", kind:5},
+    {tag:"⑥", name:"纯色 · 调暗哈希填充(②的改良版 · 推荐)", desc:"②去掉渐变 + 大幅降低饱和度(chroma 0.075)。每个名字一个稳定唯一的低饱和纯色 + 白字,安静不刺眼、不分散注意力 —— Linear/Stripe 的 infra 做法。", where:"建议:统一用于所有人/组织/商户/客户/应用头像", kind:6},
+    {tag:"A", name:"中性灰 · 无彩色(最符合规范)", desc:"所有头像同一个暖调灰底 + 深色字,完全无彩色。最贴合 TOMS“安静、单色、靠排版和数据出彩”的调性。", where:"全局统一 · 最 infra", kind:7},
+    {tag:"B", name:"单一靖蓝家族 · 明暗区分", desc:"所有头像同色相靖蓝,只在明暗上按哈希区分,白字。统一感强、又带一点品牌色；像 GitHub identicon 的同色系做法。", where:"克制但有品牌感", kind:8},
+  ];
+
+  document.querySelectorAll("[data-opts]").forEach(function(box){
+    box.innerHTML = OPTS.map(function(o){
+      return '<div class="opt">'+
+        '<div class="opt__tiles">'+tiles(o.kind)+'</div>'+
+        '<div class="opt__meta">'+
+          '<span class="opt__tag">'+o.tag+'</span><span class="opt__name">'+o.name+'</span>'+
+          '<div class="opt__desc">'+o.desc+'</div>'+
+          '<div class="opt__where">'+o.where+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join("");
+  });
+</script>
+</body>
+</html>

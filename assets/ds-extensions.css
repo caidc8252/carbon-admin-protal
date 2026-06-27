@@ -1,0 +1,809 @@
+/* ─────────────────────────────────────────────────────────────
+   TOMS DS · v2.0 spec addendum · extensions.css
+   Opt-in. Load AFTER styles/components.css.
+   Adds: new button variants, input states/sizes, table densities,
+   row states, drawer/sheet, chart tokens. Does NOT redefine any
+   existing class or token.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ─── New state-surface tokens ─────────────────────────── */
+  --color-state-hover:    color-mix(in oklch, var(--color-bg-2) 92%, var(--color-text-primary) 8%);
+  --color-state-active:   color-mix(in oklch, var(--color-bg-2) 85%, var(--color-text-primary) 15%);
+  --color-state-selected: color-mix(in oklch, var(--color-primary-50) 70%, var(--color-bg-2) 30%);
+  --color-state-focus-bg: color-mix(in oklch, var(--color-primary-50) 50%, var(--color-bg-2) 50%);
+  --color-state-readonly: var(--color-bg-3);
+  --color-state-loading:  color-mix(in oklch, var(--color-bg-2) 70%, transparent);
+
+  /* ─── Validation-state tokens (extend semantic to backgrounds) ── */
+  --color-state-invalid-ring: oklch(58% 0.20 25 / 0.25);
+  --color-state-warn-ring:    oklch(70% 0.16 70 / 0.30);
+  --color-state-ok-ring:      oklch(58% 0.14 152 / 0.30);
+
+  /* ─── Density tokens — drives table + list row heights ─── */
+  --density-row-compact:     32px;
+  --density-row-comfortable: 44px;
+  --density-row-spacious:    56px;
+  --density-pad-compact:     8px;
+  --density-pad-comfortable: 12px;
+  --density-pad-spacious:    16px;
+
+  /* ─── Chart palette ────────────────────────────────────────
+     MOVED to tokens/tokens.css (single source of truth, light + dark).
+     --color-chart-1..8, --color-chart-seq-*, --color-chart-div-*, and
+     the structural tokens (grid/axis/tooltip/zoom) now resolve from there
+     and auto-adapt under [data-theme="dark"]. The shadcn delivery layer
+     (dark-mode/theme.css --chart-1..8) mirrors the same hues as bare
+     triples. Do NOT re-declare chart colours here. */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTON — additive variants
+   ═══════════════════════════════════════════════════════════ */
+
+/* Outline — same hierarchy as secondary, no fill, sits over tinted bg */
+.tds-btn--outline {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+.tds-btn--outline:hover { background: var(--color-bg-hover); border-color: var(--color-text-tertiary); }
+.tds-btn--outline:active { background: var(--color-bg-active); }
+
+/* Soft — tonal accent fill, low-emphasis CTA */
+.tds-btn--soft {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border-color: transparent;
+}
+.tds-btn--soft:hover { background: color-mix(in oklch, var(--color-primary-50) 70%, var(--color-primary-100) 30%); }
+.tds-btn--soft:active { background: var(--color-primary-100); }
+
+/* Subtle — text-only, no background until hover */
+.tds-btn--subtle {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+.tds-btn--subtle:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+.tds-btn--subtle:active { background: var(--color-bg-active); }
+
+/* Soft semantic — for inline alert actions ("retry" inside an error pill) */
+.tds-btn--soft-success { background: var(--color-success-50); color: var(--color-success-700); border-color: transparent; }
+.tds-btn--soft-success:hover { filter: brightness(0.97); }
+.tds-btn--soft-warning { background: var(--color-warning-50); color: var(--color-warning-700); border-color: transparent; }
+.tds-btn--soft-warning:hover { filter: brightness(0.97); }
+.tds-btn--soft-danger  { background: var(--color-error-50);   color: var(--color-error-700);   border-color: transparent; }
+.tds-btn--soft-danger:hover  { filter: brightness(0.97); }
+.tds-btn--soft-info    { background: var(--color-info-50);    color: var(--color-info-700);    border-color: transparent; }
+.tds-btn--soft-info:hover    { filter: brightness(0.97); }
+
+/* Selected / toggled — works on any base variant via aria-pressed */
+.tds-btn[aria-pressed="true"]:not(.tds-btn--primary):not(.tds-btn--danger):not(.tds-btn--success) {
+  background: var(--color-state-selected);
+  color: var(--color-primary-700);
+  border-color: color-mix(in oklch, var(--color-primary-700) 25%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INPUT / SELECT — additive sizes + states
+   ═══════════════════════════════════════════════════════════ */
+
+.tds-input--xs, .tds-select--xs {
+  height: var(--control-height-xs); padding: 0 var(--space-2);
+  font-size: var(--font-size-xs); border-radius: var(--radius-sm);
+}
+.tds-input--xl, .tds-select--xl {
+  height: var(--control-height-xl); padding: 0 var(--space-5);
+  font-size: var(--font-size-lg); border-radius: var(--radius-lg);
+}
+
+/* Filled — for dense toolbars / nested forms */
+.tds-input--filled, .tds-select--filled {
+  background: var(--color-bg-3);
+  border-color: transparent;
+}
+.tds-input--filled:hover, .tds-select--filled:hover { background: var(--color-state-hover); border-color: transparent; }
+.tds-input--filled:focus-within, .tds-select--filled:focus-within {
+  background: var(--color-bg-2);
+  border-color: var(--color-border-focus);
+}
+
+/* Readonly — informational fields that aren't editable */
+.tds-input--readonly, .tds-select--readonly {
+  background: var(--color-state-readonly);
+  color: var(--color-text-secondary);
+}
+.tds-input--readonly:hover, .tds-select--readonly:hover { border-color: var(--color-border-default); }
+
+/* Validation states (warn / success extend the existing --invalid) */
+.tds-input--warn, .tds-select--warn { border-color: var(--color-warning-500); }
+.tds-input--warn:focus-within, .tds-select--warn:focus-within { box-shadow: 0 0 0 3px var(--color-state-warn-ring); }
+.tds-input--ok,   .tds-select--ok   { border-color: var(--color-success-500); }
+.tds-input--ok:focus-within,   .tds-select--ok:focus-within   { box-shadow: 0 0 0 3px var(--color-state-ok-ring); }
+
+/* Loading — animated bar at the bottom */
+.tds-input--loading, .tds-select--loading { position: relative; overflow: hidden; }
+.tds-input--loading::after, .tds-select--loading::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-primary-700) 40%,
+    var(--color-primary-700) 60%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: tds-input-loading 1.2s linear infinite;
+}
+@keyframes tds-input-loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+/* ═══════════════════════════════════════════════════════════
+   TEXTAREA
+   ═══════════════════════════════════════════════════════════ */
+.tds-textarea {
+  display: block; width: 100%; box-sizing: border-box;
+  font-family: var(--font-family-sans); font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  min-height: 80px;
+  resize: vertical;
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              box-shadow var(--duration-fast) var(--easing-standard);
+}
+.tds-textarea:hover { border-color: var(--color-border-strong); }
+.tds-textarea:focus { outline: none; border-color: var(--color-border-focus); box-shadow: var(--shadow-focus); }
+.tds-textarea--invalid { border-color: var(--color-error-500); }
+.tds-textarea[readonly] { background: var(--color-state-readonly); color: var(--color-text-secondary); }
+.tds-textarea[disabled] { background: var(--color-bg-3); color: var(--color-text-disabled); cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════
+   OTP cells
+   ═══════════════════════════════════════════════════════════ */
+.tds-otp { display: inline-flex; gap: 8px; }
+.tds-otp__cell {
+  width: 40px; height: 48px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-2);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-family: var(--font-family-mono);
+  font-size: 18px;
+  color: var(--color-text-primary);
+}
+.tds-otp__cell:focus { outline: none; border-color: var(--color-border-focus); box-shadow: var(--shadow-focus); }
+.tds-otp__cell--filled { border-color: var(--color-border-strong); }
+.tds-otp__sep { align-self: center; color: var(--color-text-tertiary); }
+
+/* ═══════════════════════════════════════════════════════════
+   TAGS input
+   ═══════════════════════════════════════════════════════════ */
+.tds-tags-input {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 6px; padding: 6px 8px; min-height: 36px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+.tds-tags-input:focus-within { border-color: var(--color-border-focus); box-shadow: var(--shadow-focus); }
+.tds-tags-input__tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 22px; padding: 0 4px 0 8px;
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 12px; color: var(--color-text-primary);
+}
+.tds-tags-input__tag button {
+  width: 16px; height: 16px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--color-text-tertiary); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.tds-tags-input__tag button:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+.tds-tags-input input { flex: 1; min-width: 60px; border: 0; outline: 0; background: transparent; font: inherit; }
+
+/* ═══════════════════════════════════════════════════════════
+   TABLE — densities + variants + row states
+   ═══════════════════════════════════════════════════════════ */
+
+.tds-table--compact     tbody td { padding: 6px var(--space-3); }
+.tds-table--compact     thead th { padding: 8px var(--space-3); }
+.tds-table--comfortable tbody td { padding: var(--space-3) var(--space-4); }   /* current default */
+.tds-table--spacious    tbody td { padding: var(--space-4) var(--space-4); }
+.tds-table--spacious    thead th { padding: var(--space-4) var(--space-4); }
+
+.tds-table--striped tbody tr:nth-child(even) td { background: var(--color-bg-3); }
+.tds-table--striped tbody tr:nth-child(even):hover td { background: var(--color-bg-hover); }
+
+.tds-table--bordered { border: 1px solid var(--color-border-default); border-radius: var(--radius-lg); overflow: hidden; }
+.tds-table--bordered td, .tds-table--bordered th { border-right: 1px solid var(--color-border-subtle); }
+.tds-table--bordered td:last-child, .tds-table--bordered th:last-child { border-right: 0; }
+
+.tds-table tbody tr[aria-selected="true"] td,
+.tds-table tbody tr.is-selected td {
+  background: var(--color-state-selected);
+  box-shadow: inset 2px 0 0 var(--color-primary-700);
+}
+.tds-table tbody tr[aria-selected="true"]:hover td,
+.tds-table tbody tr.is-selected:hover td {
+  background: color-mix(in oklch, var(--color-state-selected) 80%, var(--color-bg-hover) 20%);
+}
+
+.tds-table tbody tr.is-focus td { box-shadow: inset 0 0 0 2px oklch(40% 0.14 262 / 0.25); }
+.tds-table tbody tr.is-expanded td { background: var(--color-bg-3); }
+.tds-table tbody tr.is-disabled td { opacity: 0.5; pointer-events: none; }
+
+/* Skeleton row */
+.tds-table__skel {
+  display: inline-block;
+  height: 12px; border-radius: 4px;
+  background: linear-gradient(90deg,
+    var(--color-bg-3) 0%,
+    color-mix(in oklch, var(--color-bg-3) 50%, var(--color-bg-2) 50%) 50%,
+    var(--color-bg-3) 100%);
+  background-size: 200% 100%;
+  animation: tds-skel 1.6s linear infinite;
+  width: 80%;
+}
+@keyframes tds-skel { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+/* Sticky first column */
+.tds-table--sticky-first th:first-child, .tds-table--sticky-first td:first-child {
+  position: sticky; left: 0; z-index: 1; background: inherit;
+  box-shadow: 1px 0 0 var(--color-border-subtle);
+}
+.tds-table--sticky-first thead th:first-child { background: var(--color-bg-3); }
+.tds-table--sticky-first tbody td:first-child { background: var(--color-bg-2); }
+
+/* Empty state */
+.tds-table__empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+}
+.tds-table__empty-title { font-size: 14px; color: var(--color-text-primary); font-weight: 500; margin-bottom: 4px; }
+.tds-table__empty-hint  { font-size: 12px; }
+
+/* ═══════════════════════════════════════════════════════════
+   DRAWER · SHEET · ALERT-DIALOG
+   ═══════════════════════════════════════════════════════════ */
+
+.tds-drawer-overlay {
+  position: fixed; inset: 0; z-index: var(--z-overlay);
+  background: var(--color-bg-overlay);
+  display: flex;
+}
+.tds-drawer {
+  background: var(--color-bg-2);
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-5);
+  height: 100%;
+  width: min(480px, 90vw);
+  margin-left: auto;
+  animation: tds-drawer-r-in var(--duration-normal) var(--easing-emphasized);
+}
+.tds-drawer--left { margin-left: 0; animation-name: tds-drawer-l-in; }
+.tds-drawer--bottom {
+  margin-left: 0; height: auto; width: 100%; max-height: 80vh;
+  margin-top: auto; border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  animation-name: tds-drawer-b-in;
+}
+.tds-drawer__header { padding: 16px 20px; border-bottom: 1px solid var(--color-border-subtle); display: flex; align-items: center; justify-content: space-between; }
+.tds-drawer__title  { font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+.tds-drawer__body   { padding: 20px; overflow: auto; flex: 1; }
+.tds-drawer__footer { padding: 12px 20px; border-top: 1px solid var(--color-border-subtle); display: flex; justify-content: flex-end; gap: 8px; background: var(--color-bg-3); }
+
+@keyframes tds-drawer-r-in { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes tds-drawer-l-in { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes tds-drawer-b-in { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Sheet — mobile-style. Use same chrome as drawer-bottom with grab handle */
+.tds-sheet { border-radius: var(--radius-2xl) var(--radius-2xl) 0 0; }
+.tds-sheet__grab {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--color-border-strong);
+  margin: 8px auto 0;
+}
+
+/* Modal sizes — modifier on existing .tds-modal */
+.tds-modal--sm { max-width: 360px; }
+.tds-modal--md { max-width: 480px; }
+.tds-modal--lg { max-width: 640px; }
+.tds-modal--xl { max-width: 880px; }
+.tds-modal--fullscreen {
+  max-width: none; width: calc(100vw - 64px); height: calc(100vh - 64px);
+  max-height: calc(100vh - 64px);
+}
+
+/* Alert dialog — destructive confirmations */
+.tds-alert-dialog { max-width: 420px; }
+.tds-alert-dialog .tds-modal__header { border-bottom: 0; padding-bottom: 0; }
+.tds-alert-dialog__icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none;
+  background: var(--color-error-50); color: var(--color-error-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   POPOVER arrow + placements (informational classes)
+   ═══════════════════════════════════════════════════════════ */
+.tds-popover__arrow {
+  position: absolute; width: 10px; height: 10px;
+  background: var(--color-bg-2);
+  border-left: 1px solid var(--color-border-default);
+  border-top: 1px solid var(--color-border-default);
+  transform: rotate(45deg);
+}
+.tds-popover[data-placement="top"]    .tds-popover__arrow { bottom: -6px; left: 50%; margin-left: -5px; transform: rotate(225deg); }
+.tds-popover[data-placement="bottom"] .tds-popover__arrow { top: -6px;    left: 50%; margin-left: -5px; }
+.tds-popover[data-placement="left"]   .tds-popover__arrow { right: -6px;  top: 50%;  margin-top: -5px;  transform: rotate(135deg); }
+.tds-popover[data-placement="right"]  .tds-popover__arrow { left: -6px;   top: 50%;  margin-top: -5px;  transform: rotate(-45deg); }
+
+/* ═══════════════════════════════════════════════════════════
+   CHART INTERACTION STATES (applied to SVG primitives)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Bars / segments */
+.tds-chart__bar              { transition: opacity var(--duration-fast), filter var(--duration-fast); }
+.tds-chart__bar--hover       { filter: brightness(1.08); }
+.tds-chart__bar--selected    { filter: none; stroke: var(--color-primary-700); stroke-width: 1.5; }
+.tds-chart__bar--dim         { opacity: 0.25; }
+.tds-chart__bar--filtered    { opacity: 0.18; }
+
+/* Lines */
+.tds-chart__line             { transition: opacity var(--duration-fast); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.tds-chart__line--hover      { stroke-width: 2.25; }
+.tds-chart__line--dim        { opacity: 0.2; }
+
+/* Points */
+.tds-chart__point            { transition: r var(--duration-fast); }
+.tds-chart__point--hover     { r: 4.5; }
+.tds-chart__point--selected  { r: 5; stroke: var(--color-bg-2); stroke-width: 2; }
+
+/* Slice (pie/donut) */
+.tds-chart__slice            { transition: transform var(--duration-fast); transform-origin: center; }
+.tds-chart__slice--hover     { transform: translate(0,0) scale(1.015); filter: brightness(1.06); }
+.tds-chart__slice--selected  { stroke: var(--color-bg-2); stroke-width: 3; }
+.tds-chart__slice--dim       { opacity: 0.25; }
+
+/* Zoom-brush overlay */
+.tds-chart__brush {
+  fill: var(--color-chart-zoom-fill);
+  stroke: var(--color-chart-zoom-stroke);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+
+/* Crosshair on hover */
+.tds-chart__crosshair { stroke: var(--color-text-tertiary); stroke-width: 1; stroke-dasharray: 2 3; }
+
+/* Tooltip card */
+.tds-chart-tooltip {
+  background: var(--color-chart-tooltip-bg);
+  color: var(--color-chart-tooltip-fg);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  box-shadow: var(--shadow-4);
+  pointer-events: none;
+  max-width: 240px;
+}
+.tds-chart-tooltip__row { display: flex; align-items: center; gap: 8px; line-height: 1.5; }
+.tds-chart-tooltip__dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.tds-chart-tooltip__label { color: oklch(80% 0 0); flex: 1; }
+.tds-chart-tooltip__value { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Legend interactive */
+.tds-chart-legend       { display: inline-flex; flex-wrap: wrap; gap: 12px; }
+.tds-chart-legend__item {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-family-mono); font-size: 11px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 2px 6px; border-radius: 4px;
+  transition: background var(--duration-fast);
+}
+.tds-chart-legend__item:hover { background: var(--color-bg-hover); }
+.tds-chart-legend__item[aria-pressed="false"] { color: var(--color-text-tertiary); opacity: 0.6; }
+.tds-chart-legend__item[aria-pressed="false"] .tds-chart-legend__dot { background: var(--color-text-tertiary) !important; }
+.tds-chart-legend__dot  { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+.tds-chart-legend__dot--line { height: 2px; border-radius: 1px; width: 12px; }
+
+/* Chart loading skeleton (whole chart area) */
+.tds-chart-skeleton {
+  display: block; width: 100%; height: 100%;
+  background: linear-gradient(90deg,
+    var(--color-bg-3) 0%,
+    color-mix(in oklch, var(--color-bg-3) 50%, var(--color-bg-2) 50%) 50%,
+    var(--color-bg-3) 100%);
+  background-size: 200% 100%;
+  animation: tds-skel 1.6s linear infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Chart empty state */
+.tds-chart-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 40px;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+}
+.tds-chart-empty b { color: var(--color-text-primary); font-weight: 500; font-size: 13px; }
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS — linear bar + circular ring. Token-driven.
+   Linear:   .tds-progress > .tds-progress__bar (width = %)
+   Sizes:    --xs (3px) · --sm (5px) · default (8px) · --lg (12px)
+   Tones:    default primary · --success · --warning · --error
+   Modes:    --striped (animated stripes) · --indeterminate (looping)
+   Label:    wrap in .tds-progress-field with .tds-progress-field__row
+   ═══════════════════════════════════════════════════════════ */
+.tds-progress {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: var(--color-bg-3);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.tds-progress__bar {
+  height: 100%;
+  width: 0;
+  background: var(--color-primary-700);
+  border-radius: inherit;
+  transition: width var(--duration-normal) var(--easing-standard);
+}
+
+/* sizes */
+.tds-progress--xs { height: 3px; }
+.tds-progress--sm { height: 5px; }
+.tds-progress--lg { height: 12px; }
+
+/* tones */
+.tds-progress--success .tds-progress__bar { background: var(--color-success-500); }
+.tds-progress--warning .tds-progress__bar { background: var(--color-warning-500); }
+.tds-progress--error   .tds-progress__bar { background: var(--color-error-500); }
+.tds-progress--accent  .tds-progress__bar { background: var(--color-accent-600); }
+
+/* striped — diagonal moving stripes (the one allowed gradient besides skeleton) */
+.tds-progress--striped .tds-progress__bar {
+  background-image: linear-gradient(45deg,
+    oklch(100% 0 0 / 0.18) 25%, transparent 25%,
+    transparent 50%, oklch(100% 0 0 / 0.18) 50%,
+    oklch(100% 0 0 / 0.18) 75%, transparent 75%, transparent);
+  background-size: 16px 16px;
+  animation: tds-progress-stripe 0.8s linear infinite;
+}
+@keyframes tds-progress-stripe { from { background-position: 0 0; } to { background-position: 16px 0; } }
+
+/* indeterminate — looping sweep when % is unknown */
+.tds-progress--indeterminate .tds-progress__bar {
+  width: 40% !important;
+  border-radius: var(--radius-full);
+  animation: tds-progress-loop 1.3s var(--easing-emphasized) infinite;
+}
+@keyframes tds-progress-loop {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(320%); }
+}
+
+/* labelled field: title + % on one row, bar below */
+.tds-progress-field { display: flex; flex-direction: column; gap: var(--space-2); }
+.tds-progress-field__row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.tds-progress-field__label { font-size: var(--font-size-sm); color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.tds-progress-field__value { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; font-size: var(--font-size-sm); color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+.tds-progress-field__meta  { font-family: var(--font-family-mono); font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+
+/* circular ring — set --p (0–100) and (optional) --size on the element */
+.tds-progress-ring {
+  --p: 0;
+  --size: 56px;
+  --track: var(--color-bg-3);
+  --fill: var(--color-primary-700);
+  width: var(--size); height: var(--size);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background:
+    radial-gradient(closest-side, var(--color-bg-2) 78%, transparent 79% 100%),
+    conic-gradient(var(--fill) calc(var(--p) * 1%), var(--track) 0);
+}
+.tds-progress-ring--success { --fill: var(--color-success-500); }
+.tds-progress-ring--warning { --fill: var(--color-warning-500); }
+.tds-progress-ring--error   { --fill: var(--color-error-500); }
+.tds-progress-ring__label { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+.tds-progress-ring--sm { --size: 40px; }
+.tds-progress-ring--sm .tds-progress-ring__label { font-size: var(--font-size-xs); }
+.tds-progress-ring--lg { --size: 76px; }
+
+/* ═══════════════════════════════════════════════════════════
+   TIMELINE — vertical event log (audit trail, device history,
+   ticket activity). Tone-coded markers, mono timestamps.
+     .tds-timeline > .tds-timeline__item
+       .tds-timeline__marker  (dot; data-tone or icon inside)
+       .tds-timeline__body
+         .tds-timeline__head   (title + time)
+         .tds-timeline__desc
+   Variants: --compact (denser) · marker data-tone for semantics.
+   ═══════════════════════════════════════════════════════════ */
+.tds-timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 0; padding: 0;
+  list-style: none;
+}
+.tds-timeline__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+}
+.tds-timeline__item:last-child { padding-bottom: 0; }
+
+/* the connecting rail — drawn from each marker down to the next */
+.tds-timeline__item::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 20px; bottom: -2px;
+  width: 2px;
+  background: var(--color-border-default);
+}
+.tds-timeline__item:last-child::before { display: none; }
+
+/* marker */
+.tds-timeline__marker {
+  position: relative; z-index: 1;
+  width: 24px; height: 24px;
+  border-radius: var(--radius-full);
+  display: grid; place-items: center;
+  background: var(--color-bg-2);
+  border: 2px solid var(--color-border-strong);
+  color: var(--color-text-tertiary);
+  flex: none;
+}
+.tds-timeline__marker svg { width: 12px; height: 12px; }
+/* ringed-dot style (no icon) — hollow ring, center transparent (Linear-style),
+   sits cleanly on the rail. Tone sets the ring color via currentColor. */
+.tds-timeline__marker--dot {
+  width: 24px; height: 24px; margin: 0;
+  border: 0; background: transparent;
+  color: var(--color-text-tertiary);
+  display: grid; place-items: center;
+}
+.tds-timeline__marker--dot::after {
+  content: '';
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--color-bg-2);
+  border: 2.5px solid currentColor;
+}
+.tds-timeline__item:has(.tds-timeline__marker--dot)::before { left: 11px; }
+
+/* tone-coded markers */
+.tds-timeline__marker[data-tone="success"] { border-color: var(--color-success-500); color: var(--color-success-500); background: var(--color-success-50); }
+.tds-timeline__marker[data-tone="warning"] { border-color: var(--color-warning-500); color: var(--color-warning-700); background: var(--color-warning-50); }
+.tds-timeline__marker[data-tone="error"]   { border-color: var(--color-error-500);   color: var(--color-error-500);   background: var(--color-error-50); }
+.tds-timeline__marker[data-tone="info"]    { border-color: var(--color-info-500);    color: var(--color-info-500);    background: var(--color-info-50); }
+.tds-timeline__marker[data-tone="primary"] { border-color: var(--color-accent-600); color: var(--color-accent-600); background: var(--color-accent-50); }
+.tds-timeline__marker--dot[data-tone="success"] { color: var(--color-success-500); }
+.tds-timeline__marker--dot[data-tone="warning"] { color: var(--color-warning-500); }
+.tds-timeline__marker--dot[data-tone="error"]   { color: var(--color-error-500); }
+.tds-timeline__marker--dot[data-tone="info"]    { color: var(--color-info-500); }
+.tds-timeline__marker--dot[data-tone="primary"] { color: var(--color-accent-600); }
+
+/* body */
+.tds-timeline__body { min-width: 0; padding-top: 2px; }
+.tds-timeline__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.tds-timeline__title { font-size: var(--font-size-md); font-weight: var(--font-weight-medium); color: var(--color-text-primary); }
+.tds-timeline__time  { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; font-size: var(--font-size-xs); color: var(--color-text-tertiary); white-space: nowrap; }
+.tds-timeline__desc  { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: var(--line-height-normal); margin-top: 2px; }
+.tds-timeline__actor { font-family: var(--font-family-mono); font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-top: var(--space-1); }
+
+/* compact — denser audit log */
+.tds-timeline--compact .tds-timeline__item { padding-bottom: var(--space-3); }
+.tds-timeline--compact .tds-timeline__title { font-size: var(--font-size-sm); }
+
+/* stacked — time sits BELOW the title (not inline). Actor follows the
+   time on the same line via .tds-timeline__time-row. */
+.tds-timeline--stacked .tds-timeline__head { display: block; }
+.tds-timeline__time-row { display: flex; align-items: baseline; gap: var(--space-2); margin-top: 2px; }
+.tds-timeline__time-row .tds-timeline__time { white-space: nowrap; }
+.tds-timeline__time-row .tds-timeline__actor { margin-top: 0; }
+.tds-timeline__time-row .tds-timeline__actor::before { content: "· "; }
+
+/* ═══════════════════════════════════════════════════════════
+   STATIC STATE MIRRORS — make every interaction state a real,
+   readable class so frontend can enumerate + build them, and
+   galleries/storybook can render all states at once.
+
+   .is-hover / .is-active / .is-focus / .is-disabled / .is-selected
+   / .is-invalid / .is-loading reproduce EXACTLY what the live
+   :hover / :active / :focus-visible / [disabled] pseudo-classes in
+   styles/components.css produce. Source of truth stays the
+   pseudo-classes; these mirror them 1:1 for static display + tests.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Button ─── */
+.tds-btn.is-focus { outline: none; box-shadow: var(--shadow-focus); }
+.tds-btn.is-disabled { opacity: 0.5; cursor: not-allowed; }
+
+.tds-btn--primary.is-hover  { background: var(--color-primary-600); }
+.tds-btn--primary.is-active { background: var(--color-primary-800); }
+
+.tds-btn--secondary.is-hover  { background: var(--color-bg-hover); border-color: var(--color-border-strong); }
+.tds-btn--secondary.is-active { background: var(--color-bg-active); }
+
+.tds-btn--ghost.is-hover  { background: var(--color-bg-hover); }
+.tds-btn--ghost.is-active { background: var(--color-bg-active); }
+
+.tds-btn--outline.is-hover  { background: var(--color-bg-hover); border-color: var(--color-text-tertiary); }
+.tds-btn--outline.is-active { background: var(--color-bg-active); }
+
+.tds-btn--soft.is-hover  { background: color-mix(in oklch, var(--color-primary-50) 70%, var(--color-primary-100) 30%); }
+.tds-btn--soft.is-active { background: var(--color-primary-100); }
+
+.tds-btn--danger.is-hover  { background: var(--color-error-700); }
+.tds-btn--danger.is-active { background: color-mix(in oklch, var(--color-error-700) 82%, var(--color-text-primary) 18%); }
+
+.tds-btn--success.is-hover { filter: brightness(1.05); }
+.tds-btn--warning.is-hover { filter: brightness(1.05); }
+
+/* Toggle (aria-pressed mirror) */
+.tds-btn.is-selected:not(.tds-btn--primary):not(.tds-btn--danger):not(.tds-btn--success) {
+  background: var(--color-state-selected);
+  color: var(--color-primary-700);
+  border-color: color-mix(in oklch, var(--color-primary-700) 25%, transparent);
+}
+
+/* ─── Input / Select ─── */
+.tds-input.is-hover, .tds-select.is-hover { border-color: var(--color-border-strong); }
+.tds-input.is-focus, .tds-select.is-focus { border-color: var(--color-border-focus); box-shadow: var(--shadow-focus); }
+.tds-input.is-invalid, .tds-select.is-invalid { border-color: var(--color-error-500); }
+.tds-input.is-invalid.is-focus { box-shadow: 0 0 0 3px var(--color-state-invalid-ring); }
+.tds-input.is-disabled, .tds-select.is-disabled { background: var(--color-bg-3); color: var(--color-text-disabled); cursor: not-allowed; }
+
+/* ─── Checkbox / Radio (mirror :checked + focus) ─── */
+.tds-checkbox.is-hover .tds-checkbox__box,
+.tds-radio.is-hover .tds-radio__box { border-color: var(--color-primary-700); }
+.tds-checkbox.is-focus .tds-checkbox__box,
+.tds-radio.is-focus .tds-radio__box { box-shadow: var(--shadow-focus); }
+.tds-checkbox.is-checked .tds-checkbox__box,
+.tds-radio.is-checked .tds-radio__box { background: var(--color-primary-700); border-color: var(--color-primary-700); }
+.tds-checkbox.is-checked .tds-checkbox__check { color: #fff; }
+.tds-radio.is-checked .tds-radio__dot { transform: scale(1); }
+.tds-checkbox.is-disabled, .tds-radio.is-disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Switch ─── */
+.tds-switch.is-hover { background: var(--color-text-disabled); }
+.tds-switch.is-focus { box-shadow: var(--shadow-focus); }
+.tds-switch.is-disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Tab ─── */
+.tds-tab.is-hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+.tds-tab.is-focus { outline: none; box-shadow: var(--shadow-focus); border-radius: var(--radius-md); }
+.tds-tab.is-selected { color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+.tds-tab.is-selected::after { transform: scaleX(1); }
+.tds-tab.is-disabled { color: var(--color-text-disabled); cursor: not-allowed; }
+
+/* ─── Menu item ─── */
+.tds-menu__item.is-hover { background: var(--color-bg-hover); }
+.tds-menu__item.is-focus { outline: none; background: var(--color-bg-hover); box-shadow: var(--shadow-focus); }
+.tds-menu__item.is-selected { color: var(--color-primary-700); }
+.tds-menu__item.is-disabled { color: var(--color-text-disabled); cursor: not-allowed; }
+
+/* ─── Table row ─── */
+.tds-table tbody tr.is-hover td { background: var(--color-bg-hover); }
+.tds-table tbody tr.is-selected td { background: var(--color-state-selected); box-shadow: inset 2px 0 0 var(--color-primary-700); }
+.tds-table tbody tr.is-disabled td { opacity: 0.5; }
+
+/* Native checkboxes inside tables adopt the brand indigo, not the
+   browser default blue. Covers bare <input type=checkbox> used for
+   row selection / select-all. */
+.tds-table input[type="checkbox"],
+.tds-table input[type="radio"] {
+  accent-color: var(--color-primary-700);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DENSITY MODE — one system, three densities.
+   Put data-density="compact | comfortable | spacious" on any
+   container (or <body>). It remaps spacing/size ONLY — colors,
+   type ramp, radius, shadow, component identity stay identical.
+   Default (no attribute) == comfortable. Fully back-compatible.
+     · compact     → ops / data-dense tables
+     · comfortable → default, most screens
+     · spacious    → executive overview / reports (big, readable)
+   ═══════════════════════════════════════════════════════════ */
+[data-density="compact"]     { --d-cell-py: 7px;  --d-card-pad: 14px; --d-kpi: 20px; --d-gap: 10px; }
+[data-density="comfortable"] { --d-cell-py: 12px; --d-card-pad: 20px; --d-kpi: 26px; --d-gap: 14px; }
+[data-density="spacious"]    { --d-cell-py: 18px; --d-card-pad: 28px; --d-kpi: 36px; --d-gap: 20px; }
+
+/* Table row height tracks density */
+[data-density] .tds-table tbody td { padding-top: var(--d-cell-py); padding-bottom: var(--d-cell-py); }
+[data-density="compact"]  .tds-table thead th { padding-top: 8px; padding-bottom: 8px; }
+[data-density="spacious"] .tds-table thead th { padding-top: 14px; padding-bottom: 14px; }
+
+/* Card padding tracks density */
+[data-density] .tds-card > .tds-card__body   { padding: var(--d-card-pad); }
+[data-density] .tds-card > .tds-card__header,
+[data-density] .tds-card > .tds-card__footer { padding: calc(var(--d-card-pad) * 0.8) var(--d-card-pad); }
+
+/* KPI / metric value tracks density (opt-in via .tds-density-kpi) */
+[data-density] .tds-density-kpi { font-size: var(--d-kpi); }
+
+/* ═══════════════════════════════════════════════════════════
+   PRODUCT CARD — catalog / order grid (tds-product-card)
+   Media + SAMPLE ribbon + title + SKU + desc + price + actions.
+   All token-driven. Use inside .tds-product-grid.
+   ═══════════════════════════════════════════════════════════ */
+.tds-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.tds-product-card {
+  display: flex; flex-direction: column;
+  background: var(--color-bg-2);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              box-shadow var(--duration-fast) var(--easing-standard);
+}
+.tds-product-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-3); }
+
+/* Media — product photo sits on a clean white ground (bg-2).
+   Drop a real photo with <img>; falls back to a model tile or box icon. */
+.tds-product-card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--color-bg-2);
+  display: grid; place-items: center;
+  padding: var(--space-3);
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+  overflow: hidden;
+}
+.tds-product-card__media img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* Flat variant tints (NO gradient — System A) for sample / production preview grounds */
+.tds-product-card--sample .tds-product-card__media     { background: var(--color-success-50); }
+.tds-product-card--production .tds-product-card__media { background: var(--color-primary-50); }
+
+/* Corner ribbon — e.g. SAMPLE. Uses success green by default; data-tone swaps it. */
+.tds-product-card__ribbon {
+  position: absolute; top: 0; right: 0;
+  width: 96px; height: 96px; overflow: hidden; pointer-events: none;
+}
+.tds-product-card__ribbon span {
+  position: absolute; top: 14px; right: -28px;
+  width: 120px; transform: rotate(45deg);
+  background: var(--color-success-500); color: #fff;
+  text-align: center;
+  font: 600 9.5px/1.9 var(--font-family-mono);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  box-shadow: var(--shadow-1);
+}
+.tds-product-card__ribbon[data-tone="info"] span    { background: var(--color-info-500); }
+.tds-product-card__ribbon[data-tone="warning"] span  { background: var(--color-warning-500); color: oklch(20% 0.04 70); }
+.tds-product-card__ribbon[data-tone="neutral"] span   { background: var(--color-text-tertiary); }
+
+/* Body */
+.tds-product-card__body { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4); flex: 1; }
+.tds-product-card__title { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); letter-spacing: -0.01em; }
+.tds-product-card__sku { font-family: var(--font-family-mono); font-size: var(--font-size-xs); color: var(--color-text-tertiary); letter-spacing: 0.02em; }
+.tds-product-card__desc {
+  font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: var(--line-height-normal);
+  margin-top: var(--space-1);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.tds-product-card__price-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); margin-top: auto; padding-top: var(--space-3); }
+.tds-product-card__price { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); letter-spacing: -0.01em; }
+.tds-product-card__options { font-size: var(--font-size-xs); color: var(--color-text-tertiary); white-space: nowrap; }
+
+/* Actions — primary Order (block) + square cart icon button */
+.tds-product-card__actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.tds-product-card__actions .tds-btn:first-child { flex: 1; }

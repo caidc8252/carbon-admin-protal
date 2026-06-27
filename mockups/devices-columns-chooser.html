@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Devices · Columns chooser</title>
+  <link rel="stylesheet" href="../assets/tokens.css" />
+  <link rel="stylesheet" href="../assets/components.css" />
+  <link rel="stylesheet" href="../assets/devices-aliases.css" />
+  <link rel="stylesheet" href="../app-publish/tds/colors_and_type.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; background: var(--color-bg-1); color: var(--color-text-primary);
+           font-family: "Geist", system-ui, sans-serif; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 36px 28px 120px; }
+    .ptitle { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .psub { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 26px; max-width: 760px; line-height: 1.55; }
+    .mono { font-family: "Geist Mono", monospace; }
+
+    /* list card */
+    .card { background: var(--color-bg-2); border: 1px solid var(--color-border-default);
+            border-radius: 12px; box-shadow: var(--shadow-1); overflow: visible; }
+    .lch { display: flex; align-items: center; gap: 12px; padding: 13px 16px;
+           border-bottom: 1px solid var(--color-border-subtle); }
+    .lch__count { font-size: 13px; font-weight: 600; }
+    .lch__count span { color: var(--color-text-tertiary); font-weight: 400; }
+    .spacer { flex: 1; }
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-family: inherit;
+           font-size: 12.5px; font-weight: 500; border-radius: 8px; padding: 7px 12px;
+           border: 1px solid var(--color-border-default); background: var(--color-bg-2);
+           color: var(--color-text-secondary); transition: all .12s ease; white-space: nowrap; }
+    .btn:hover { color: var(--color-primary-700); border-color: color-mix(in oklab, var(--color-primary-500) 35%, transparent); }
+    .btn svg { flex: none; }
+    .btn--on { color: var(--color-primary-700); border-color: color-mix(in oklab, var(--color-primary-500) 45%, transparent);
+               background: color-mix(in oklab, var(--color-primary-500) 8%, transparent); }
+    .btn__badge { font-size: 10px; font-weight: 600; padding: 0 5px; height: 15px; min-width: 15px;
+                  display: inline-grid; place-items: center; border-radius: 999px;
+                  background: var(--color-primary-500); color: #fff; }
+
+    /* table */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+         color: var(--color-text-tertiary); padding: 10px 16px; border-bottom: 1px solid var(--color-border-subtle);
+         white-space: nowrap; }
+    td { padding: 11px 16px; font-size: 12.5px; border-bottom: 1px solid var(--color-border-subtle); white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+
+    /* popover */
+    .pop-anchor { position: relative; }
+    .pop { position: absolute; top: calc(100% + 8px); right: 0; width: 340px; z-index: 50;
+           background: var(--color-bg-2); border: 1px solid var(--color-border-default); border-radius: 12px;
+           box-shadow: 0 18px 48px -10px oklch(0% 0 0 / 0.22); overflow: hidden; }
+    .pop__head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--color-border-subtle); }
+    .pop__title { font-size: 13px; font-weight: 600; flex: 1; }
+    .pop__title span { color: var(--color-text-tertiary); font-weight: 400; }
+    .pop__link { font-size: 11.5px; color: var(--color-primary-700); cursor: pointer; }
+    .pop__body { max-height: 460px; overflow-y: auto; padding: 6px 0; }
+    .grp { padding: 8px 14px 2px; }
+    .grp__h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .grp__name { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-text-tertiary); }
+    .grp__model { font-size: 9.5px; color: var(--color-text-tertiary); opacity: 0.7; font-family: "Geist Mono", monospace; }
+    .opt { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 7px; cursor: pointer; }
+    .opt:hover { background: var(--color-bg-3); }
+    .opt__box { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--color-border-strong);
+                display: grid; place-items: center; flex: none; color: #fff; }
+    .opt__box svg { opacity: 0; }
+    .opt.on .opt__box { background: var(--color-primary-500); border-color: var(--color-primary-500); }
+    .opt.on .opt__box svg { opacity: 1; }
+    .opt.locked { cursor: not-allowed; }
+    .opt.locked .opt__box { background: var(--color-text-tertiary); border-color: var(--color-text-tertiary); }
+    .opt__label { font-size: 12.5px; color: var(--color-text-primary); flex: 1; }
+    .opt.locked .opt__label { color: var(--color-text-secondary); }
+    .opt__lock { font-size: 9.5px; color: var(--color-text-tertiary); letter-spacing: 0.04em; }
+    .pop__foot { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--color-border-subtle); background: var(--color-bg-1); }
+    .pop__foot .spacer { flex: 1; }
+    .note { margin-top: 14px; font-size: 12px; color: var(--color-text-tertiary); line-height: 1.5; }
+    .pill { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:600; }
+    .pill--ok { color: var(--color-success-700); background: var(--color-success-50); }
+    .dot { width:6px;height:6px;border-radius:50%;background:currentColor; }
+    .legend { display:flex; gap:18px; margin: 6px 0 22px; font-size:11.5px; color:var(--color-text-tertiary); }
+    .legend b { color: var(--color-text-secondary); font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="ptitle">Devices — Columns chooser</h1>
+    <p class="psub">Mock of the new <b>👁 Columns</b> control (right of Export) and its popover. Checked items are the current default 8 columns; the rest are available, grouped by data-model category. Confirm the taxonomy and I'll wire it in.</p>
+    <div class="legend">
+      <span><b>✓ filled</b> = shown</span>
+      <span><b>☐ empty</b> = available, hidden</span>
+      <span><b>locked</b> = always shown (row identity)</span>
+    </div>
+
+    <div class="card">
+      <div class="lch">
+        <div class="lch__count">92 <span>devices</span></div>
+        <div class="spacer"></div>
+        <button class="btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Export
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="pop-anchor">
+          <button class="btn btn--on">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            Columns
+            <span class="btn__badge">8</span>
+          </button>
+
+          <!-- POPOVER -->
+          <div class="pop">
+            <div class="pop__head">
+              <div class="pop__title">Columns <span>· 8 shown</span></div>
+              <span class="pop__link">Select all</span>
+              <span class="pop__link">Reset</span>
+            </div>
+            <div class="pop__body" id="grps"></div>
+            <div class="pop__foot">
+              <span style="font-size:11.5px;color:var(--color-text-tertiary)">Saved to this browser</span>
+              <div class="spacer"></div>
+              <span class="pill pill--ok"><span class="dot"></span>Live preview</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Serial number</th><th>Model</th><th>Owner</th><th>Merchant · Store</th>
+            <th>OS / Firmware</th><th>Last check-in</th><th>Connectivity</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <p class="note">Groups &amp; fields shown in the popover map to the device data model:
+      <b>Identity</b> (DEVICE) · <b>Ownership</b> (PARTNER/MERCHANT) · <b>Status &amp; connectivity</b> · <b>Software</b> (DEVICE EXTEND) · <b>Hardware</b> (DEVICE INFO) · <b>Lifecycle</b> · <b>Security</b> (CLIENT CERT).</p>
+  </div>
+
+  <script>
+    const CHK = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>';
+    const GROUPS = [
+      { name: "Identity", model: "DEVICE", items: [
+        { l: "Serial number", on: true, lock: true }, { l: "Model", on: true },
+        { l: "PN" }, { l: "Config code" }, { l: "Hardware ID" }, { l: "PCI version" }, { l: "Run mode" },
+      ]},
+      { name: "Ownership", model: "PARTNER / MERCHANT", items: [
+        { l: "Owner", on: true }, { l: "Merchant · Store", on: true },
+      ]},
+      { name: "Status & connectivity", model: "DEVICE / EXTEND", items: [
+        { l: "Status", on: true }, { l: "Connectivity", on: true }, { l: "Last check-in", on: true },
+      ]},
+      { name: "Software", model: "DEVICE EXTEND", items: [
+        { l: "OS / Firmware", on: true }, { l: "Firmware ID" }, { l: "Finance app" },
+      ]},
+      { name: "Hardware", model: "DEVICE INFO", items: [
+        { l: "IMEI" }, { l: "Storage" }, { l: "Battery health" },
+      ]},
+      { name: "Lifecycle", model: "DEVICE", items: [
+        { l: "Record created" }, { l: "Activated" },
+      ]},
+      { name: "Security", model: "CLIENT CERT", items: [
+        { l: "Cert CN" }, { l: "Cert expires" },
+      ]},
+    ];
+    document.getElementById('grps').innerHTML = GROUPS.map(g => `
+      <div class="grp">
+        <div class="grp__h"><span class="grp__name">${g.name}</span><span class="grp__model">${g.model}</span></div>
+        ${g.items.map(it => `
+          <div class="opt ${it.on ? 'on' : ''} ${it.lock ? 'locked' : ''}">
+            <span class="opt__box">${CHK}</span>
+            <span class="opt__label">${it.l}</span>
+            ${it.lock ? '<span class="opt__lock">LOCKED</span>' : ''}
+          </div>`).join('')}
+      </div>`).join('');
+
+    const ROWS = [
+      ["N950-0014-3322","N950","Northwind Commerce","Cascade Bistro · HQ","TOMS 8.2.1","05-12 14:25","Online","Active"],
+      ["S60-0488-0021","S60","Northwind Commerce","Riverside Coffee · Plateau","TOMS 7.4.3","05-09 14:30","Offline","Locked"],
+      ["X800-0099-1422","X800","Lakeside ISV","Books & Co · HQ","TOMS 8.2.0","05-12 14:18","Online","Active"],
+    ];
+    document.getElementById('rows').innerHTML = ROWS.map(r => `<tr>${r.map((c,i)=>`<td class="${i===0?'mono':''}">${c}</td>`).join('')}</tr>`).join('');
+  </script>
+</body>
+</html>

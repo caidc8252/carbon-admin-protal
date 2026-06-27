@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ui-spec diagrams · 目录</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:24px;}
+  .dcard{display:block;text-decoration:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow-1);color:inherit;transition:border-color .12s,box-shadow .12s;}
+  .dcard:hover{border-color:var(--primary-200);box-shadow:var(--shadow-2);}
+  .dcard__sec{font:600 11px/1 var(--mono);letter-spacing:.04em;color:var(--primary-700);background:var(--primary-50);border:1px solid var(--primary-200);border-radius:5px;padding:3px 7px;display:inline-block;}
+  .dcard__t{font-size:14.5px;font-weight:600;margin-top:10px;}
+  .dcard__d{font-size:12px;color:var(--fg3);margin-top:5px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ui-spec · 配套示意图</h1>
+  <p class="lede">
+    规范正文见 <code>ui-spec/ui-spec.md</code>（唯一事实来源）。本目录把示意图按章节拆成若干可编辑的独立页面，每页顶部 <code>&lt;link href="_shared.css"&gt;</code> 共用一套 token——<b>改样式改 <code>_shared.css</code> 一处，全部同步</b>。
+  </p>
+  <div class="note">原 <code>ui-spec-diagrams.html</code> 是打包压缩的单文件（不可直接编辑），已由下列拆分图取代。新增/修改示意图，直接编辑对应 HTML 即可。</div>
+
+  <div class="grid">
+    <a class="dcard" href="01-titlebar.html"><span class="dcard__sec">§1 · §6</span><div class="dcard__t">标题栏统一模板</div><div class="dcard__d">五个标准形态 A/B/C/D/E + E′ · 单标题层级</div></a>
+    <a class="dcard" href="02-forms.html"><span class="dcard__sec">§2</span><div class="dcard__t">新建 / 编辑表单</div><div class="dcard__d">表单外壳 · WizardFooter 分步底栏 · Summary 侧栏</div></a>
+    <a class="dcard" href="03-list-pagination.html"><span class="dcard__sec">§3</span><div class="dcard__t">列表卡 & 分页</div><div class="dcard__d">列表解剖 · 分页三区块 · 行操作图标 · Load more</div></a>
+    <a class="dcard" href="04-search.html"><span class="dcard__sec">§4</span><div class="dcard__t">搜索与筛选</div><div class="dcard__d">控件库（搜索/选择/多选/级联）· Advanced 在 Search 左 · 含 §4.5/§4.6</div></a>
+    <a class="dcard" href="05-advanced-search.html"><span class="dcard__sec">§4.6</span><div class="dcard__t">高级搜索</div><div class="dcard__d">单一 AdvancedSheet · 右缘齐平 · APPLIES WITH · 无 match 数</div></a>
+    <a class="dcard" href="06-active-filters.html"><span class="dcard__sec">§4.5</span><div class="dcard__t">Active filters</div><div class="dcard__d">已生效芯片 · 逐条 × · 去 Clear all</div></a>
+    <a class="dcard" href="07-shell-scroll.html"><span class="dcard__sec">§5.0–5.2</span><div class="dcard__t">框架 / Shell</div><div class="dcard__d">三区结构 · 侧栏三态 · 滚动唯一性</div></a>
+    <a class="dcard" href="07-stepper.html"><span class="dcard__sec">§5.3</span><div class="dcard__t">Stepper 两种变体</div><div class="dcard__d">A 卡片（Order detail）/ B 标题底部（Ticket）· 按放置二选一</div></a>
+    <a class="dcard" href="07-spacing.html"><span class="dcard__sec">§5.4</span><div class="dcard__t">内容区块间距</div><div class="dcard__d">统一 4px 节奏 · --space-* token 速查</div></a>
+    <a class="dcard" href="09-loading.html"><span class="dcard__sec">§7</span><div class="dcard__t">Loading 加载态</div><div class="dcard__d">按范围选型 · 骨架屏 · Spinner 三处</div></a>
+    <a class="dcard" href="11-datetime.html"><span class="dcard__sec">§9</span><div class="dcard__t">日期与时间格式</div><div class="dcard__d">美式三形态 · 12h+AM/PM · 不补前导 0 · 等宽数字</div></a>
+  </div>
+</div>
+</body>
+</html>

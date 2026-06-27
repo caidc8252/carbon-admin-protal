@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>§11 日期与时间格式 · ui-spec diagrams</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* big format specimens */
+  .fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px;}
+  @media (max-width:760px){.fmt-grid{grid-template-columns:1fr;}}
+  .fmt{background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-1);padding:18px 20px;}
+  .fmt__when{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3);}
+  .fmt__sample{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;color:var(--fg1);margin-top:12px;letter-spacing:-.01em;}
+  .fmt__pat{font-family:var(--mono);font-size:11.5px;color:var(--primary-700);background:var(--primary-50);border:1px solid var(--primary-200);border-radius:5px;padding:2px 7px;display:inline-block;margin-top:12px;}
+  .fmt__note{font-size:12px;color:var(--fg2);margin-top:10px;line-height:1.5;}
+
+  /* anatomy callouts */
+  .anat{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:30px;font-weight:600;color:var(--fg1);letter-spacing:0;}
+  .anat .seg{position:relative;}
+  .anat .hl{color:var(--primary-700);}
+  .anat .sp{display:inline-block;width:.34em;border-bottom:2px solid var(--warn-700);margin:0 1px;vertical-align:2px;}
+  .anat-legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;font-size:12.5px;color:var(--fg2);}
+  .anat-legend span{display:inline-flex;align-items:center;gap:7px;}
+  .anat-legend i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--primary-700);background:var(--primary-50);border:1px solid var(--primary-200);border-radius:4px;padding:1px 5px;}
+
+  .rule td{padding:9px 14px;font-size:12.5px;vertical-align:top;}
+  .rule td:first-child{color:var(--fg1);font-weight:500;width:30%;}
+  .rule td:nth-child(2){font-family:var(--mono);color:var(--success-700);font-weight:600;width:22%;font-variant-numeric:tabular-nums;}
+  .rule td:nth-child(3){color:var(--danger-700);font-family:var(--mono);font-size:12px;width:20%;}
+  .rule td:last-child{color:var(--fg3);font-size:12px;}
+
+  /* context: mock table */
+  .mono-c{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--fg2);}
+  .meta-line{font-size:12px;color:var(--fg3);display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .meta-line .mono-c{color:var(--fg3);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="index.html">← diagrams</a> · ui-spec.md §11</div>
+  <h1>日期与时间格式</h1>
+  <p class="lede">
+    全站统一为<b>美式（en-US）</b>格式，分三形态：<b>仅时间</b> / <b>仅日期</b> / <b>日期 + 时间</b>。
+    数字一律 <code>font-variant-numeric: tabular-nums</code> 等宽（数据语态）。<b>本章取代</b> README 的 ISO 示例（<code>2026-05-19 14:22:08</code>），为门户唯一时间格式事实来源。
+  </p>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>三种形态</h2></div>
+    <div class="fmt-grid">
+      <div class="fmt">
+        <div class="fmt__when">仅时间 · Time only</div>
+        <div class="fmt__sample">3:35 PM</div>
+        <div class="fmt__pat">h:mm A</div>
+        <div class="fmt__note">12 小时制 + 大写 AM/PM。小时不补 0，分钟两位。</div>
+      </div>
+      <div class="fmt">
+        <div class="fmt__when">仅日期 · Date only</div>
+        <div class="fmt__sample">6/13/2026</div>
+        <div class="fmt__pat">M/D/YYYY</div>
+        <div class="fmt__note">月 / 日 / 四位年。月与日均不补前导 0。</div>
+      </div>
+      <div class="fmt">
+        <div class="fmt__when">日期 + 时间</div>
+        <div class="fmt__sample">6/13/2026 3:45 PM</div>
+        <div class="fmt__pat">M/D/YYYY h:mm A</div>
+        <div class="fmt__note">日期在前、时间在后，中间一个空格。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>解剖（以「日期 + 时间」为例）</h2></div>
+    <p class="sec-desc">两处空格全站统一保留：<b>日期 ↔ 时间</b> 之间一个、<b>时间 ↔ AM/PM</b> 之间一个（黄色下划线标注）。蓝色为不补前导 0 的字段。</p>
+    <div class="card card--pad" style="max-width:600px;">
+      <div class="anat"><span class="hl">6</span>/<span class="hl">13</span>/2026<span class="sp"></span><span class="hl">3</span>:45<span class="sp"></span>PM</div>
+      <div class="anat-legend">
+        <span><i>M</i> 月不补 0（6, 非 06）</span>
+        <span><i>D</i> 日不补 0（13）</span>
+        <span><i>YYYY</i> 四位年</span>
+        <span><i>h</i> 时不补 0（3, 非 03）</span>
+        <span><i>mm</i> 分两位（45, 05）</span>
+        <span style="color:var(--warn-700);">▁ 两处空格保留</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>规则（对 ✓ · 错 ✗）</h2></div>
+    <div class="card" style="overflow:hidden;max-width:760px;">
+      <table class="tbl rule"><tbody>
+        <tr><td>时制</td><td>3:45 PM</td><td>14:25</td><td>12 小时制 + 大写 AM/PM，不用 24 小时制</td></tr>
+        <tr><td>小时前导 0</td><td>9:05 AM</td><td>09:05</td><td>小时不补前导 0；分钟恒两位</td></tr>
+        <tr><td>日期月/日</td><td>7/1/2026</td><td>07/01/2026</td><td>月与日不补前导 0，年四位</td></tr>
+        <tr><td>空格</td><td>6/13/2026 3:45 PM</td><td>6/13/2026&nbsp;3:45PM</td><td>日期↔时间、时间↔AM/PM 各留一个空格</td></tr>
+        <tr><td>秒 / 时区</td><td>3:45 PM</td><td>3:45:08 PM EST</td><td>默认不带秒、不拼时区后缀（审计/日志另行声明）</td></tr>
+        <tr><td>等宽数字</td><td>tabular-nums</td><td>—</td><td>列表/表格纵向对齐，mono 数据语态</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="tag tag--new">NEW</span><h2>在列表 / 详情中的用法</h2></div>
+    <p class="sec-desc"><b>相对时间为辅助、非替代</b>：列表「Last seen」可继续用 <code>5 min ago</code> 主显，但其 tooltip / 详情页的<b>绝对时间</b>走「日期 + 时间」形态。表格中时间列一律等宽对齐。</p>
+    <div class="card" style="overflow:hidden;max-width:760px;">
+      <div class="list-head"><span class="list-head__count"><b>3</b> devices</span></div>
+      <table class="tbl"><thead>
+        <tr><th>SN / Model</th><th>Last seen</th><th>Activated</th><th>Window opens</th></tr>
+      </thead><tbody>
+        <tr><td class="mono-c">N950-0014-9281</td><td class="mono-c">6/13/2026 3:45 PM</td><td class="mono-c">2/14/2025</td><td class="mono-c">2:00 AM</td></tr>
+        <tr><td class="mono-c">S60-0488-0021</td><td class="mono-c">6/9/2026 11:30 AM</td><td class="mono-c">9/12/2024</td><td class="mono-c">2:00 AM</td></tr>
+        <tr><td class="mono-c">X800-0099-1422</td><td class="mono-c">6/13/2026 3:52 PM</td><td class="mono-c">1/20/2025</td><td class="mono-c">3:30 AM</td></tr>
+      </tbody></table>
+    </div>
+    <div class="contrast" style="max-width:760px;">
+      <span><span class="x">✗</span> 旧 ISO 显示</span>
+      <span class="mono-c" style="text-decoration:line-through;">2026-06-13 15:45:08</span>
+      <span style="margin:0 4px;">→</span>
+      <span><span class="ok">✓</span> 本章格式</span>
+      <span class="mono-c" style="color:var(--fg1);">6/13/2026 3:45 PM</span>
+    </div>
+  </section>
+
+  <div class="note">
+    落地：抽一处共享格式化工具（<code>fmtTime</code> / <code>fmtDate</code> / <code>fmtDateTime</code>），各页不再各写 <code>toLocale*</code> / 手拼字符串；迁移现存 ISO <code>YYYY-MM-DD HH:mm:ss</code>（如 Devices 列表 Last seen / Activated 列）到本章格式。详见 <code>ui-spec.md §11</code> 与附录第 11 项。
+  </div>
+</div>
+</body>
+</html>
